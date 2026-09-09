@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.9**
+**Current development version: v0.12.10**
 
 IT-Kayali Translate is a modular multilingual translation plugin for WordPress. The goal is a reusable, distributable translation platform that works with plain WordPress and can optionally integrate with WooCommerce, Elementor, WoodMart and additional themes/builders through adapters.
 
@@ -10,18 +10,20 @@ IT-Kayali Translate is a modular multilingual translation plugin for WordPress. 
 
 The current development focus is stability of multilingual storefront routing and WooCommerce system pages, especially Cart, Checkout and My Account under language-prefixed URLs such as `/en/` and `/ar/`.
 
-### v0.12.9
+### v0.12.10
 
-- Preserves the active WooCommerce **My Account endpoint when switching language**. Switching from Orders, Downloads, Addresses, Account details or View order no longer intentionally falls back to Dashboard.
-- Adds a direct WooCommerce endpoint content dispatcher for language-prefixed account URLs as a final fallback when WordPress/WoodMart loses the endpoint query state.
-- Treats the real language-prefixed My Account request path as authoritative when rebuilding account endpoint URLs.
-- Strengthens the WoodMart/account navigation fallback: known account links now perform a direct full-page navigation to the canonical language endpoint URL instead of allowing another theme script to redirect to Dashboard.
-- Plugin header, ITKT_VERSION and WordPress readme stable tag are synchronized to 0.12.9.
-- All plugin PHP files pass syntax validation and the installation ZIP passes archive validation.
+- Adds an **independent WooCommerce My Account rescue marker** for non-default-language account links. The marker does not depend on WordPress rewrite rules.
+- Account links keep their clean pretty path (for example `/en/mein-konto/orders/`) while a short-lived query marker tells the server exactly which WooCommerce endpoint must render.
+- The marker is validated against WooCommerce's canonical endpoint map before it can affect rendering.
+- The standard frontend JavaScript bundle now rewrites My Account navigation links directly, instead of relying only on a footer-specific WoodMart fallback.
+- Capture-phase click handling owns the final destination for known account tabs before WoodMart or another script can collapse the click back to Dashboard.
+- After the correct endpoint page loads, the temporary rescue marker is removed from the visible address bar using `history.replaceState()`.
+- The server synchronizes the marker into `$wp`, `$wp_query` and WooCommerce endpoint state, and the direct content dispatcher uses the same validated marker as a final fallback.
+- All PHP files pass syntax validation, the frontend JavaScript passes syntax validation, and a local marker/dispatcher test passed.
 
 ### Test still required on the staging site
 
-v0.12.8 failed the real staging test: after switching from the default language to English/Arabic, My Account returned to Dashboard and endpoint tabs still did not open reliably. v0.12.9 specifically addresses that observed behavior. Verify the real staging site before closing the issue.
+The real v0.12.9 staging test failed: after switching to English, the My Account page still showed Dashboard and the endpoint tabs did not open reliably. v0.12.10 deliberately stops relying on the pretty-path rewrite alone and carries the endpoint state independently for the request. Verify English and Arabic on staging before closing the issue.
 
 ## Persistent project hand-off
 
@@ -38,7 +40,7 @@ For every new plugin version, the WordPress ZIP delivered in chat and the GitHub
 
 ### Current verified open issue
 
-The real-world v0.12.8 test confirms that WooCommerce My Account still works only in the default language. After switching to English/Arabic the visitor lands on the account Dashboard, and Orders, Downloads, Addresses and Account details cannot be opened reliably. v0.12.9 is the current fix candidate and remains **in verification** until the staging test succeeds.
+The real-world v0.12.9 test still shows WooCommerce My Account falling back to Dashboard in non-default languages. The visible English account page loads and translates, but Orders, Downloads, Addresses and Account details cannot yet be confirmed working. v0.12.10 is the current fix candidate and remains **in verification** until the staging test succeeds.
 
 ## Core principles
 
