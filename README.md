@@ -17,6 +17,23 @@ The current development focus is stability of multilingual storefront routing an
 - Rebuilds WooCommerce account endpoint links at late priority.
 - Adds a frontend fallback for WooCommerce/WoodMart account navigation.
 
+## Persistent project hand-off
+
+The repository is the canonical hand-off point for continued development, including when work moves to a new chat.
+
+Before changing the plugin, read:
+
+- `README.md` for product architecture and capabilities.
+- `CHANGELOG.md` for version history.
+- `AGENDA.md` for the current bug status, priorities and next steps.
+- The current plugin source for the exact implementation state.
+
+For every new plugin version, the WordPress ZIP delivered in chat and the GitHub source must represent the same version. The release is not considered complete until the plugin version, README, CHANGELOG and AGENDA are synchronized.
+
+### Current verified open issue
+
+The latest real-world test of v0.12.7 shows that WooCommerce My Account works correctly in the German/default language, but non-default-language account endpoints such as Orders, Addresses and Account details can still fall back to the account dashboard. This remains the first priority for the next fix.
+
 ## Core principles
 
 - Modular translation core; WooCommerce, Elementor and WoodMart are optional integrations.
