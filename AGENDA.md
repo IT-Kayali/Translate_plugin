@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.9**  
+**Aktueller Entwicklungsstand: v0.12.10**  
 **Letzte Aktualisierung: 09.09.2026**
 
 Diese Datei ist die zentrale Übergabe- und Arbeitsagenda des Projekts. Sie muss bei jeder Plugin-Version aktualisiert werden, damit die Entwicklung auch in einem neuen Chat ohne Informationsverlust fortgesetzt werden kann.
@@ -49,24 +49,27 @@ Nicht-Standardsprachen, aktuell insbesondere Arabisch:
 - Beim Klick auf Bestellungen, Adressen oder Kontodetails wird der gewünschte Bereich noch nicht zuverlässig geöffnet.
 - Die Seite bleibt bzw. fällt auf die Kontoübersicht zurück.
 
-**Status:** Der reale Test von v0.12.8 ist fehlgeschlagen. Nach dem Sprachwechsel landet „Mein Konto“ weiterhin auf dem Dashboard und die Endpoints öffnen nicht zuverlässig. v0.12.9 ist dafür gebaut und bleibt bis zum Staging-Test **in Verifikation**.
+**Status:** Auch der reale Test von v0.12.9 ist fehlgeschlagen. Englisch wird korrekt geladen und übersetzt, aber die Konto-Tabs öffnen weiterhin nicht zuverlässig und die Seite bleibt auf dem Dashboard. v0.12.10 ist dafür gebaut und bleibt bis zum Staging-Test **in Verifikation**.
 
-### Ergebnis des v0.12.8-Staging-Tests
+### Ergebnisse der bisherigen Staging-Tests
 - Standardsprache/Deutsch: My-Account-Endpoints funktionieren.
-- Englisch/Arabisch: Sprachwechsel führt zurück auf das Dashboard.
-- Orders, Downloads, Adressen und Kontodetails lassen sich danach nicht zuverlässig öffnen.
-- Damit ist P0 noch nicht erledigt.
+- v0.12.8: Englisch/Arabisch fallen auf Dashboard zurück.
+- v0.12.9: Englisch wird sichtbar korrekt geladen und übersetzt, aber Orders/Downloads/Adressen/Kontodetails öffnen weiterhin nicht zuverlässig.
+- Damit ist P0 weiterhin offen.
 
-### In v0.12.9 umgesetzt
-- Sprachumschalter bewahrt den aktuellen WooCommerce-Endpoint beim Wechsel zwischen DE/EN/AR usw.
-- Direkter Content-Dispatcher ruft bei einer echten Sprach-Endpoint-URL die passende WooCommerce-Endpoint-Aktion auf, selbst wenn Query Vars verloren gingen.
-- Aktueller /LANG/mein-konto/... Request-Pfad wird beim Erzeugen der Endpoint-URLs als autoritativ behandelt.
-- WoodMart-/Account-Link-Fallback erzwingt bei bekannten Konto-Links eine normale Vollnavigation auf die korrekte Endpoint-URL.
-- Plugin-Version, ITKT_VERSION und readme.txt auf 0.12.9 synchronisiert.
-- Alle PHP-Dateien ohne Syntaxfehler; ZIP-Integrität geprüft.
+### In v0.12.10 umgesetzt
+- Unabhängiger Rescue-Marker `itkt_wc_endpoint` trägt den kanonischen WooCommerce-Endpoint zusätzlich zur Pretty-URL.
+- Der Server liest diesen Marker vor der Rewrite-Auswertung und setzt den exakten WooCommerce-Endpoint wieder in WordPress/WooCommerce.
+- Der Marker wird ausschließlich gegen die echte WooCommerce-Endpoint-Map validiert.
+- Die normale `frontend.js` enthält jetzt die Account-Navigation-Reparatur; sie ist nicht mehr nur von einem Inline-Footer-Script abhängig.
+- Account-Klicks werden in der Capture-Phase abgefangen, bevor WoodMart/andere Scripts sie auf Dashboard umleiten können.
+- Nach erfolgreichem Laden entfernt JavaScript den temporären Marker wieder aus der sichtbaren Adresszeile.
+- Direkter WooCommerce-Content-Dispatcher bleibt als letzte serverseitige Absicherung aktiv.
+- PHP-Syntaxprüfung, JavaScript-Syntaxprüfung und lokaler Marker/Dispatcher-Test erfolgreich.
+- ZIP-Integrität geprüft.
 
 ### Nächster konkreter Test
-Nach Installation der v0.12.9 auf Staging:
+Nach Installation der v0.12.10 auf Staging:
 1. Arabisch öffnen: `/ar/mein-konto/`.
 2. Bestellungen anklicken → URL muss `/ar/mein-konto/orders/` werden und Bestellungen anzeigen.
 3. Downloads testen.
@@ -125,7 +128,7 @@ Nach Installation der v0.12.9 auf Staging:
 ## Nächste Aufgaben – Priorität
 
 ### P0 – aktuell zuerst erledigen
-- v0.12.9 auf Staging installieren und WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen verifizieren.
+- v0.12.10 auf Staging installieren und WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen verifizieren.
 - Arabisch und Englisch testen:
   - Dashboard
   - Bestellungen
@@ -190,4 +193,4 @@ Eine neue Version gilt erst als fertig, wenn:
 
 **Projekt:** IT-Kayali Translate  
 **Website:** it-kayali.de  
-**Aktuelle Version:** v0.12.9
+**Aktuelle Version:** v0.12.10
