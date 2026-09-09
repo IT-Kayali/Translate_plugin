@@ -1,0 +1,30 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary / local
+*.log
+*.tmp
+*.bak
+*.orig
+.cache/
+tmp/
+temp/
+
+# Build artifacts
+dist/
+build/
+*.zip
+
+# Dependencies if introduced later
+node_modules/
+vendor/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
