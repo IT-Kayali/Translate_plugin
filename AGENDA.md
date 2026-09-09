@@ -49,7 +49,7 @@ Nicht-Standardsprachen, aktuell insbesondere Arabisch:
 - Beim Klick auf Bestellungen, Adressen oder Kontodetails wird der gewünschte Bereich noch nicht zuverlässig geöffnet.
 - Die Seite bleibt bzw. fällt auf die Kontoübersicht zurück.
 
-**Status:** Auch der reale Test von v0.12.9 ist fehlgeschlagen. Englisch wird korrekt geladen und übersetzt, aber die Konto-Tabs öffnen weiterhin nicht zuverlässig und die Seite bleibt auf dem Dashboard. v0.12.10 ist dafür gebaut und bleibt bis zum Staging-Test **in Verifikation**.
+**Status:** v0.12.10 wurde auf der realen Staging-Seite erfolgreich getestet. Die WooCommerce-„Mein Konto“-Navigation funktioniert jetzt auch in Nicht-Standardsprachen. Der bisherige Dashboard-Fallback gilt für den getesteten Ablauf als **behoben**.
 
 ### Ergebnisse der bisherigen Staging-Tests
 - Standardsprache/Deutsch: My-Account-Endpoints funktionieren.
@@ -68,16 +68,26 @@ Nicht-Standardsprachen, aktuell insbesondere Arabisch:
 - PHP-Syntaxprüfung, JavaScript-Syntaxprüfung und lokaler Marker/Dispatcher-Test erfolgreich.
 - ZIP-Integrität geprüft.
 
-### Nächster konkreter Test
-Nach Installation der v0.12.10 auf Staging:
-1. Arabisch öffnen: `/ar/mein-konto/`.
-2. Bestellungen anklicken → URL muss `/ar/mein-konto/orders/` werden und Bestellungen anzeigen.
-3. Downloads testen.
-4. Adressen testen.
-5. Kontodetails testen.
-6. Einzelbestellung testen, z. B. `/ar/mein-konto/view-order/<ID>/`.
-7. Dasselbe mindestens mit Englisch wiederholen.
-8. Erst wenn diese Tests erfolgreich sind, P0 „Mein Konto“ als erledigt markieren.
+### Ergebnis v0.12.10
+- Realer Staging-Test erfolgreich.
+- „Mein Konto“ funktioniert in der getesteten Nicht-Standardsprache wieder.
+- Der bisherige Rückfall auf das Dashboard wurde beseitigt.
+- P0 „Mein Konto“ ist damit abgeschlossen.
+
+### Nächster konkreter Schwerpunkt
+Als Nächstes folgt die systematische WooCommerce-End-to-End-Prüfung je Sprache:
+1. Shop
+2. Suche
+3. Produktseite
+4. Kategorien
+5. Filter
+6. Mini-Cart
+7. Warenkorb
+8. Checkout
+9. Mein Konto
+10. Wishlist
+
+Danach werden noch nicht übersetzbare bzw. dynamisch erzeugte WoodMart-/WooCommerce-Texte gesammelt und in die zentrale Übersetzungslogik aufgenommen.
 
 ## Bereits vorhandene Hauptfunktionen
 
@@ -127,23 +137,13 @@ Nach Installation der v0.12.10 auf Staging:
 
 ## Nächste Aufgaben – Priorität
 
-### P0 – aktuell zuerst erledigen
-- v0.12.10 auf Staging installieren und WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen verifizieren.
-- Arabisch und Englisch testen:
-  - Dashboard
-  - Bestellungen
-  - Einzelbestellung
-  - Downloads
-  - Adressen
-  - Kontodetails
-  - Zahlungsmethoden, falls aktiv
-  - Abmelden
-- Prüfen, ob WoodMart eigene Endpoint-/Navigation-Logik dazwischenfunkt.
-- Prüfen, ob Sprachrouter den WooCommerce Query Var nach dem WordPress Rewrite erneut überschreibt.
-- Systemseiten physisch nur einmal verwenden, Sprache virtuell beibehalten.
+### P0 – erledigt
+- WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen repariert.
+- v0.12.10 auf der realen Staging-Seite erfolgreich bestätigt.
+- Dashboard-Fallback nach Sprachwechsel im getesteten Ablauf behoben.
 
-### P1 – danach
-- WooCommerce End-to-End je Sprache:
+### P1 – aktuell als Nächstes
+- WooCommerce End-to-End je Sprache systematisch prüfen:
   - Shop
   - Suche
   - Produkt
