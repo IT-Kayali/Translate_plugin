@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.7**
+**Current development version: v0.12.8**
 
 IT-Kayali Translate is a modular multilingual translation plugin for WordPress. The goal is a reusable, distributable translation platform that works with plain WordPress and can optionally integrate with WooCommerce, Elementor, WoodMart and additional themes/builders through adapters.
 
@@ -10,12 +10,19 @@ IT-Kayali Translate is a modular multilingual translation plugin for WordPress. 
 
 The current development focus is stability of multilingual storefront routing and WooCommerce system pages, especially Cart, Checkout and My Account under language-prefixed URLs such as `/en/` and `/ar/`.
 
-### v0.12.7
+### v0.12.8
 
-- Fixes WooCommerce **My Account** system-page resolution for non-default languages.
-- Keeps account endpoints such as Orders, Downloads, Addresses and Account details on the selected language URL.
-- Rebuilds WooCommerce account endpoint links at late priority.
-- Adds a frontend fallback for WooCommerce/WoodMart account navigation.
+- Rebuilds WooCommerce **My Account** endpoint URLs from the exact physical WooCommerce system page instead of translated page copies.
+- Runs the My Account permalink filter at final priority so WoodMart/other filters cannot collapse non-default-language account links back to the dashboard.
+- Reconstructs Orders, Downloads, Addresses, Account details and other account endpoints directly for `/LANG/...` URLs.
+- Synchronizes endpoint state through `$wp`, `$wp_query` and `set_query_var()` before WooCommerce renders account content.
+- Adds a footer/click fallback that corrects WooCommerce/WoodMart account navigation links if theme JavaScript replaces them later.
+- PHP syntax validation passed for all plugin PHP files.
+- A local routing test confirmed `/ar/mein-konto/orders/` resolves to the physical My Account page with the `orders` endpoint.
+
+### Test still required on the staging site
+
+After installing v0.12.8, verify Arabic and English My Account navigation in the real WoodMart/WooCommerce environment. Until that test passes, the account issue remains **in verification**, not fully closed.
 
 ## Persistent project hand-off
 
