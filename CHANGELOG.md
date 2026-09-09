@@ -19,7 +19,7 @@ The current development version is **0.12.10**.
 - `public/assets/frontend.js` passes JavaScript syntax validation.
 - A local PHP harness confirmed marker validation and direct dispatch to `woocommerce_account_orders_endpoint`.
 - Installation ZIP integrity test passes.
-- Real staging verification for English and Arabic is still required.
+- Real staging verification completed successfully: the non-default-language My Account endpoint fallback issue is resolved in the tested flow.
 
 ## [0.12.9]
 
