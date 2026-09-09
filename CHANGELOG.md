@@ -2,7 +2,21 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-The current development version is **0.12.8**.
+The current development version is **0.12.9**.
+
+## [0.12.9]
+
+### Fixed
+- Language switching inside WooCommerce My Account preserves the current endpoint instead of resetting to Dashboard.
+- Added a direct endpoint-content dispatcher based on the real `/LANG/my-account/ENDPOINT/` browser URL when WooCommerce/WoodMart loses endpoint query state.
+- My Account endpoint URL rebuilding now also trusts the current language-prefixed account path.
+- WoodMart/account navigation fallback now performs a direct full-page navigation to the canonical endpoint URL, preventing competing theme JavaScript from routing back to Dashboard.
+
+### Validation
+- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` stable tag synchronized to 0.12.9.
+- All PHP files pass syntax validation.
+- Installation ZIP integrity test passes.
+- Real staging verification for English and Arabic is still required.
 
 ## [0.12.8]
 
