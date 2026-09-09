@@ -21,9 +21,9 @@ The current development focus is stability of multilingual storefront routing an
 - The server synchronizes the marker into `$wp`, `$wp_query` and WooCommerce endpoint state, and the direct content dispatcher uses the same validated marker as a final fallback.
 - All PHP files pass syntax validation, the frontend JavaScript passes syntax validation, and a local marker/dispatcher test passed.
 
-### Test still required on the staging site
+### Staging verification
 
-The real v0.12.9 staging test failed: after switching to English, the My Account page still showed Dashboard and the endpoint tabs did not open reliably. v0.12.10 deliberately stops relying on the pretty-path rewrite alone and carries the endpoint state independently for the request. Verify English and Arabic on staging before closing the issue.
+v0.12.10 has now been confirmed on the real staging site: WooCommerce My Account navigation works again in non-default languages after the rescue-marker fix. The previous Dashboard fallback is considered resolved for the tested account flow.
 
 ## Persistent project hand-off
 
@@ -38,9 +38,11 @@ Before changing the plugin, read:
 
 For every new plugin version, the WordPress ZIP delivered in chat and the GitHub source must represent the same version. The release is not considered complete until the plugin version, README, CHANGELOG and AGENDA are synchronized.
 
-### Current verified open issue
+### Current verified status
 
-The real-world v0.12.9 test still shows WooCommerce My Account falling back to Dashboard in non-default languages. The visible English account page loads and translates, but Orders, Downloads, Addresses and Account details cannot yet be confirmed working. v0.12.10 is the current fix candidate and remains **in verification** until the staging test succeeds.
+The WooCommerce My Account language-endpoint issue is **resolved in v0.12.10** based on the real staging test. Non-default-language account navigation no longer falls back to Dashboard in the tested flow.
+
+The next development focus is broader WooCommerce end-to-end verification across languages and remaining untranslated frontend/WoodMart strings.
 
 ## Core principles
 
