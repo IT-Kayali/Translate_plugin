@@ -2,7 +2,24 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-The current development version is **0.12.9**.
+The current development version is **0.12.10**.
+
+## [0.12.10]
+
+### Fixed
+- Added an independent `itkt_wc_endpoint` rescue marker for non-default-language WooCommerce My Account requests.
+- My Account links retain their pretty endpoint path while carrying the canonical endpoint key separately for the server request.
+- Server-side endpoint restoration now trusts the validated rescue marker before rewrite-derived endpoint state.
+- The normal ITKT frontend bundle now rewrites My Account navigation links and intercepts known account-tab clicks in capture phase, so WoodMart/other scripts cannot redirect them back to Dashboard.
+- The temporary marker is removed from the visible browser address after the endpoint page has loaded.
+- Endpoint state is synchronized into WordPress/WooCommerce runtime state and the direct endpoint content dispatcher.
+
+### Validation
+- All plugin PHP files pass `php -l`.
+- `public/assets/frontend.js` passes JavaScript syntax validation.
+- A local PHP harness confirmed marker validation and direct dispatch to `woocommerce_account_orders_endpoint`.
+- Installation ZIP integrity test passes.
+- Real staging verification for English and Arabic is still required.
 
 ## [0.12.9]
 
