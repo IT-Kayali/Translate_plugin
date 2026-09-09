@@ -2,7 +2,21 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-The current development version is **0.12.7**.
+The current development version is **0.12.8**.
+
+## [0.12.8]
+
+### Fixed
+- My Account endpoint URLs are now based on the exact physical WooCommerce system page instead of translated page copies.
+- The My Account permalink filter now runs at final priority to prevent WoodMart/other filters from collapsing non-default-language links back to the dashboard.
+- Orders, Downloads, Addresses, Account details and related endpoints are rebuilt directly under the selected language prefix.
+- Endpoint state is synchronized through `$wp`, `$wp_query` and `set_query_var()` before WooCommerce renders account content.
+- Added a footer/click-time fallback for WooCommerce/WoodMart account navigation links.
+
+### Validation
+- All plugin PHP files pass syntax validation.
+- Local routing test confirms `/ar/mein-konto/orders/` maps to the physical My Account page and exposes the `orders` endpoint.
+- Real staging verification is still required for Arabic/English before the issue is considered fully closed.
 
 ## [0.12.7]
 
