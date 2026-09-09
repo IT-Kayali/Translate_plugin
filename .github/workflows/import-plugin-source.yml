@@ -1,0 +1,55 @@
+name: Import plugin source
+
+on:
+  push:
+    paths:
+      - "source/it-kayali-translate-v0.12.7.zip"
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Extract plugin package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/itkt-import
+          mkdir -p /tmp/itkt-import
+          unzip -q source/it-kayali-translate-v0.12.7.zip -d /tmp/itkt-import
+
+          test -f /tmp/itkt-import/it-kayali-translate/it-kayali-translate.php
+
+          rm -rf admin includes public
+          rm -f it-kayali-translate.php readme.txt uninstall.php
+
+          cp -a /tmp/itkt-import/it-kayali-translate/admin .
+          cp -a /tmp/itkt-import/it-kayali-translate/includes .
+          cp -a /tmp/itkt-import/it-kayali-translate/public .
+          cp /tmp/itkt-import/it-kayali-translate/it-kayali-translate.php .
+          cp /tmp/itkt-import/it-kayali-translate/readme.txt .
+          cp /tmp/itkt-import/it-kayali-translate/uninstall.php .
+
+      - name: Commit imported v0.12.7 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add admin includes public it-kayali-translate.php readme.txt uninstall.php
+          git rm -f source/it-kayali-translate-v0.12.7.zip
+
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: import IT-Kayali Translate v0.12.7 source"
+          git push
