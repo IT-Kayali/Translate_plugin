@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.7**  
+**Aktueller Entwicklungsstand: v0.12.8**  
 **Letzte Aktualisierung: 09.09.2026**
 
 Diese Datei ist die zentrale Übergabe- und Arbeitsagenda des Projekts. Sie muss bei jeder Plugin-Version aktualisiert werden, damit die Entwicklung auch in einem neuen Chat ohne Informationsverlust fortgesetzt werden kann.
@@ -49,7 +49,28 @@ Nicht-Standardsprachen, aktuell insbesondere Arabisch:
 - Beim Klick auf Bestellungen, Adressen oder Kontodetails wird der gewünschte Bereich noch nicht zuverlässig geöffnet.
 - Die Seite bleibt bzw. fällt auf die Kontoübersicht zurück.
 
-**Status:** noch offen. v0.12.7 hat den Bereich gehärtet, der reale Test zeigt aber, dass das Problem noch nicht vollständig gelöst ist.
+**Status:** v0.12.8 ist gebaut und lokal geprüft, aber noch nicht auf der realen Staging-Seite bestätigt. Der Punkt bleibt deshalb **in Verifikation**.
+
+### In v0.12.8 umgesetzt
+- My-Account-URLs werden aus der exakt in WooCommerce konfigurierten physischen Systemseite aufgebaut.
+- Die technische Account-Seite wird nicht mehr durch eine übersetzte Seitenkopie ersetzt.
+- My-Account-Permalink-Filter läuft mit finaler Priorität.
+- Orders, Downloads, Adressen, Kontodetails und weitere Endpoints werden für Sprach-URLs direkt rekonstruiert.
+- `$wp`, `$wp_query` und `set_query_var()` werden vor dem WooCommerce-Rendern synchronisiert.
+- WooCommerce-/WoodMart-Navigationslinks werden zusätzlich im Footer und unmittelbar beim Klick korrigiert.
+- Alle PHP-Dateien wurden erfolgreich auf Syntax geprüft.
+- Lokaler Routing-Test für `/ar/mein-konto/orders/` ist erfolgreich.
+
+### Nächster konkreter Test
+Nach Installation der v0.12.8 auf Staging:
+1. Arabisch öffnen: `/ar/mein-konto/`.
+2. Bestellungen anklicken → URL muss `/ar/mein-konto/orders/` werden und Bestellungen anzeigen.
+3. Downloads testen.
+4. Adressen testen.
+5. Kontodetails testen.
+6. Einzelbestellung testen, z. B. `/ar/mein-konto/view-order/<ID>/`.
+7. Dasselbe mindestens mit Englisch wiederholen.
+8. Erst wenn diese Tests erfolgreich sind, P0 „Mein Konto“ als erledigt markieren.
 
 ## Bereits vorhandene Hauptfunktionen
 
@@ -100,7 +121,7 @@ Nicht-Standardsprachen, aktuell insbesondere Arabisch:
 ## Nächste Aufgaben – Priorität
 
 ### P0 – aktuell zuerst erledigen
-- WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen vollständig reparieren.
+- v0.12.8 auf Staging installieren und WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen verifizieren.
 - Arabisch und Englisch testen:
   - Dashboard
   - Bestellungen
@@ -165,4 +186,4 @@ Eine neue Version gilt erst als fertig, wenn:
 
 **Projekt:** IT-Kayali Translate  
 **Website:** it-kayali.de  
-**Aktuelle Version:** v0.12.7
+**Aktuelle Version:** v0.12.8
