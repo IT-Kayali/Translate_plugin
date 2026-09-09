@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.8**
+**Current development version: v0.12.9**
 
 IT-Kayali Translate is a modular multilingual translation plugin for WordPress. The goal is a reusable, distributable translation platform that works with plain WordPress and can optionally integrate with WooCommerce, Elementor, WoodMart and additional themes/builders through adapters.
 
@@ -10,19 +10,18 @@ IT-Kayali Translate is a modular multilingual translation plugin for WordPress. 
 
 The current development focus is stability of multilingual storefront routing and WooCommerce system pages, especially Cart, Checkout and My Account under language-prefixed URLs such as `/en/` and `/ar/`.
 
-### v0.12.8
+### v0.12.9
 
-- Rebuilds WooCommerce **My Account** endpoint URLs from the exact physical WooCommerce system page instead of translated page copies.
-- Runs the My Account permalink filter at final priority so WoodMart/other filters cannot collapse non-default-language account links back to the dashboard.
-- Reconstructs Orders, Downloads, Addresses, Account details and other account endpoints directly for `/LANG/...` URLs.
-- Synchronizes endpoint state through `$wp`, `$wp_query` and `set_query_var()` before WooCommerce renders account content.
-- Adds a footer/click fallback that corrects WooCommerce/WoodMart account navigation links if theme JavaScript replaces them later.
-- PHP syntax validation passed for all plugin PHP files.
-- A local routing test confirmed `/ar/mein-konto/orders/` resolves to the physical My Account page with the `orders` endpoint.
+- Preserves the active WooCommerce **My Account endpoint when switching language**. Switching from Orders, Downloads, Addresses, Account details or View order no longer intentionally falls back to Dashboard.
+- Adds a direct WooCommerce endpoint content dispatcher for language-prefixed account URLs as a final fallback when WordPress/WoodMart loses the endpoint query state.
+- Treats the real language-prefixed My Account request path as authoritative when rebuilding account endpoint URLs.
+- Strengthens the WoodMart/account navigation fallback: known account links now perform a direct full-page navigation to the canonical language endpoint URL instead of allowing another theme script to redirect to Dashboard.
+- Plugin header, ITKT_VERSION and WordPress readme stable tag are synchronized to 0.12.9.
+- All plugin PHP files pass syntax validation and the installation ZIP passes archive validation.
 
 ### Test still required on the staging site
 
-After installing v0.12.8, verify Arabic and English My Account navigation in the real WoodMart/WooCommerce environment. Until that test passes, the account issue remains **in verification**, not fully closed.
+v0.12.8 failed the real staging test: after switching from the default language to English/Arabic, My Account returned to Dashboard and endpoint tabs still did not open reliably. v0.12.9 specifically addresses that observed behavior. Verify the real staging site before closing the issue.
 
 ## Persistent project hand-off
 
@@ -39,7 +38,7 @@ For every new plugin version, the WordPress ZIP delivered in chat and the GitHub
 
 ### Current verified open issue
 
-The latest real-world test of v0.12.7 shows that WooCommerce My Account works correctly in the German/default language, but non-default-language account endpoints such as Orders, Addresses and Account details can still fall back to the account dashboard. This remains the first priority for the next fix.
+The real-world v0.12.8 test confirms that WooCommerce My Account still works only in the default language. After switching to English/Arabic the visitor lands on the account Dashboard, and Orders, Downloads, Addresses and Account details cannot be opened reliably. v0.12.9 is the current fix candidate and remains **in verification** until the staging test succeeds.
 
 ## Core principles
 
