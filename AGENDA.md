@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.8**  
+**Aktueller Entwicklungsstand: v0.12.9**  
 **Letzte Aktualisierung: 09.09.2026**
 
 Diese Datei ist die zentrale Übergabe- und Arbeitsagenda des Projekts. Sie muss bei jeder Plugin-Version aktualisiert werden, damit die Entwicklung auch in einem neuen Chat ohne Informationsverlust fortgesetzt werden kann.
@@ -49,20 +49,24 @@ Nicht-Standardsprachen, aktuell insbesondere Arabisch:
 - Beim Klick auf Bestellungen, Adressen oder Kontodetails wird der gewünschte Bereich noch nicht zuverlässig geöffnet.
 - Die Seite bleibt bzw. fällt auf die Kontoübersicht zurück.
 
-**Status:** v0.12.8 ist gebaut und lokal geprüft, aber noch nicht auf der realen Staging-Seite bestätigt. Der Punkt bleibt deshalb **in Verifikation**.
+**Status:** Der reale Test von v0.12.8 ist fehlgeschlagen. Nach dem Sprachwechsel landet „Mein Konto“ weiterhin auf dem Dashboard und die Endpoints öffnen nicht zuverlässig. v0.12.9 ist dafür gebaut und bleibt bis zum Staging-Test **in Verifikation**.
 
-### In v0.12.8 umgesetzt
-- My-Account-URLs werden aus der exakt in WooCommerce konfigurierten physischen Systemseite aufgebaut.
-- Die technische Account-Seite wird nicht mehr durch eine übersetzte Seitenkopie ersetzt.
-- My-Account-Permalink-Filter läuft mit finaler Priorität.
-- Orders, Downloads, Adressen, Kontodetails und weitere Endpoints werden für Sprach-URLs direkt rekonstruiert.
-- `$wp`, `$wp_query` und `set_query_var()` werden vor dem WooCommerce-Rendern synchronisiert.
-- WooCommerce-/WoodMart-Navigationslinks werden zusätzlich im Footer und unmittelbar beim Klick korrigiert.
-- Alle PHP-Dateien wurden erfolgreich auf Syntax geprüft.
-- Lokaler Routing-Test für `/ar/mein-konto/orders/` ist erfolgreich.
+### Ergebnis des v0.12.8-Staging-Tests
+- Standardsprache/Deutsch: My-Account-Endpoints funktionieren.
+- Englisch/Arabisch: Sprachwechsel führt zurück auf das Dashboard.
+- Orders, Downloads, Adressen und Kontodetails lassen sich danach nicht zuverlässig öffnen.
+- Damit ist P0 noch nicht erledigt.
+
+### In v0.12.9 umgesetzt
+- Sprachumschalter bewahrt den aktuellen WooCommerce-Endpoint beim Wechsel zwischen DE/EN/AR usw.
+- Direkter Content-Dispatcher ruft bei einer echten Sprach-Endpoint-URL die passende WooCommerce-Endpoint-Aktion auf, selbst wenn Query Vars verloren gingen.
+- Aktueller /LANG/mein-konto/... Request-Pfad wird beim Erzeugen der Endpoint-URLs als autoritativ behandelt.
+- WoodMart-/Account-Link-Fallback erzwingt bei bekannten Konto-Links eine normale Vollnavigation auf die korrekte Endpoint-URL.
+- Plugin-Version, ITKT_VERSION und readme.txt auf 0.12.9 synchronisiert.
+- Alle PHP-Dateien ohne Syntaxfehler; ZIP-Integrität geprüft.
 
 ### Nächster konkreter Test
-Nach Installation der v0.12.8 auf Staging:
+Nach Installation der v0.12.9 auf Staging:
 1. Arabisch öffnen: `/ar/mein-konto/`.
 2. Bestellungen anklicken → URL muss `/ar/mein-konto/orders/` werden und Bestellungen anzeigen.
 3. Downloads testen.
@@ -121,7 +125,7 @@ Nach Installation der v0.12.8 auf Staging:
 ## Nächste Aufgaben – Priorität
 
 ### P0 – aktuell zuerst erledigen
-- v0.12.8 auf Staging installieren und WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen verifizieren.
+- v0.12.9 auf Staging installieren und WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen verifizieren.
 - Arabisch und Englisch testen:
   - Dashboard
   - Bestellungen
@@ -186,4 +190,4 @@ Eine neue Version gilt erst als fertig, wenn:
 
 **Projekt:** IT-Kayali Translate  
 **Website:** it-kayali.de  
-**Aktuelle Version:** v0.12.8
+**Aktuelle Version:** v0.12.9
