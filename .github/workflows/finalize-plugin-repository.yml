@@ -1,0 +1,112 @@
+name: Finalize IT-Kayali Translate repository
+
+on:
+  push:
+    paths:
+      - ".github/workflows/finalize-plugin-repository.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild exact v0.12.10 plugin source
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf /tmp/itkt-build
+          mkdir -p /tmp/itkt-build
+
+          # Full v0.12.8 base archive.
+          cat source/v0.12.8/part-* > /tmp/itkt-0128.tar.xz.b64
+          base64 --decode /tmp/itkt-0128.tar.xz.b64 > /tmp/itkt-0128.tar.xz
+          echo "a48d2a2de6e25569714bc012f2a44b1c08c44b83a1f12e22f4335d8ece762b17  /tmp/itkt-0128.tar.xz" | sha256sum -c -
+          tar -xJf /tmp/itkt-0128.tar.xz -C /tmp/itkt-build
+
+          PLUGIN_DIR="/tmp/itkt-build/it-kayali-translate"
+          test -f "$PLUGIN_DIR/it-kayali-translate.php"
+          grep -q "Version: 0.12.8" "$PLUGIN_DIR/it-kayali-translate.php"
+
+          # Apply v0.12.9 delta.
+          cat \
+            source/v0.12.9/patch-part-00.b64 \
+            source/v0.12.9/patch-part-01.b64 \
+            source/v0.12.9/patch-part-02.b64 \
+            source/v0.12.9/patch-part-03.b64 \
+            source/v0.12.9/patch-part-04.b64 \
+            source/v0.12.9/patch-part-05.b64 \
+            > /tmp/itkt-0129-patch.tar.xz.b64
+          base64 --decode /tmp/itkt-0129-patch.tar.xz.b64 > /tmp/itkt-0129-patch.tar.xz
+          echo "c57ccdcab195c78017a13070ee6187f42d30cc5d309f629cd232b125cf4b7786  /tmp/itkt-0129-patch.tar.xz" | sha256sum -c -
+          tar -xJf /tmp/itkt-0129-patch.tar.xz -C "$PLUGIN_DIR"
+          grep -q "Version: 0.12.9" "$PLUGIN_DIR/it-kayali-translate.php"
+
+          # Apply v0.12.10 delta in the exact manifest order.
+          cat \
+            source/v0.12.10/patch-part-00.b64 \
+            source/v0.12.10/patch-part-01.b64 \
+            source/v0.12.10/patch-part-02-03.b64 \
+            source/v0.12.10/patch-tail-00.b64 \
+            source/v0.12.10/patch-tail-01.b64 \
+            source/v0.12.10/patch-tail-02.b64 \
+            source/v0.12.10/patch-tail-03.b64 \
+            source/v0.12.10/patch-tail-04.b64 \
+            source/v0.12.10/patch-tail-05.b64 \
+            source/v0.12.10/patch-tail-06.b64 \
+            source/v0.12.10/patch-tail-07.b64 \
+            > /tmp/itkt-01210-patch.tar.xz.b64
+          test "$(wc -c < /tmp/itkt-01210-patch.tar.xz.b64)" -eq 60656
+          base64 --decode /tmp/itkt-01210-patch.tar.xz.b64 > /tmp/itkt-01210-patch.tar.xz
+          echo "92a8435fb6f42fe9f672d438313aa2f9a1a97ab922720528b340d5ff01971c28  /tmp/itkt-01210-patch.tar.xz" | sha256sum -c -
+          tar -xJf /tmp/itkt-01210-patch.tar.xz -C "$PLUGIN_DIR"
+
+          grep -q "Version: 0.12.10" "$PLUGIN_DIR/it-kayali-translate.php"
+          grep -q "ITKT_VERSION', '0.12.10'" "$PLUGIN_DIR/it-kayali-translate.php"
+          grep -q "Stable tag: 0.12.10" "$PLUGIN_DIR/readme.txt"
+
+          find "$PLUGIN_DIR" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+          node --check "$PLUGIN_DIR/public/assets/frontend.js"
+
+      - name: Replace temporary archive layout with real plugin source
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PLUGIN_DIR="/tmp/itkt-build/it-kayali-translate"
+
+          rm -rf admin includes public source
+          rm -f it-kayali-translate.php readme.txt uninstall.php
+          rm -f .github/workflows/import-plugin-source.yml
+
+          cp -a "$PLUGIN_DIR/admin" .
+          cp -a "$PLUGIN_DIR/includes" .
+          cp -a "$PLUGIN_DIR/public" .
+          cp "$PLUGIN_DIR/it-kayali-translate.php" .
+          cp "$PLUGIN_DIR/readme.txt" .
+          cp "$PLUGIN_DIR/uninstall.php" .
+
+          test -f it-kayali-translate.php
+          test -d includes
+          test -d public/assets
+          test ! -d source
+
+      - name: Commit clean repository layout
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: publish complete IT-Kayali Translate v0.12.10 source"
+          git push
