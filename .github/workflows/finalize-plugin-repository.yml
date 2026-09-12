@@ -26,7 +26,7 @@ jobs:
           rm -rf /tmp/itkt-build
           mkdir -p /tmp/itkt-build
 
-          # Full v0.12.8 base archive. Validate the actual archived bytes by xz/tar + version.
+          # Full v0.12.8 base archive.
           cat source/v0.12.8/part-* > /tmp/itkt-0128.tar.xz.b64
           base64 --decode /tmp/itkt-0128.tar.xz.b64 > /tmp/itkt-0128.tar.xz
           xz -t /tmp/itkt-0128.tar.xz
@@ -36,7 +36,7 @@ jobs:
           test -f "$PLUGIN_DIR/it-kayali-translate.php"
           grep -q "Version: 0.12.8" "$PLUGIN_DIR/it-kayali-translate.php"
 
-          # Apply v0.12.9 delta and verify the resulting plugin version.
+          # Apply v0.12.9 delta.
           cat \
             source/v0.12.9/patch-part-00.b64 \
             source/v0.12.9/patch-part-01.b64 \
@@ -50,7 +50,7 @@ jobs:
           tar -xJf /tmp/itkt-0129-patch.tar.xz -C "$PLUGIN_DIR"
           grep -q "Version: 0.12.9" "$PLUGIN_DIR/it-kayali-translate.php"
 
-          # Apply v0.12.10 delta in the exact manifest order.
+          # Apply v0.12.10 delta in manifest order.
           cat \
             source/v0.12.10/patch-part-00.b64 \
             source/v0.12.10/patch-part-01.b64 \
@@ -83,10 +83,12 @@ jobs:
 
           PLUGIN_DIR="/tmp/itkt-build/it-kayali-translate"
 
-          rm -rf admin includes public source
+          # Remove temporary development/import material.
+          rm -rf admin includes public source .repo-import
           rm -f it-kayali-translate.php readme.txt uninstall.php
           rm -f .github/workflows/import-plugin-source.yml
 
+          # Publish the real installable plugin files at repository root.
           cp -a "$PLUGIN_DIR/admin" .
           cp -a "$PLUGIN_DIR/includes" .
           cp -a "$PLUGIN_DIR/public" .
@@ -98,6 +100,13 @@ jobs:
           test -d includes
           test -d public/assets
           test ! -d source
+          test ! -d .repo-import
+
+          # This workflow is a one-time migration helper and should not remain
+          # in the finished plugin repository.
+          rm -f .github/workflows/finalize-plugin-repository.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
 
       - name: Commit clean repository layout
         shell: bash
