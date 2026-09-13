@@ -1,9 +1,9 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
 **Aktueller Entwicklungsstand: v0.12.10**  
-**Letzte Aktualisierung: 09.09.2026**
+**Letzte Aktualisierung: 13.09.2026**
 
-Diese Datei ist die zentrale Übergabe- und Arbeitsagenda des Projekts. Sie muss bei jeder Plugin-Version aktualisiert werden, damit die Entwicklung auch in einem neuen Chat ohne Informationsverlust fortgesetzt werden kann.
+Diese Datei ist die zentrale Übergabe- und Arbeitsagenda des Projekts. Sie muss bei jeder neuen Plugin-Version aktualisiert werden, damit die Entwicklung auch in einem neuen Chat ohne Informationsverlust fortgesetzt werden kann.
 
 ## Arbeitsregel für jede neue Version
 
@@ -16,16 +16,12 @@ Wenn eine neue Version von IT-Kayali Translate erstellt wird, gehören immer die
 5. Den identischen Quellstand auf GitHub aktualisieren.
 6. `README.md` auf den aktuellen Funktionsstand bringen.
 7. `CHANGELOG.md` um die neue Version ergänzen.
-8. Diese `AGENDA.md` aktualisieren:
-   - Was wurde erledigt?
-   - Was funktioniert?
-   - Welche Fehler sind noch offen?
-   - Was ist als Nächstes geplant?
+8. Diese `AGENDA.md` aktualisieren: erledigte Punkte, bestätigte Funktionen, offene Fehler und nächste Schritte.
 9. Erst danach gilt die Version als abgeschlossen.
 
 ## Übergabe in einen neuen Chat
 
-Bei Fortsetzung in einem neuen Chat zuerst diese Dateien aus dem GitHub-Repository lesen:
+Bei Fortsetzung in einem neuen Chat zuerst diese Dateien im GitHub-Repository lesen:
 
 - `README.md` – Produkt, Architektur, Funktionen und aktueller Versionsstand.
 - `CHANGELOG.md` – technische Änderungen pro Version.
@@ -34,100 +30,118 @@ Bei Fortsetzung in einem neuen Chat zuerst diese Dateien aus dem GitHub-Reposito
 
 Der neueste Stand auf GitHub und die zuletzt bereitgestellte Plugin-ZIP sollen dieselbe Versionsnummer besitzen.
 
-## Aktueller Schwerpunkt
+## Repository-Status
 
-WooCommerce-Systemseiten müssen unter allen aktiven Sprachen genauso zuverlässig funktionieren wie in der Standardsprache.
+Der `main`-Branch ist seit 13.09.2026 bereinigt und enthält den vollständigen, installierbaren Quellcode von **v0.12.10 direkt im Repository-Root**.
 
-### Aktuell bestätigtes Problem
+Die früher nur für den technischen Import benötigten Archive und Rekonstruktionsdateien gehören nicht mehr zum kanonischen `main`-Stand:
 
-Deutsch / Standardsprache:
-- `/mein-konto/orders/` funktioniert.
-- Bestellungen, Adressen, Kontodetails und weitere WooCommerce-Endpoints werden korrekt geöffnet.
+- kein `source/`
+- kein `.repo-import/`
+- kein `.repo-fix/`
+- keine einmaligen Import-/Finalisierungs-Workflows
 
-Nicht-Standardsprachen, aktuell insbesondere Arabisch:
-- `/ar/mein-konto/` öffnet die Kontoübersicht.
-- Beim Klick auf Bestellungen, Adressen oder Kontodetails wird der gewünschte Bereich noch nicht zuverlässig geöffnet.
-- Die Seite bleibt bzw. fällt auf die Kontoübersicht zurück.
+Der veröffentlichte Quellstand wurde aus der bereits funktionierenden v0.12.10-Installations-ZIP rekonstruiert. Vor der Veröffentlichung wurden ZIP-Prüfsumme und ZIP-Integrität kontrolliert sowie PHP- und Frontend-JavaScript-Syntaxtests ausgeführt.
 
-**Status:** v0.12.10 wurde auf der realen Staging-Seite erfolgreich getestet. Die WooCommerce-„Mein Konto“-Navigation funktioniert jetzt auch in Nicht-Standardsprachen. Der bisherige Dashboard-Fallback gilt für den getesteten Ablauf als **behoben**.
+Für die normale Nutzung kann der aktuelle `main`-Branch über **GitHub → Code → Download ZIP** heruntergeladen werden. Für jede neue Entwicklungsversion wird zusätzlich weiterhin eine fertige WordPress-ZIP im Chat bereitgestellt.
 
-### Ergebnisse der bisherigen Staging-Tests
-- Standardsprache/Deutsch: My-Account-Endpoints funktionieren.
-- v0.12.8: Englisch/Arabisch fallen auf Dashboard zurück.
-- v0.12.9: Englisch wird sichtbar korrekt geladen und übersetzt, aber Orders/Downloads/Adressen/Kontodetails öffnen weiterhin nicht zuverlässig.
-- Damit ist P0 weiterhin offen.
+## Aktueller Funktionsstatus
 
-### In v0.12.10 umgesetzt
+### P0 – WooCommerce „Mein Konto“
+
+**Erledigt in v0.12.10.**
+
+Bestätigter Stand auf der realen Staging-Seite:
+
+- Deutsch / Standardsprache: WooCommerce-Account-Endpunkte funktionieren.
+- Nicht-Standardsprache: Kontoübersicht und getestete Account-Bereiche öffnen wieder korrekt.
+- Der bisherige Rückfall auf das Dashboard nach Klick auf Orders, Downloads, Adressen oder Kontodetails wurde beseitigt.
+- Der reale Test von v0.12.10 war erfolgreich.
+
+### Technische Lösung in v0.12.10
+
 - Unabhängiger Rescue-Marker `itkt_wc_endpoint` trägt den kanonischen WooCommerce-Endpoint zusätzlich zur Pretty-URL.
-- Der Server liest diesen Marker vor der Rewrite-Auswertung und setzt den exakten WooCommerce-Endpoint wieder in WordPress/WooCommerce.
-- Der Marker wird ausschließlich gegen die echte WooCommerce-Endpoint-Map validiert.
-- Die normale `frontend.js` enthält jetzt die Account-Navigation-Reparatur; sie ist nicht mehr nur von einem Inline-Footer-Script abhängig.
-- Account-Klicks werden in der Capture-Phase abgefangen, bevor WoodMart/andere Scripts sie auf Dashboard umleiten können.
-- Nach erfolgreichem Laden entfernt JavaScript den temporären Marker wieder aus der sichtbaren Adresszeile.
-- Direkter WooCommerce-Content-Dispatcher bleibt als letzte serverseitige Absicherung aktiv.
-- PHP-Syntaxprüfung, JavaScript-Syntaxprüfung und lokaler Marker/Dispatcher-Test erfolgreich.
-- ZIP-Integrität geprüft.
+- Der Server liest den validierten Marker vor bzw. ergänzend zur Rewrite-Auswertung und stellt den exakten WooCommerce-Endpoint wieder her.
+- Der Marker wird gegen die echte WooCommerce-Endpoint-Map validiert.
+- Die normale `frontend.js` enthält die Account-Navigation-Reparatur.
+- Account-Klicks werden in der Capture-Phase abgefangen, bevor WoodMart oder andere Scripts sie auf das Dashboard umleiten können.
+- Nach erfolgreichem Laden wird der temporäre Marker wieder aus der sichtbaren URL entfernt.
+- Der direkte WooCommerce-Content-Dispatcher bleibt als letzte serverseitige Absicherung aktiv.
 
-### Ergebnis v0.12.10
+### Validierung v0.12.10
+
+- PHP-Syntaxprüfung erfolgreich.
+- JavaScript-Syntaxprüfung für `public/assets/frontend.js` erfolgreich.
+- Lokaler Marker-/Dispatcher-Test erfolgreich.
+- Installations-ZIP integer und reproduzierbar geprüft.
 - Realer Staging-Test erfolgreich.
-- „Mein Konto“ funktioniert in der getesteten Nicht-Standardsprache wieder.
-- Der bisherige Rückfall auf das Dashboard wurde beseitigt.
-- P0 „Mein Konto“ ist damit abgeschlossen.
 
-### Nächster konkreter Schwerpunkt
-Als Nächstes folgt die systematische WooCommerce-End-to-End-Prüfung je Sprache:
+## Nächster konkreter Schwerpunkt
+
+Als Nächstes folgt die systematische WooCommerce-End-to-End-Prüfung für jede aktive Sprache. Nicht nur einzelne Seiten testen, sondern den vollständigen Nutzerweg:
+
 1. Shop
 2. Suche
 3. Produktseite
 4. Kategorien
-5. Filter
+5. Filter / Attribute
 6. Mini-Cart
 7. Warenkorb
 8. Checkout
 9. Mein Konto
 10. Wishlist
 
-Danach werden noch nicht übersetzbare bzw. dynamisch erzeugte WoodMart-/WooCommerce-Texte gesammelt und in die zentrale Übersetzungslogik aufgenommen.
+Während dieser Tests sollen alle nicht übersetzten oder falsch gerouteten Texte/Links gesammelt werden. Besonders wichtig sind dynamische WoodMart-/WooCommerce-Ausgaben, AJAX-Inhalte und Blocks.
 
 ## Bereits vorhandene Hauptfunktionen
 
 ### Translation Core
+
 - Dynamische Sprachenverwaltung.
 - Standardsprache frei wählbar.
 - LTR/RTL-Unterstützung.
 - Sprachabhängiges Routing und Fallbacks.
 - Modulare Adapter-Architektur.
+- Frontend-Sprache unabhängig von der WordPress-Adminsprache.
 
 ### WordPress / Elementor
+
 - Seiten und Beiträge mit Sprachversionen.
-- Elementor-Strukturkopie.
+- Verknüpfung vorhandener Sprachseiten.
+- Elementor-Strukturkopie und -Bearbeitung.
 - Layoutschutz für Container, CSS, IDs, Bilder und technische Einstellungen.
-- Verknüpfen vorhandener Sprachseiten.
-- Builder-Textfelder strukturiert übersetzbar.
+- Sprachabhängige Slugs und Routing.
+- Strukturierte Übersetzung unterstützter Builder-Textfelder.
 
 ### WooCommerce
+
 - Ein physisches Produkt pro Produkt-ID, keine Produktduplikate je Sprache.
 - Produktname, Kurzbeschreibung und Langbeschreibung.
 - Kategorien, Tags, Attribute und Attributwerte.
 - Sprachabhängige Slugs.
-- Produkt-Routing.
+- Produkt-Routing und Fallbacks.
 - Cart-/Checkout-/My-Account-Sprachlogik.
-- XLSX/CSV-Produktübersetzungen.
+- XLSX/CSV-Produktübersetzungen mit dynamischen Sprachspalten.
+- Preise, SKU, Lagerbestand, Bilder und technische Produktdaten bleiben gemeinsam.
 
 ### String Translation
+
 - PHP-Gettext-Scanner für Plugins und Themes.
 - Eigene gespeicherte Übersetzungen ohne Änderung fremder Quelldateien.
 - Suche und Statusverwaltung.
 - Native WordPress-/WooCommerce-Sprachpakete als Fallback.
-- JavaScript-i18n wurde bereits erweitert, ist aber noch nicht vollständig abgeschlossen.
+- IT-Kayali-Overrides mit höherer Priorität.
+- JavaScript-i18n wurde erweitert, ist aber noch nicht vollständig abgeschlossen.
 
 ### Frontend Live Translation
+
 - Admin-Modus auf der echten Website.
-- Anklickbare unterstützte Texte.
-- Drawer/Editor für aktive Sprachen.
-- Schutz dynamischer Variablen und Markup wird weiter ausgebaut.
+- Unterstützte Texte direkt anklickbar.
+- Editor/Drawer für aktive Sprachen.
+- Schutz dynamischer Variablen, HTML/Markup und Links wird weiter ausgebaut.
 
 ### SEO / Diagnose
+
 - Canonical.
 - hreflang.
 - x-default.
@@ -138,39 +152,46 @@ Danach werden noch nicht übersetzbare bzw. dynamisch erzeugte WoodMart-/WooComm
 ## Nächste Aufgaben – Priorität
 
 ### P0 – erledigt
-- WooCommerce „Mein Konto“ Endpoints für Nicht-Standardsprachen repariert.
-- v0.12.10 auf der realen Staging-Seite erfolgreich bestätigt.
+
+- WooCommerce „Mein Konto“-Endpoints für Nicht-Standardsprachen repariert.
+- v0.12.10 auf der realen Staging-Seite bestätigt.
 - Dashboard-Fallback nach Sprachwechsel im getesteten Ablauf behoben.
+- GitHub-Repository auf vollständigen installierbaren Quellcode umgestellt.
 
 ### P1 – aktuell als Nächstes
-- WooCommerce End-to-End je Sprache systematisch prüfen:
-  - Shop
-  - Suche
-  - Produkt
-  - Kategorien
-  - Filter
-  - Mini-Cart
-  - Warenkorb
-  - Checkout
-  - Mein Konto
-  - Wishlist
+
+- WooCommerce-End-to-End je Sprache systematisch prüfen.
 - Nicht übersetzbare Frontend-Texte automatisch erkennen und zentral verfügbar machen.
 - Frontend Live Translation für Kategorien, Menüs, globale Strings und weitere WoodMart-Inhalte erweitern.
-- WooCommerce-/WoodMart-Strings in AJAX/Blocks systematisch testen.
+- WooCommerce-/WoodMart-Strings in AJAX und Blocks systematisch testen.
+- Checkout einschließlich dynamischer Hinweistexte, Zahlungs-/Versandtexte und Validierung prüfen.
+- Sprachwechsel auf Produkt-, Kategorie-, Warenkorb-, Checkout- und Account-Seiten auf exakt gleiche Zielseite prüfen.
 
 ### P2 – Richtung v1.0
+
 - JavaScript-i18n und sichere Pluralformen vervollständigen.
 - Rollen/Capability wie `manage_translations`.
-- Globale Kategorien/Tags/Attribute in Import/Export erweitern.
+- Globale Kategorien/Tags/Attribute im Import/Export erweitern.
 - Backup/Restore von Plugin-Konfiguration und Übersetzungsdaten.
 - Datenbank-Migrationssystem für Updates.
 - Performance-/Caching-Tests bei großen Shops.
+- Weitere Theme-/Builder-Adapter abstrahieren.
 - Lizenz-/Update-System erst nach stabiler v1.0-Basis.
 - Optionale KI-Übersetzung später als separates Modul mit Glossar und Kostenkontrolle.
 
+## Wichtige Produktregeln
+
+- Das Plugin soll generisch und verkaufbar bleiben, nicht Allord-Sweets-spezifisch werden.
+- WooCommerce-Produkte werden nicht je Sprache dupliziert.
+- Theme-/Plugin-Quelldateien werden nicht verändert.
+- Automatische Übersetzungen dürfen kein Layout, CSS, IDs, Bilder, technische URLs oder Code beschädigen.
+- RTL soll auf Wunsch nur den Inhaltsbereich beeinflussen und nicht pauschal Header/Footer spiegeln.
+- Rechnungen, Lieferscheine und transaktionale E-Mails sollen unabhängig von der Kundensprache in der konfigurierten Standardsprache bleiben.
+- Neue Integrationen sollen über Module/Adapter ergänzt werden, nicht als projektspezifische Sonderlösung im Core.
+
 ## Versionsregel
 
-Bei jedem Release müssen mindestens folgende Stellen dieselbe Version zeigen:
+Bei jedem funktionalen Release müssen mindestens folgende Stellen dieselbe Version zeigen:
 
 - Plugin Header in `it-kayali-translate.php`
 - `ITKT_VERSION`
@@ -178,19 +199,5 @@ Bei jedem Release müssen mindestens folgende Stellen dieselbe Version zeigen:
 - `README.md`
 - `CHANGELOG.md`
 - `AGENDA.md`
-- Name der im Chat bereitgestellten ZIP
 
-## Qualitätsregel
-
-Eine neue Version gilt erst als fertig, wenn:
-- der Code gespeichert ist,
-- die ZIP erstellt wurde,
-- GitHub aktualisiert wurde,
-- README/CHANGELOG/AGENDA aktualisiert wurden,
-- und der konkrete Fix mindestens auf dem betroffenen Testpfad geprüft wurde.
-
----
-
-**Projekt:** IT-Kayali Translate  
-**Website:** it-kayali.de  
-**Aktuelle Version:** v0.12.10
+Zusätzlich müssen GitHub-Quellstand und die im Chat bereitgestellte Installations-ZIP denselben funktionalen Stand repräsentieren.
