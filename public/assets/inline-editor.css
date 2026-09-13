@@ -1,0 +1,37 @@
+body.itkt-inline-mode{--itkt-navy:#071a2f;--itkt-orange:#ff7a1a;--itkt-white:#fff}
+#wpadminbar #wp-admin-bar-itkt-inline-translate.itkt-is-active>.ab-item{background:#ff7a1a!important;color:#fff!important}
+.itkt-inline-editable{position:relative!important;outline:2px dashed rgba(255,122,26,.72)!important;outline-offset:4px!important;cursor:pointer!important;transition:outline-color .15s ease,box-shadow .15s ease}
+.itkt-inline-editable:hover{outline-color:#ff7a1a!important;box-shadow:0 0 0 5px rgba(255,122,26,.10)!important}
+.itkt-inline-edit-badge{display:none!important;position:absolute!important;z-index:999970!important;top:-28px!important;inset-inline-end:0!important;padding:6px 9px!important;border-radius:7px!important;background:#071a2f!important;color:#fff!important;font:700 11px/1.1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;white-space:nowrap!important;box-shadow:0 6px 18px rgba(7,26,47,.22)!important;direction:ltr!important}
+body.itkt-inline-mode .itkt-inline-editable:hover>.itkt-inline-edit-badge{display:inline-flex!important}
+.itkt-inline-overlay{position:fixed;z-index:999980;inset:0;background:rgba(7,26,47,.46);opacity:0;visibility:hidden;transition:.2s}
+.itkt-inline-overlay.is-open{opacity:1;visibility:visible}
+.itkt-inline-panel{position:fixed;z-index:999990;top:32px;right:0;width:min(620px,96vw);height:calc(100vh - 32px);background:#fff;color:#071a2f;box-shadow:-22px 0 50px rgba(7,26,47,.22);transform:translateX(105%);transition:transform .24s ease;overflow:hidden;direction:ltr;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.itkt-inline-panel.is-open{transform:translateX(0)}
+.itkt-inline-panel-head{height:88px;padding:18px 22px;background:#071a2f;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.itkt-inline-panel-head h2{margin:3px 0 0!important;color:#fff!important;font:800 22px/1.2 inherit!important}
+.itkt-inline-kicker{color:#ff7a1a;font-size:10px;font-weight:900;letter-spacing:1.2px}
+.itkt-inline-close{border:0;background:rgba(255,255,255,.1);color:#fff;width:38px;height:38px;border-radius:10px;font-size:25px;cursor:pointer}
+.itkt-inline-panel-body{height:calc(100% - 88px);overflow:auto;padding:20px 22px 110px;background:#f5f7fa}
+.itkt-inline-current{padding:14px 16px;margin-bottom:15px;border:1px solid #d9e1eb;border-radius:12px;background:#fff}.itkt-inline-current span{display:block;color:#68788b;font-size:11px}.itkt-inline-current strong{font-size:14px}
+.itkt-inline-field{margin:0 0 16px;padding:16px;border-radius:14px;background:#fff;border:1px solid #d9e1eb}.itkt-inline-field h3{margin:0 0 13px!important;font:800 14px/1.25 inherit!important;color:#071a2f!important}
+.itkt-inline-language{display:block;margin:0 0 12px}.itkt-inline-language>span{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;font-size:12px}.itkt-inline-language em{font-style:normal;color:#8794a2;font-size:10px}
+.itkt-inline-language input,.itkt-inline-language textarea{box-sizing:border-box;width:100%;border:1px solid #cbd6e2!important;border-radius:10px!important;background:#fff!important;color:#071a2f!important;padding:10px 12px!important;font:400 13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;box-shadow:none!important}.itkt-inline-language textarea{min-height:100px;resize:vertical}.itkt-inline-language input:focus,.itkt-inline-language textarea:focus{outline:none!important;border-color:#ff7a1a!important;box-shadow:0 0 0 3px rgba(255,122,26,.12)!important}.itkt-inline-language.is-source input,.itkt-inline-language.is-source textarea{background:#f0f3f7!important;color:#657487!important}
+.itkt-inline-actions{position:sticky;bottom:-110px;display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:14px 0 0;background:linear-gradient(to bottom,rgba(245,247,250,0),#f5f7fa 30%)}
+.itkt-inline-save,.itkt-inline-secondary{min-height:40px;border-radius:9px;padding:0 16px;font-weight:800;cursor:pointer}.itkt-inline-save{border:1px solid #ff7a1a;background:#ff7a1a;color:#fff}.itkt-inline-save:disabled{opacity:.65}.itkt-inline-secondary{border:1px solid #cbd6e2;background:#fff;color:#071a2f}
+.itkt-inline-loading,.itkt-inline-empty,.itkt-inline-error{padding:18px;border-radius:12px;background:#fff;border:1px solid #d9e1eb}.itkt-inline-error{border-color:#f2b7b7;color:#9d2424}
+.itkt-inline-toast{position:fixed;z-index:1000000;right:24px;bottom:24px;transform:translateY(20px);opacity:0;visibility:hidden;padding:12px 16px;border-radius:10px;background:#071a2f;color:#fff;font:800 12px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 10px 30px rgba(7,26,47,.25);transition:.2s}.itkt-inline-toast.is-visible{opacity:1;visibility:visible;transform:none}.itkt-inline-toast.is-error{background:#a12828}
+@media(max-width:782px){.itkt-inline-panel{top:46px;height:calc(100vh - 46px)}.itkt-inline-panel-head{height:78px}.itkt-inline-panel-body{height:calc(100% - 78px)}}
+.itkt-inline-visual-note{margin:-2px 0 15px;padding:11px 13px;border-left:3px solid #ff7a1a;border-radius:8px;background:#fff6ee;color:#5e6b79;font:600 11px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+
+.itkt-inline-editable:is(input,textarea,select){outline-offset:2px!important;cursor:pointer!important}.itkt-inline-editable:is(input,textarea,select):hover{box-shadow:0 0 0 4px rgba(255,122,26,.12)!important}
+
+/* v0.11.2: native WooCommerce fallback shown separately from an ITKT override. */
+.itkt-inline-native-default{
+  display:block;
+  margin-top:6px;
+  color:#66788a;
+  font-size:12px;
+  line-height:1.4;
+  font-style:normal;
+}

@@ -1,0 +1,64 @@
+.itkt-language-switcher{display:flex;align-items:center;gap:12px;flex-wrap:wrap;direction:ltr}
+.itkt-language-switcher .itkt-lang-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:#071a2f;line-height:1;transition:transform .18s ease,opacity .18s ease,color .18s ease}
+.itkt-language-switcher .itkt-lang-link:hover{color:#ff7a1a;transform:translateY(-2px)}
+.itkt-language-switcher .itkt-flag{display:inline-flex;align-items:center;justify-content:center;font-size:28px;line-height:1;filter:saturate(.96);transition:transform .18s ease,filter .18s ease}
+.itkt-language-switcher .itkt-code{font-size:11px;font-weight:800;letter-spacing:.45px}
+.itkt-language-switcher .itkt-name{font-size:12px;font-weight:700;white-space:nowrap}
+/* Flag-only mode: intentionally no card, border or background. */
+.itkt-language-switcher.itkt-style-flags .itkt-lang-link{position:relative;min-width:31px;padding:2px 1px;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.itkt-language-switcher.itkt-style-flags .itkt-lang-link:hover .itkt-flag{transform:scale(1.08);filter:saturate(1.08)}
+.itkt-language-switcher.itkt-style-flags .itkt-lang-link.is-active:after{content:"";position:absolute;left:20%;right:20%;bottom:-6px;height:2px;border-radius:2px;background:#ff7a1a}
+.itkt-language-switcher.itkt-style-flags .itkt-lang-link.is-active .itkt-flag{transform:scale(1.06)}
+/* Optional compact pill mode for users who explicitly request labels. */
+.itkt-language-switcher.itkt-style-pills .itkt-lang-link{min-height:34px;padding:5px 9px;border:1px solid rgba(7,26,47,.16);border-radius:9px;background:#fff}
+.itkt-language-switcher.itkt-style-pills .itkt-lang-link.is-active{background:#071a2f;border-color:#071a2f;color:#fff}
+.itkt-language-switcher.itkt-style-text .itkt-lang-link{background:transparent;border-color:transparent;padding-inline:4px}
+.itkt-language-switcher.itkt-style-text .itkt-lang-link.is-active{color:#ff7a1a}
+body.itkt-text-language-rtl .itkt-language-switcher{direction:ltr}
+
+/* V0.5: Arabic text direction without mirroring WooCommerce/WoodMart layout containers. */
+body.itkt-text-language-rtl .product_title,
+body.itkt-text-language-rtl .woocommerce-product-details__short-description,
+body.itkt-text-language-rtl .woocommerce-Tabs-panel,
+body.itkt-text-language-rtl .woocommerce-product-attributes,
+body.itkt-text-language-rtl .term-description,
+body.itkt-text-language-rtl .woocommerce-products-header__title{direction:rtl;text-align:right}
+
+
+/* V0.6: full RTL is opt-in per language. Text-only RTL keeps the original builder geometry. */
+html[dir="rtl"] body.itkt-layout-rtl{direction:rtl}
+body.itkt-layout-preserve-ltr{direction:ltr}
+body.itkt-layout-preserve-ltr .itkt-text-rtl,
+body.itkt-layout-preserve-ltr [lang="ar"]{direction:rtl}
+body.itkt-layout-rtl .itkt-language-switcher{direction:ltr}
+
+
+/* V0.10.6: RTL only for the actual page/shop content. Header and footer stay LTR. */
+body.itkt-content-layout-rtl{direction:ltr}
+body.itkt-content-layout-rtl main,
+body.itkt-content-layout-rtl #main,
+body.itkt-content-layout-rtl #primary,
+body.itkt-content-layout-rtl .main-page-wrapper,
+body.itkt-content-layout-rtl .site-content,
+body.itkt-content-layout-rtl .content-area,
+body.itkt-content-layout-rtl .wd-content-area,
+body.itkt-content-layout-rtl .page-title:not(header *):not(footer *){
+  direction:rtl;
+  text-align:right;
+}
+body.itkt-content-layout-rtl header,
+body.itkt-content-layout-rtl .site-header,
+body.itkt-content-layout-rtl .whb-header,
+body.itkt-content-layout-rtl .whb-main-header,
+body.itkt-content-layout-rtl .wd-header,
+body.itkt-content-layout-rtl footer,
+body.itkt-content-layout-rtl .site-footer,
+body.itkt-content-layout-rtl .footer-container,
+body.itkt-content-layout-rtl .wd-footer,
+body.itkt-content-layout-rtl .wd-prefooter,
+body.itkt-content-layout-rtl .copyrights-wrapper{
+  direction:ltr !important;
+  text-align:initial;
+}
+body.itkt-content-layout-rtl header .itkt-language-switcher,
+body.itkt-content-layout-rtl footer .itkt-language-switcher{direction:ltr!important}

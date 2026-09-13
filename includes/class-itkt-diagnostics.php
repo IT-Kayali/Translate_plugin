@@ -1,0 +1,249 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+class ITKT_Diagnostics {
+    const LOG_OPTION = 'itkt_diagnostic_log';
+    const STATS_TRANSIENT = 'itkt_diagnostic_stats';
+    private static $instance = null;
+
+    public static function instance() {
+        if ( null === self::$instance ) { self::$instance = new self(); }
+        return self::$instance;
+    }
+
+    private function __construct() {
+        add_action( 'template_redirect', array( $this, 'capture_translated_404' ), 99 );
+        add_action( 'itkt_product_translation_saved', array( $this, 'invalidate_stats' ), 10, 3 );
+        add_action( 'itkt_translation_created', array( $this, 'invalidate_stats' ), 10, 3 );
+        add_action( 'itkt_existing_translation_linked', array( $this, 'invalidate_stats' ), 10, 3 );
+        add_action( 'itkt_elementor_layout_repaired', array( $this, 'invalidate_stats' ), 10, 2 );
+    }
+
+    public function logging_enabled() {
+        $settings = get_option( 'itkt_settings', array() );
+        return ! array_key_exists( 'diagnostic_logging', $settings ) || ! empty( $settings['diagnostic_logging'] );
+    }
+
+    public function log( $level, $event, $message, $context = array() ) {
+        if ( ! $this->logging_enabled() ) { return; }
+        $allowed = array( 'info', 'warning', 'error', 'success' );
+        $level = in_array( $level, $allowed, true ) ? $level : 'info';
+        $entry = array(
+            'time'    => current_time( 'mysql' ),
+            'level'   => $level,
+            'event'   => sanitize_key( $event ),
+            'message' => sanitize_text_field( $message ),
+            'context' => $this->sanitize_context( $context ),
+        );
+        $log = get_option( self::LOG_OPTION, array() );
+        if ( ! is_array( $log ) ) { $log = array(); }
+        array_unshift( $log, $entry );
+        $log = array_slice( $log, 0, 80 );
+        update_option( self::LOG_OPTION, $log, false );
+    }
+
+    private function sanitize_context( $context ) {
+        $clean = array();
+        foreach ( (array) $context as $key => $value ) {
+            $key = sanitize_key( (string) $key );
+            if ( ! $key ) { continue; }
+            if ( is_bool( $value ) ) { $clean[ $key ] = $value ? '1' : '0'; continue; }
+            if ( is_scalar( $value ) ) { $text = sanitize_text_field( (string) $value ); $clean[ $key ] = function_exists( 'mb_substr' ) ? mb_substr( $text, 0, 300, 'UTF-8' ) : substr( $text, 0, 300 ); }
+        }
+        return $clean;
+    }
+
+    public function get_log() {
+        $log = get_option( self::LOG_OPTION, array() );
+        return is_array( $log ) ? $log : array();
+    }
+
+    public function clear_log() { delete_option( self::LOG_OPTION ); }
+
+    public function invalidate_stats() { delete_transient( self::STATS_TRANSIENT ); }
+
+    public function capture_translated_404() {
+        if ( is_admin() || ! is_404() ) { return; }
+        $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+        $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+        $parts = array_values( array_filter( explode( '/', trim( $path, '/' ) ), 'strlen' ) );
+        if ( count( $parts ) < 2 ) { return; }
+        $lang = sanitize_key( (string) $parts[0] );
+        $active = ITKT_Languages::instance()->get_active();
+        if ( empty( $active[ $lang ] ) ) { return; }
+        $event = ( in_array( sanitize_key( (string) ( $parts[1] ?? '' ) ), array( 'product', 'produkt' ), true ) ) ? 'product_404' : 'translated_404';
+        $this->log( 'warning', $event, 'Eine Sprach-URL endete auf einer 404-Seite.', array( 'lang' => $lang, 'path' => $path ) );
+    }
+
+    public function stats() {
+        $cached = get_transient( self::STATS_TRANSIENT );
+        if ( is_array( $cached ) ) { return $cached; }
+
+        $targets = ITKT_Languages::instance()->get_active();
+        unset( $targets[ ITKT_Languages::instance()->get_default_code() ] );
+        $stats = array(
+            'total'    => 0,
+            'complete' => 0,
+            'missing'  => 0,
+            'partial'  => 0,
+            'outdated' => 0,
+            'draft'    => 0,
+            'by_type'  => array(),
+        );
+
+        foreach ( array( 'page' => 'Seiten', 'post' => 'Beiträge' ) as $post_type => $label ) {
+            $ids = get_posts( array(
+                'post_type'        => $post_type,
+                'post_status'      => array( 'publish', 'draft', 'private', 'pending' ),
+                'numberposts'      => -1,
+                'fields'           => 'ids',
+                'meta_query'       => array( array( 'key' => '_itkt_language', 'value' => ITKT_Languages::instance()->get_default_code() ) ),
+                'suppress_filters' => true,
+            ) );
+            $row = array( 'label' => $label, 'total' => 0, 'complete' => 0, 'missing' => 0, 'partial' => 0, 'outdated' => 0, 'draft' => 0 );
+            foreach ( $ids as $id ) {
+                $translations = ITKT_Content::instance()->translations_for( $id );
+                foreach ( $targets as $code => $language ) {
+                    $status = ITKT_Content::instance()->translation_status( $id, $translations[ $code ] ?? null );
+                    $status = isset( $row[ $status ] ) ? $status : ( 'complete' === $status ? 'complete' : 'partial' );
+                    $row['total']++; $row[ $status ]++;
+                    $stats['total']++; $stats[ $status ]++;
+                }
+            }
+            $stats['by_type'][ $post_type ] = $row;
+        }
+
+        if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && post_type_exists( 'product' ) && class_exists( 'ITKT_Product_Translations' ) ) {
+            $ids = get_posts( array( 'post_type'=>'product', 'post_status'=>array('publish','draft','private','pending'), 'numberposts'=>-1, 'fields'=>'ids', 'suppress_filters'=>true ) );
+            $row = array( 'label' => 'Produkte', 'total' => 0, 'complete' => 0, 'missing' => 0, 'partial' => 0, 'outdated' => 0, 'draft' => 0 );
+            foreach ( $ids as $id ) {
+                foreach ( $targets as $code => $language ) {
+                    $status = ITKT_Product_Translations::instance()->status( $id, $code );
+                    if ( ! isset( $row[ $status ] ) ) { $status = 'partial'; }
+                    $row['total']++; $row[ $status ]++;
+                    $stats['total']++; $stats[ $status ]++;
+                }
+            }
+            $stats['by_type']['product'] = $row;
+        }
+
+        set_transient( self::STATS_TRANSIENT, $stats, 5 * MINUTE_IN_SECONDS );
+        return $stats;
+    }
+
+    public function self_test() {
+        global $wpdb;
+        $checks = array();
+        $add = function( $id, $label, $ok, $detail, $severity = 'error' ) use ( &$checks ) {
+            $checks[] = array( 'id'=>$id, 'label'=>$label, 'ok'=>(bool)$ok, 'detail'=>$detail, 'severity'=>$severity );
+        };
+
+        $settings = get_option( 'itkt_settings', array() );
+        $add( 'setup', 'Plugin-Einrichtung', ! empty( $settings['setup_complete'] ), ! empty( $settings['setup_complete'] ) ? 'Setup abgeschlossen.' : 'Setup-Assistent wurde noch nicht abgeschlossen.' );
+
+        $active = ITKT_Languages::instance()->get_active();
+        $add( 'languages', 'Aktive Sprachen', count( $active ) >= 1, count( $active ) . ' aktive Sprache(n): ' . implode( ', ', array_keys( $active ) ) );
+
+        $permalink = (string) get_option( 'permalink_structure' );
+        $add( 'permalinks', 'Permalink-Struktur', '' !== $permalink, $permalink ?: 'Einfache Permalinks sind aktiv; Sprach-Routing ist damit eingeschränkt.' );
+
+        $rules = get_option( 'rewrite_rules', array() );
+        $rules_text = is_array( $rules ) ? implode( "\n", array_keys( $rules ) ) . "\n" . implode( "\n", $rules ) : '';
+        $add( 'rewrite', 'ITKT Produkt-Routing', false !== strpos( $rules_text, 'itkt_product_slug' ), false !== strpos( $rules_text, 'itkt_product_slug' ) ? 'Übersetzte Produkt-Rewrite-Regel ist registriert.' : 'Produkt-Rewrite-Regel fehlt. Permalinks neu laden.' );
+
+        if ( ITKT_Plugin::module_enabled( 'woocommerce' ) ) {
+            $wc_ok = post_type_exists( 'product' ) && class_exists( 'ITKT_WooCommerce' );
+            $add( 'woocommerce', 'WooCommerce Adapter', $wc_ok, $wc_ok ? 'WooCommerce-Übersetzungsschicht ist aktiv.' : 'WooCommerce-Modul ist aktiviert, Adapter oder Produkt-Post-Type fehlt.' );
+        }
+
+        if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && ITKT_Plugin::module_enabled( 'strings' ) && class_exists( 'ITKT_Native_Translations' ) ) {
+            $missing_catalogs = array();
+            foreach ( $active as $code => $language ) {
+                // English is WooCommerce's canonical source and needs no language-pack file.
+                if ( 'en' === $code ) { continue; }
+                if ( ! ITKT_Native_Translations::instance()->has_catalog( 'woocommerce', $code ) ) { $missing_catalogs[] = strtoupper( $code ); }
+            }
+            $catalog_ok = empty( $missing_catalogs );
+            $detail = $catalog_ok
+                ? 'Native WooCommerce-Sprachkataloge für die aktiven Sprachen wurden gefunden.'
+                : 'Kein nativer WooCommerce-Sprachkatalog gefunden für: ' . implode( ', ', $missing_catalogs ) . '. Eigene ITKT-Overrides funktionieren weiterhin.';
+            $add( 'woocommerce_catalogs', 'WooCommerce Sprachpakete', $catalog_ok, $detail, 'warning' );
+        }
+
+        $missing_hash = 0; $duplicate_hashes = 0; $translated_slugs = 0;
+        if ( post_type_exists( 'product' ) ) {
+            $rows = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE meta_key LIKE '_itkt_slug_%' AND meta_key NOT LIKE '_itkt_slug_hash_%' AND meta_value <> ''" );
+            foreach ( (array) $rows as $row ) {
+                $translated_slugs++;
+                $lang = sanitize_key( substr( $row->meta_key, strlen( '_itkt_slug_' ) ) );
+                $expected = class_exists( 'ITKT_Product_Translations' ) ? ITKT_Product_Translations::public_slug_hash( $row->meta_value ) : '';
+                $actual = get_post_meta( $row->post_id, '_itkt_slug_hash_' . $lang, true );
+                if ( $expected && ! hash_equals( $expected, (string) $actual ) ) { $missing_hash++; }
+            }
+            $duplicates = $wpdb->get_results( "SELECT meta_key, meta_value, COUNT(*) AS c FROM {$wpdb->postmeta} WHERE meta_key LIKE '_itkt_slug_hash_%' AND meta_value <> '' GROUP BY meta_key, meta_value HAVING COUNT(*) > 1" );
+            $duplicate_hashes = count( (array) $duplicates );
+        }
+        $add( 'slug_hashes', 'Produkt-Slug-Index', 0 === $missing_hash, $translated_slugs . ' übersetzte Slugs, ' . $missing_hash . ' fehlende/veraltete Hash-Indizes.', 'warning' );
+        $add( 'slug_duplicates', 'Doppelte Produkt-Slugs', 0 === $duplicate_hashes, $duplicate_hashes ? $duplicate_hashes . ' doppelte sprachabhängige Slug-Indizes gefunden.' : 'Keine doppelten sprachabhängigen Slugs erkannt.', 'warning' );
+
+        if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && class_exists( 'ITKT_Product_Translations' ) ) {
+            $search_version_ok = get_option( 'itkt_product_search_index_version' ) === ITKT_Product_Translations::SEARCH_INDEX_VERSION;
+            $add( 'product_search_index', 'Produkt-Suchindex', $search_version_ok, $search_version_ok ? 'Sprachabhängiger Produkt-Suchindex ist aktuell.' : 'Produkt-Suchindex wird noch aufgebaut oder sollte manuell repariert werden.', 'warning' );
+        }
+
+        if ( ITKT_Plugin::module_enabled( 'strings' ) ) {
+            $table = $wpdb->prefix . 'itkt_strings';
+            $exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+            $add( 'strings_table', 'String-Translation Datenbank', $exists === $table, $exists === $table ? 'String-Tabelle ist vorhanden.' : 'String-Tabelle fehlt; Plugin einmal deaktivieren/aktivieren oder Schema reparieren.' );
+        }
+
+        $memory = wp_convert_hr_to_bytes( ini_get( 'memory_limit' ) );
+        $add( 'memory', 'PHP Memory Limit', $memory < 0 || $memory >= 128 * MB_IN_BYTES, ini_get( 'memory_limit' ) . ' PHP Memory Limit.', 'warning' );
+
+        return $checks;
+    }
+
+    public function repair_search_indexes() {
+        if ( ! class_exists( 'ITKT_Product_Translations' ) || ! post_type_exists( 'product' ) ) { return array( 'checked'=>0, 'repaired'=>0 ); }
+        $ids = get_posts( array( 'post_type'=>'product', 'post_status'=>array('publish','draft','private','pending'), 'numberposts'=>-1, 'fields'=>'ids', 'suppress_filters'=>true ) );
+        $langs = ITKT_Languages::instance()->get_active();
+        unset( $langs[ ITKT_Languages::instance()->get_default_code() ] );
+        $checked = 0; $repaired = 0;
+        foreach ( $ids as $id ) {
+            foreach ( $langs as $code => $lang ) {
+                $checked++;
+                $before = (string) get_post_meta( $id, ITKT_Product_Translations::instance()->search_meta_key( $code ), true );
+                ITKT_Product_Translations::instance()->update_search_index( $id, $code, ITKT_Product_Translations::instance()->get( $id, $code ) );
+                $after = (string) get_post_meta( $id, ITKT_Product_Translations::instance()->search_meta_key( $code ), true );
+                if ( $before !== $after ) { $repaired++; }
+            }
+        }
+        update_option( 'itkt_product_search_index_version', ITKT_Product_Translations::SEARCH_INDEX_VERSION, false );
+        $this->log( 'success', 'search_index_repair', 'Produkt-Suchindex wurde geprüft.', array( 'checked'=>$checked, 'repaired'=>$repaired ) );
+        return array( 'checked'=>$checked, 'repaired'=>$repaired );
+    }
+
+    public function repair_slug_indexes() {
+        if ( ! class_exists( 'ITKT_Product_Translations' ) || ! post_type_exists( 'product' ) ) { return array( 'checked'=>0, 'repaired'=>0 ); }
+        $ids = get_posts( array( 'post_type'=>'product', 'post_status'=>array('publish','draft','private','pending'), 'numberposts'=>-1, 'fields'=>'ids', 'suppress_filters'=>true ) );
+        $langs = ITKT_Languages::instance()->get_active();
+        unset( $langs[ ITKT_Languages::instance()->get_default_code() ] );
+        $checked = 0; $repaired = 0;
+        foreach ( $ids as $id ) {
+            foreach ( $langs as $code => $lang ) {
+                $slug = ITKT_Product_Translations::instance()->explicit_slug( $id, $code );
+                if ( ! $slug ) { continue; }
+                $checked++;
+                $hash = ITKT_Product_Translations::public_slug_hash( $slug );
+                $stored = (string) get_post_meta( $id, '_itkt_slug_hash_' . $code, true );
+                if ( $hash && ! hash_equals( $hash, $stored ) ) {
+                    update_post_meta( $id, '_itkt_slug_' . $code, $slug );
+                    update_post_meta( $id, '_itkt_slug_hash_' . $code, $hash );
+                    $repaired++;
+                }
+            }
+        }
+        $this->log( 'success', 'slug_index_repair', 'Produkt-Slug-Indizes wurden geprüft.', array( 'checked'=>$checked, 'repaired'=>$repaired ) );
+        return array( 'checked'=>$checked, 'repaired'=>$repaired );
+    }
+}

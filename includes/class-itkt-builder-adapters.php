@@ -1,0 +1,142 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
+
+/**
+ * Built-in builder adapters. The translation core stays builder-agnostic;
+ * adapters only declare supported content types and safe text controls.
+ */
+class ITKT_Elementor_Adapter implements ITKT_Adapter_Interface {
+    public function id() { return 'elementor'; }
+    public function label() { return 'Elementor'; }
+    public function is_available() { return ITKT_Plugin::module_enabled( 'elementor' ) && ( did_action( 'elementor/loaded' ) || defined( 'ELEMENTOR_VERSION' ) || class_exists( '\\Elementor\\Plugin' ) ); }
+
+    public function boot() {
+        add_filter( 'itkt_supported_post_types', array( $this, 'post_types' ) );
+        add_filter( 'itkt_elementor_widget_profiles', array( $this, 'profiles' ) );
+        add_filter( 'itkt_elementor_manual_widgets', array( $this, 'manual_widgets' ) );
+        add_filter( 'itkt_elementor_translatable_keys', array( $this, 'extra_keys' ), 10, 2 );
+    }
+
+    public function post_types( $types ) {
+        if ( post_type_exists( 'elementor_library' ) ) { $types[] = 'elementor_library'; }
+        return array_values( array_unique( $types ) );
+    }
+
+    public function manual_widgets( $widgets ) {
+        return array_values( array_unique( array_merge( (array) $widgets, array( 'html', 'shortcode', 'code' ) ) ) );
+    }
+
+    public function extra_keys( $keys, $widget ) {
+        $extra = array(
+            'title_text','description_text','button_text','btn_text','field_label','field_placeholder',
+            'success_message','error_message','required_message','invalid_message','before_text',
+            'highlighted_text','after_text','testimonial_name','testimonial_job','inner_text',
+            'blockquote_content','tweet_button_label','item_text','item_label','menu_title','read_more_text',
+        );
+        return array_values( array_unique( array_merge( (array) $keys, $extra ) ) );
+    }
+
+    public function profiles( $profiles ) {
+        $profiles = (array) $profiles;
+        $map = array(
+            'heading'          => array( 'label'=>'Überschrift', 'keys'=>array('title') ),
+            'text-editor'      => array( 'label'=>'Texteditor', 'keys'=>array('editor') ),
+            'button'           => array( 'label'=>'Button', 'keys'=>array('text') ),
+            'icon-box'         => array( 'label'=>'Icon Box', 'keys'=>array('title_text','description_text') ),
+            'image-box'        => array( 'label'=>'Bild Box', 'keys'=>array('title_text','description_text') ),
+            'testimonial'      => array( 'label'=>'Testimonial', 'keys'=>array('testimonial_content','testimonial_name','testimonial_job') ),
+            'tabs'             => array( 'label'=>'Tabs', 'keys'=>array('tab_title','tab_content') ),
+            'accordion'        => array( 'label'=>'Akkordeon', 'keys'=>array('tab_title','tab_content') ),
+            'toggle'           => array( 'label'=>'Toggle', 'keys'=>array('tab_title','tab_content') ),
+            'counter'          => array( 'label'=>'Zähler', 'keys'=>array('title','prefix','suffix') ),
+            'progress'         => array( 'label'=>'Fortschritt', 'keys'=>array('title','inner_text') ),
+            'alert'            => array( 'label'=>'Hinweis', 'keys'=>array('title','description') ),
+            'call-to-action'   => array( 'label'=>'Call to Action', 'keys'=>array('title','description','button') ),
+            'animated-headline'=> array( 'label'=>'Animierte Überschrift', 'keys'=>array('before_text','highlighted_text','after_text') ),
+            'blockquote'       => array( 'label'=>'Zitat', 'keys'=>array('blockquote_content','tweet_button_label') ),
+            'form'             => array( 'label'=>'Formular', 'keys'=>array('field_label','placeholder','field_placeholder','button_text','success_message','error_message','required_message','invalid_message') ),
+            'slides'           => array( 'label'=>'Slides', 'keys'=>array('heading','description','button_text') ),
+            'nested-tabs'      => array( 'label'=>'Nested Tabs', 'keys'=>array('tab_title','title') ),
+            'nested-accordion' => array( 'label'=>'Nested Accordion', 'keys'=>array('title') ),
+            'menu-anchor'      => array( 'label'=>'Menü-Anker', 'keys'=>array() ),
+        );
+        return array_replace_recursive( $profiles, $map );
+    }
+}
+
+class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
+    public function id() { return 'woodmart'; }
+    public function label() { return 'WoodMart / XTemos'; }
+    public function is_available() {
+        $env = ITKT_Environment::detect();
+        return ITKT_Plugin::module_enabled( 'woodmart' ) && ! empty( $env['woodmart']['active'] );
+    }
+
+    public function boot() {
+        add_filter( 'itkt_supported_post_types', array( $this, 'post_types' ) );
+        add_filter( 'itkt_elementor_widget_profiles', array( $this, 'profiles' ) );
+        add_filter( 'itkt_elementor_translatable_keys', array( $this, 'extra_keys' ), 10, 2 );
+    }
+
+    public function post_types( $types ) {
+        foreach ( self::builder_post_types() as $post_type => $label ) { $types[] = $post_type; }
+        return array_values( array_unique( $types ) );
+    }
+
+    public static function builder_post_types() {
+        $out = array();
+        $known = array(
+            'cms_block'          => 'WoodMart HTML-Blöcke',
+            'woodmart_layout'    => 'WoodMart Layouts',
+            'woodmart_slide'     => 'WoodMart Slides',
+            'woodmart_popup'     => 'WoodMart Pop-ups',
+            'woodmart_size_guide'=> 'WoodMart Größentabellen',
+            'woodmart_sidebar'   => 'WoodMart Seitenleisten',
+            'woodmart_woo_layout'=> 'WoodMart WooCommerce Layouts',
+            'wd_woo_layout'      => 'WoodMart WooCommerce Layouts',
+        );
+        foreach ( $known as $name => $label ) { if ( post_type_exists( $name ) ) { $out[ $name ] = $label; } }
+
+        // Future-proof discovery for WoodMart/XTemos content types without hard-coding every version.
+        foreach ( get_post_types( array( 'show_ui' => true ), 'objects' ) as $name => $object ) {
+            if ( isset( $out[ $name ] ) || in_array( $name, array('post','page','product','attachment','elementor_library'), true ) ) { continue; }
+            $haystack = strtolower( $name . ' ' . ( $object->label ?? '' ) . ' ' . ( $object->labels->name ?? '' ) . ' ' . ( $object->labels->singular_name ?? '' ) );
+            if ( preg_match( '/woodmart|xtemos|html.?block|floating.?block|mega.?menu|woo.?layout/', $haystack ) ) {
+                $out[ $name ] = $object->labels->name ?: $object->label ?: $name;
+            }
+        }
+        return apply_filters( 'itkt_woodmart_builder_post_types', $out );
+    }
+
+    public function extra_keys( $keys, $widget ) {
+        if ( 0 === strpos( (string) $widget, 'wd_' ) || false !== strpos( (string) $widget, 'woodmart' ) || false !== strpos( (string) $widget, 'xts' ) ) {
+            $keys = array_merge( (array) $keys, array(
+                'title','subtitle','text','content','description','button_text','btn_text','label','caption',
+                'after_title','before_title','extra_title','read_more_text','link_text','item_title','item_text',
+            ) );
+        }
+        return array_values( array_unique( $keys ) );
+    }
+
+    public function profiles( $profiles ) {
+        $profiles = (array) $profiles;
+        $map = array(
+            'wd_title'              => array( 'label'=>'WoodMart Titel', 'keys'=>array('title','subtitle','after_title','before_title') ),
+            'woodmart_title'        => array( 'label'=>'WoodMart Titel', 'keys'=>array('title','subtitle','after_title','before_title') ),
+            'wd_text_block'         => array( 'label'=>'WoodMart Textblock', 'keys'=>array('text','content','title') ),
+            'woodmart_text_block'   => array( 'label'=>'WoodMart Textblock', 'keys'=>array('text','content','title') ),
+            'wd_button'             => array( 'label'=>'WoodMart Button', 'keys'=>array('title','text','button_text','btn_text') ),
+            'woodmart_button'       => array( 'label'=>'WoodMart Button', 'keys'=>array('title','text','button_text','btn_text') ),
+            'wd_infobox'            => array( 'label'=>'WoodMart Info Box', 'keys'=>array('title','subtitle','text','content','description','button_text','btn_text') ),
+            'woodmart_infobox'      => array( 'label'=>'WoodMart Info Box', 'keys'=>array('title','subtitle','text','content','description','button_text','btn_text') ),
+            'wd_banner'             => array( 'label'=>'WoodMart Banner', 'keys'=>array('title','subtitle','text','content','description','button_text','btn_text') ),
+            'woodmart_banner'       => array( 'label'=>'WoodMart Banner', 'keys'=>array('title','subtitle','text','content','description','button_text','btn_text') ),
+            'wd_list'               => array( 'label'=>'WoodMart Liste', 'keys'=>array('title','text','item_title','item_text') ),
+            'wd_testimonials'       => array( 'label'=>'WoodMart Testimonials', 'keys'=>array('title','text','content','name','job','testimonial_content') ),
+            'wd_products'           => array( 'label'=>'WoodMart Produkte', 'keys'=>array('title','subtitle') ),
+            'wd_product_categories' => array( 'label'=>'WoodMart Kategorien', 'keys'=>array('title','subtitle') ),
+            'wd_mega_menu'          => array( 'label'=>'WoodMart Mega-Menü', 'keys'=>array('title','menu_title') ),
+        );
+        return array_replace_recursive( $profiles, $map );
+    }
+}
