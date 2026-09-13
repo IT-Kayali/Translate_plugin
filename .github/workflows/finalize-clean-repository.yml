@@ -1,0 +1,116 @@
+name: Finalize clean IT-Kayali Translate repository
+
+on:
+  push:
+    branches:
+      - tmp-github-finish
+    paths:
+      - ".github/workflows/finalize-clean-repository.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild and verify exact v0.12.10 package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf /tmp/itkt-final /tmp/itkt-plugin.zip /tmp/itkt-plugin.zip.b64
+          mkdir -p /tmp/itkt-final
+
+          cat \
+            .repo-import/payload-00.b64 \
+            .repo-import/payload-01.b64 \
+            .repo-import/payload-02.b64 \
+            .repo-import/payload-03.b64 \
+            .repo-import/payload-04.b64 \
+            .repo-fix/p05-00.b64 \
+            .repo-fix/p05-01.b64 \
+            .repo-fix/p05-02.b64 \
+            .repo-import/payload-06.b64 \
+            .repo-import/payload-07.b64 \
+            .repo-import/payload-08.b64 \
+            .repo-fix/p09-00.b64 \
+            .repo-fix/p09-01.b64 \
+            .repo-fix/p09-02.b64 \
+            .repo-fix/p10-00.b64 \
+            .repo-fix/p10-01.b64 \
+            .repo-fix/p10-02.b64 \
+            .repo-fix/p11-00.b64 \
+            .repo-fix/p11-01.b64 \
+            > /tmp/itkt-plugin.zip.b64
+
+          test "$(wc -c < /tmp/itkt-plugin.zip.b64)" -eq 231196
+          base64 --decode /tmp/itkt-plugin.zip.b64 > /tmp/itkt-plugin.zip
+          echo "dd18aea5099b932f77cee0a73522937b760207f9a9b1943262d7b8cc050ebe82  /tmp/itkt-plugin.zip" | sha256sum -c -
+          unzip -t /tmp/itkt-plugin.zip >/dev/null
+          unzip -q /tmp/itkt-plugin.zip -d /tmp/itkt-final
+
+          PLUGIN_DIR="/tmp/itkt-final/it-kayali-translate"
+          test -f "$PLUGIN_DIR/it-kayali-translate.php"
+          test -f "$PLUGIN_DIR/readme.txt"
+          test -f "$PLUGIN_DIR/uninstall.php"
+          test -d "$PLUGIN_DIR/admin"
+          test -d "$PLUGIN_DIR/includes"
+          test -d "$PLUGIN_DIR/public/assets"
+
+          grep -q "Version: 0.12.10" "$PLUGIN_DIR/it-kayali-translate.php"
+          grep -q "ITKT_VERSION', '0.12.10'" "$PLUGIN_DIR/it-kayali-translate.php"
+          grep -q "Stable tag: 0.12.10" "$PLUGIN_DIR/readme.txt"
+
+          find "$PLUGIN_DIR" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+          node --check "$PLUGIN_DIR/public/assets/frontend.js"
+
+      - name: Publish real plugin source at repository root
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PLUGIN_DIR="/tmp/itkt-final/it-kayali-translate"
+
+          rm -rf admin includes public source .repo-import .repo-fix .github
+          rm -f it-kayali-translate.php readme.txt uninstall.php
+
+          cp -a "$PLUGIN_DIR/admin" ./
+          cp -a "$PLUGIN_DIR/includes" ./
+          cp -a "$PLUGIN_DIR/public" ./
+          cp "$PLUGIN_DIR/it-kayali-translate.php" ./
+          cp "$PLUGIN_DIR/readme.txt" ./
+          cp "$PLUGIN_DIR/uninstall.php" ./
+
+          test -f it-kayali-translate.php
+          test -f readme.txt
+          test -f uninstall.php
+          test -d admin
+          test -d includes
+          test -d public/assets
+          test ! -e source
+          test ! -e .repo-import
+          test ! -e .repo-fix
+          test ! -e .github
+
+          grep -q "Version: 0.12.10" it-kayali-translate.php
+          grep -q "ITKT_VERSION', '0.12.10'" it-kayali-translate.php
+          grep -q "Stable tag: 0.12.10" readme.txt
+
+      - name: Commit final repository layout
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: publish complete IT-Kayali Translate v0.12.10 source"
+          git push origin HEAD:tmp-github-finish
