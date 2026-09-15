@@ -1,0 +1,62 @@
+name: Apply v0.12.11 source update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0.12.11.yml'
+      - '.repo-update/v0.12.11.patch.gz.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Decode and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode .repo-update/v0.12.11.patch.gz.b64 > /tmp/itkt-v0.12.11.patch.gz
+          echo 'dd22cdd8891b451237cdb0274f985b6630a44f1fbbe28f73788c59ddf8ed85ad  /tmp/itkt-v0.12.11.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/itkt-v0.12.11.patch.gz > /tmp/itkt-v0.12.11.patch
+          git apply --check /tmp/itkt-v0.12.11.patch
+          git apply /tmp/itkt-v0.12.11.patch
+
+      - name: Validate plugin
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Version: 0.12.11' it-kayali-translate.php
+          grep -q "ITKT_VERSION', '0.12.11'" it-kayali-translate.php
+          grep -q 'Stable tag: 0.12.11' readme.txt
+          test -f includes/class-itkt-backup.php
+          find . -name '*.php' -type f -print0 | xargs -0 -n1 php -l >/tmp/php-lint.txt
+          node --check public/assets/frontend.js
+          node --check public/assets/inline-editor.js
+          node --check public/assets/i18n-runtime.js
+
+      - name: Commit clean v0.12.11 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .repo-update
+          rm -f .github/workflows/apply-v0.12.11.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git config user.name 'IT-Kayali'
+          git config user.email 'ghaithkayali99@gmail.com'
+          git add -A
+          git commit -m 'feat: v0.12.11 frontend text center and backup foundation [skip ci]'
+          git push origin HEAD:main
