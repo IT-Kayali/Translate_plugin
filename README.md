@@ -1,188 +1,116 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.10**
+**Current development version: v0.12.11**
 
-IT-Kayali Translate is a modular multilingual translation plugin for WordPress. The goal is a reusable and distributable translation platform that works with plain WordPress and can optionally integrate with WooCommerce, Elementor, WoodMart and additional themes/builders through adapters.
+IT-Kayali Translate is a modular multilingual WordPress plugin focused first on a complete, stable multilingual storefront for the current project. Commercial licensing/distribution work is intentionally postponed until the plugin itself is finished and stable.
 
-> Development repository. The plugin is still under active development and has not reached v1.0.
+## Current confirmed state
 
-## Repository status
+- v0.12.10 fixed the WooCommerce **My Account** language-endpoint problem on the real staging site.
+- The repository root contains the installable plugin source directly.
+- WooCommerce products remain one physical product ID across all languages.
+- WordPress/Elementor content, WooCommerce product fields, taxonomy labels, routing, string translation, frontend live translation and SEO foundations are already present.
 
-The repository now contains the **complete installable v0.12.10 plugin source directly at the repository root**. The former archive/patch/import layout has been removed from `main`.
+## v0.12.11 – current work
 
-For normal development use, the repository itself is the canonical source. No Base64 parts, patch archives or reconstruction workflow are required anymore.
+v0.12.11 starts the finalization phase requested for the production plugin.
 
-The current source was rebuilt from the verified v0.12.10 installation ZIP and validated before being published to `main`.
+### New: Frontend Texte
 
-## Current focus
+A new backend page **IT-Kayali Translate → Frontend Texte** automatically collects supported visible texts while an administrator browses the configured default language.
 
-The WooCommerce My Account routing problem in non-default languages is resolved in v0.12.10 on the real staging site.
+The catalog groups texts into areas such as:
 
-The next development focus is systematic WooCommerce end-to-end verification in every active language and finding remaining untranslated or dynamically generated WooCommerce/WoodMart frontend strings.
+- Shop
+- Search
+- Product page
+- Category/archive
+- Filters
+- Mini-Cart
+- Cart
+- Checkout
+- My Account
+- Wishlist
+- Popups / Offcanvas
+- Header
+- Footer
+- Menu
+- Other
 
-### v0.12.10
+Translations can be entered directly in the table for every active target language. Captured texts reuse the existing ITKT global-string runtime, so saved translations can be applied without changing WooCommerce, WoodMart or theme source files.
 
-- Adds an independent WooCommerce My Account rescue marker for non-default-language account links.
-- Account links keep their clean pretty path while a short-lived validated marker tells the server which WooCommerce endpoint must render.
-- The normal frontend JavaScript bundle rewrites My Account navigation links directly.
-- Capture-phase click handling prevents WoodMart or another script from collapsing known account links back to Dashboard.
-- The temporary marker is removed from the visible URL after the correct endpoint loads.
-- Endpoint state is synchronized into WordPress/WooCommerce runtime state with a direct content dispatcher as final fallback.
-- All plugin PHP files pass syntax validation and the frontend JavaScript passes syntax validation.
-- Real staging verification succeeded: Orders, Downloads, Addresses and Account details no longer fall back to Dashboard in the tested non-default-language flow.
+The collector is intentionally **admin-only** and runs only in the default storefront language. It rescans dynamically inserted AJAX/fragment content and WooCommerce cart/checkout events. Common price, quantity and technical-value containers are excluded from collection.
 
-## Persistent project hand-off
+### Verification status
 
-This repository is the canonical hand-off point when development moves to another chat.
+The v0.12.11 source passes PHP syntax checks, JavaScript syntax checks and ZIP integrity validation. **Real staging verification of the new Frontend Texte workflow is still required before this feature is marked complete.**
 
-Before changing the plugin, read:
+## Product priorities before calling the plugin finished
 
-- `README.md` for architecture, capabilities and current version.
-- `CHANGELOG.md` for version history.
-- `AGENDA.md` for current priorities, completed fixes and next steps.
-- The plugin source itself for the exact implementation state.
+The current goal is a finished production plugin, not a sellable marketplace product. The remaining priorities are:
 
-For every new plugin version, the WordPress ZIP delivered in chat and the GitHub source must represent the same version. A version is not considered finished until source, version numbers, README, CHANGELOG and AGENDA are synchronized.
+1. Complete WooCommerce end-to-end verification in DE/EN/AR first: Shop, Search, Product, Categories, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist and Popups/Offcanvas. Language switching must stay on the same logical destination.
+2. Finish the backend frontend-text table and make every discovered supported frontend string directly editable per language.
+3. Complete dynamic WooCommerce/WoodMart/AJAX/Blocks translation coverage, including payment, shipping, validation, notices and checkout labels.
+4. Expand live translation to categories, menus, global strings, Header/Footer, WoodMart content and Popups.
+5. Finish JavaScript i18n, including dynamic strings and safe plural handling.
+6. Add Backup/Restore for plugin settings and translation data.
+7. Complete performance/cache testing for large shops, AJAX, WP Fastest Cache, IONOS cache and related caching layers.
 
-## Core principles
+Commercial licensing, customer updater infrastructure and marketplace preparation are deferred until later.
 
-- Modular translation core; WooCommerce, Elementor and WoodMart are optional integrations.
-- WordPress pages/posts may have linked language versions when a page builder needs a complete document.
-- WooCommerce products remain **one physical product ID** across languages.
-- Prices, SKU, stock, images, variants and technical product data are not duplicated.
-- Translatable product fields are stored language-dependently.
-- Theme/plugin source files are read only; translations are stored separately.
-- Layout, CSS, IDs, images, URLs and code must not be changed by automatic text translation.
-- RTL text can be enabled without forcing the entire theme/layout to mirror.
-- Frontend language selection and backend/admin language remain logically separate.
-- Orders, invoices, delivery notes and transactional e-mails are intended to remain in the configured standard language rather than automatically following the storefront language.
+## Main architecture rules
+
+- WooCommerce products are never duplicated per language.
+- Prices, SKU, stock, images, variants and technical product data stay shared.
+- Theme/plugin source files are read-only; translations are stored separately.
+- Frontend language is independent from WordPress admin language.
+- RTL can affect text/content without forcing Header/Footer/layout mirroring.
+- Automatic translation handling must not modify CSS, IDs, markup structure, images or technical URLs.
+- Transactional emails/invoices should remain in the configured standard language unless explicitly changed later.
+- New integrations should remain modular/adaptable rather than project-specific core hacks.
 
 ## Supported languages
 
-The project currently provides language management for:
-
-- German (`de`)
-- Arabic (`ar`, RTL)
-- English (`en`)
-- French (`fr`)
-- Spanish (`es`)
-- Turkish (`tr`)
-- Swedish (`sv`)
-- Dutch (`nl`)
-
-Only active languages are shown in translation workflows and the frontend language switcher.
-
-## Main modules
-
-### WordPress content
-
-- Pages and posts
-- Linked language versions
-- Translation status
-- Elementor-aware duplication and editing
-- Language-specific slugs and routing
-
-### WooCommerce
-
-- One product ID across languages
-- Product title
-- Short and long description
-- Categories and tags
-- Global and custom attributes
-- Language-stable product/category links
-- Cart / Checkout / My Account language handling
-- Product slug routing and fallbacks
-- Storefront-only translation layer
-- XLSX/CSV product translation workflow
-
-### Elementor / WoodMart
-
-- Structured text-field detection
-- Safe translation of supported widget text
-- Protection of design/layout/query fields
-- WoodMart/XTemos compatibility layer
-- Header, menu, layout and HTML-block compatibility is expanded progressively
-
-### String Translation
-
-- PHP gettext scanning for plugins and themes
-- Stored translations without editing original source files
-- WooCommerce/WordPress native language-pack fallback
-- IT-Kayali overrides take priority
-- JavaScript i18n and advanced plural handling are still being expanded
-
-### Frontend Live Translation
-
-Logged-in administrators can select supported frontend text and translate it directly on the website. Markup, links and dynamic values are protected where supported.
-
-### SEO / Routing
-
-- Language-prefixed URLs
-- Per-language slugs where supported
-- Canonical URLs
-- hreflang
-- x-default
-- SEO title/meta fields
-- Translation sitemap
-- Routing diagnostics and repair tools
-
-## Requirements
-
-- WordPress 6.4 or newer
-- PHP 8.0 or newer
-- WooCommerce only when WooCommerce features are used
-- Elementor/WoodMart only when their adapters are used
-
-## Installation from GitHub
-
-For the current development repository:
-
-1. Open the repository on GitHub.
-2. Select **Code → Download ZIP**.
-3. In WordPress go to **Plugins → Add Plugin → Upload Plugin**.
-4. Upload the downloaded ZIP and install/replace the development version.
-5. After routing-related updates, clear page/server caches and resave **Settings → Permalinks** when required.
-6. Test the default language and non-default languages separately.
-
-A separately packaged WordPress ZIP may also be supplied in chat for each version. Both GitHub and the chat ZIP must stay on the same version.
+Current language management includes DE, AR, EN, FR, ES, TR, SV and NL. Active languages determine which translation columns/workflows are shown.
 
 ## Repository structure
 
 ```text
 admin/
-  assets/
 includes/
 public/
-  assets/
 it-kayali-translate.php
 readme.txt
 uninstall.php
 README.md
 CHANGELOG.md
 AGENDA.md
-.gitignore
 ```
 
-Temporary `source/`, `.repo-import/`, `.repo-fix/` and one-time migration workflow folders are not part of the canonical `main` branch anymore.
+The repository root is the plugin source. GitHub **Code → Download ZIP** can be used as a source archive; finished development versions are additionally delivered as installable WordPress ZIPs in chat.
 
-## Versioning rule
+## New-chat handoff rule
 
-Every functional release must keep these locations synchronized:
+Before changing the plugin in a new chat, read:
 
-- Plugin header version in `it-kayali-translate.php`
+1. `README.md`
+2. `CHANGELOG.md`
+3. `AGENDA.md`
+4. the current plugin source
+
+For every new functional version, keep synchronized:
+
+- plugin header version
 - `ITKT_VERSION`
-- WordPress `readme.txt` stable tag
-- `README.md` current version
+- WordPress `readme.txt` Stable tag
+- `README.md`
 - `CHANGELOG.md`
 - `AGENDA.md`
+- GitHub source
+- installable ZIP delivered in chat
 
-Every functional change should receive a changelog entry before the version is considered finished.
-
-## Development status toward v1.0
-
-Major foundations already exist: modular core, language management, WordPress/Elementor content workflow, WooCommerce translation without product duplication, product import/export, language routing, RTL controls, SEO basics, string translation, frontend live translation and diagnostics.
-
-Important remaining work includes broader JS/plural string coverage, additional frontend-inline translation targets, role/capability handling, systematic WoodMart edge-case testing, complete WooCommerce end-to-end tests, performance/caching tests, migration/update infrastructure and later licensing/updater work.
+Do not mark a bug/feature complete until the relevant real-site test confirms it.
 
 ## Website
 
