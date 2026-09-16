@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.12**  
+**Aktueller Entwicklungsstand: v0.12.13**  
 **Letzte Aktualisierung: 16.09.2026**
 
 Diese Datei ist die zentrale Übergabe- und Arbeitsagenda. Der aktuelle Fokus ist ein **fertiges, stabiles Produktions-Plugin** für den eigenen Einsatz. Verkauf, Lizenzierung, Marketplace und Kunden-Updater werden bewusst auf später verschoben.
@@ -27,7 +27,7 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
 
-## v0.12.11 / v0.12.12 – aktuelle Produktionsphase
+## v0.12.11 / v0.12.12 – Frontend- und Dynamic-Runtime-Phase
 
 ### Frontend Texte – Backend-Zentrale
 
@@ -56,7 +56,7 @@ v0.12.12 erweitert die Erfassung um `placeholder`, `aria-label`, `title`, Button
 
 ### Dynamische Übersetzungen / JavaScript-i18n
 
-Neu in v0.12.12:
+In v0.12.12 implementiert:
 
 - separates Modul `ITKT_Dynamic_Runtime`
 - `@wordpress/i18n` Plural-Bridge für `ngettext` und `ngettext_with_context`
@@ -64,26 +64,35 @@ Neu in v0.12.12:
 - erneutes Anwenden nach klassischen WooCommerce Fragment-, Coupon-, Versand- und Checkout-Events
 - Beobachtung dynamisch geänderter `placeholder`, `title`, `aria-label` und Button-Werte
 
-### Status
+**Status:** lokal validiert, vollständiger Realtest auf der Staging-Seite noch offen.
 
-**v0.12.12 ist implementiert und lokal validiert, aber noch nicht auf der realen Staging-Seite bestätigt.**
+## v0.12.13 – Backup / Restore
 
-Lokale Prüfungen:
-- alle PHP-Dateien: Syntaxprüfung erfolgreich
-- alle JavaScript-Dateien: Syntaxprüfung erfolgreich
-- Installations-ZIP: Integrität erfolgreich geprüft
+Neu ist **IT-Kayali Translate → Backup / Restore**.
 
-Nächster Realtest:
-1. v0.12.12 installieren.
-2. Als Administrator DE öffnen.
-3. Shop, Produktseite, Filter, Mini-Cart, Warenkorb, Checkout, Mein Konto, Wishlist und Popups öffnen.
-4. Mindestens eine Fehlermeldung/Notice auslösen, z. B. Checkout-Validierung oder Warenkorb-Hinweis.
-5. Backend → Frontend Texte prüfen: richtige Bereichszuordnung, insbesondere Mini-Cart und Hinweise/Fehler.
-6. Einen neu erkannten Text für EN/AR übersetzen.
-7. EN/AR prüfen und WooCommerce AJAX/Cart/Checkout-Aktionen auslösen.
-8. Prüfen, dass Übersetzungen nach Fragment-/Blocks-Refresh erhalten bleiben.
+Das JSON-Backup enthält:
 
-## Ziel bis „Plugin fertig“
+- Plugin-Einstellungen
+- Sprachkonfiguration
+- ITKT String-/Source-/Translation-Tabellen
+- globale und Frontend-Stringübersetzungen
+- `_itkt_*` Post-Metadaten inkl. Produktübersetzungen
+- `_itkt_*` Term-Metadaten inkl. Taxonomieübersetzungen
+- Snapshot verknüpfter übersetzter WordPress-Inhalte
+
+Restore-Regeln:
+
+- Produkte, Seiten, Beiträge und Begriffe werden **nicht neu erstellt**.
+- Damit entstehen durch Restore keine Duplikate.
+- Vorhandene verknüpfte Inhalte werden nur über ihre existierende WordPress-ID aktualisiert.
+- Nicht mehr vorhandene IDs werden übersprungen und gemeldet.
+- ITKT-Stringtabellen und ITKT-Metadaten werden durch den Backup-Stand ersetzt.
+- Rewrite-, Such- und Runtime-Zustände werden danach neu aufgebaut.
+- Export/Restore nur für Administratoren mit Nonce-Schutz und expliziter Restore-Bestätigung.
+
+**Status P6:** implementiert und lokal validiert, aber erst nach einem echten Export-/Änderungs-/Restore-Test auf Staging abgeschlossen.
+
+## Was bis „Plugin fertig“ noch fehlt
 
 ### P1 – WooCommerce komplett End-to-End
 
@@ -103,15 +112,15 @@ DE/EN/AR zuerst vollständig prüfen und reparieren:
 
 Wichtig: Der Sprachwechsel muss immer auf derselben logischen Zielseite bleiben. Kein Rückfall auf Startseite, Dashboard oder falsche Produkt-/Kategorie-URL.
 
-### P2 – Frontend-Texte im Backend vollständig
+### P2 – Frontend-Texte im Backend vollständig verifizieren/verfeinern
 
-- automatische Erfassung weiter verfeinern
+- automatische Erfassung real testen
 - doppelte/falsche technische Texte reduzieren
-- Bereichserkennung verbessern
-- direkte Übersetzung je aktiver Sprache
-- Suche/Filter/Status vollständig nutzbar
+- Bereichserkennung verbessern, falls im Realtest nötig
+- direkte Übersetzung je aktiver Sprache prüfen
+- Suche/Filter/Status auf realen Daten prüfen
 
-### P3 – Dynamische Übersetzungen vervollständigen
+### P3 – Dynamische Übersetzungen real vollständig prüfen
 
 Systematisch prüfen:
 
@@ -127,7 +136,7 @@ Systematisch prüfen:
 - Notices
 - dynamische Popup-/Offcanvas-Inhalte
 
-### P4 – Live-Übersetzung erweitern
+### P4 – Live-Übersetzung erweitern/verifizieren
 
 - Kategorien
 - Menüs
@@ -139,7 +148,7 @@ Systematisch prüfen:
 - Offcanvas/Drawer
 - weitere dynamische Widgets
 
-### P5 – JavaScript-i18n fertigstellen
+### P5 – JavaScript-i18n fertig verifizieren
 
 - dynamisch nachgeladene JS-Texte
 - WooCommerce Blocks
@@ -147,19 +156,18 @@ Systematisch prüfen:
 - AJAX-Neurendering
 - keine verlorenen Übersetzungen nach Fragment-Refresh
 
-### P6 – Backup / Restore
+### P6 – Backup / Restore Realtest
 
-Einbauen für:
+v0.12.13 ist implementiert. Noch durchführen:
 
-- Plugin-Einstellungen
-- Sprachkonfiguration
-- String-Übersetzungen
-- visuelle/globale Übersetzungen
-- Produktübersetzungen
-- Taxonomieübersetzungen
-- relevante Plugin-Metadaten
+1. Backup auf Staging exportieren.
+2. Eine ungefährliche Testübersetzung ändern.
+3. Backup wiederherstellen.
+4. Prüfen, dass alter Wert zurückkommt.
+5. Prüfen, dass keine Produkte/Seiten/Begriffe dupliziert wurden.
+6. Frontend EN/AR nach Restore prüfen.
 
-Restore muss vorhandene Daten kontrolliert wiederherstellen können, ohne Produkte oder Layout zu duplizieren.
+Danach P6 schließen.
 
 ### P7 – Performance & Cache
 
