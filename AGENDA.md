@@ -1,7 +1,7 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.11**  
-**Letzte Aktualisierung: 15.09.2026**
+**Aktueller Entwicklungsstand: v0.12.12**  
+**Letzte Aktualisierung: 16.09.2026**
 
 Diese Datei ist die zentrale Übergabe- und Arbeitsagenda. Der aktuelle Fokus ist ein **fertiges, stabiles Produktions-Plugin** für den eigenen Einsatz. Verkauf, Lizenzierung, Marketplace und Kunden-Updater werden bewusst auf später verschoben.
 
@@ -27,13 +27,13 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
 
-## v0.12.11 – aktuell implementiert
+## v0.12.11 / v0.12.12 – aktuelle Produktionsphase
 
 ### Frontend Texte – Backend-Zentrale
 
-Neu ist der Bereich **IT-Kayali Translate → Frontend Texte**.
+Der Bereich **IT-Kayali Translate → Frontend Texte** sammelt unterstützte sichtbare Texte automatisch, wenn ein Administrator die Standardsprache im Frontend durchklickt.
 
-Wenn ein Administrator die konfigurierte Standardsprache im Frontend durchklickt, sammelt das Plugin unterstützte sichtbare Texte automatisch und ordnet sie Bereichen zu:
+Bereiche:
 
 - Shop
 - Suche
@@ -46,39 +46,42 @@ Wenn ein Administrator die konfigurierte Standardsprache im Frontend durchklickt
 - Mein Konto
 - Wishlist
 - Popups/Offcanvas
+- Hinweise/Fehlermeldungen
 - Header
 - Footer
 - Menü
 - Sonstige
 
-Die gefundenen Texte können in einer Tabelle direkt für alle aktiven Zielsprachen übersetzt werden.
+v0.12.12 erweitert die Erfassung um `placeholder`, `aria-label`, `title`, Button-Werte und Select-Optionen. Mini-Cart-Inhalte werden vor allgemeinen Popup-/Offcanvas-Bereichen erkannt.
 
-### Dynamische Erfassung in v0.12.11
+### Dynamische Übersetzungen / JavaScript-i18n
 
-- MutationObserver für nachgeladene DOM-Inhalte.
-- WooCommerce Cart-/Checkout-/Fragment-Events werden erneut erfasst.
-- Popup-, Drawer- und Offcanvas-Bereiche werden berücksichtigt.
-- Erfassung läuft nur für angemeldete Administratoren.
-- Erfassung läuft nur in der Standardsprache.
-- Typische Preise, Mengen und technische Produkt-/Bestellwerte werden nicht als Übersetzungsstrings gesammelt.
-- Gespeicherte Werte nutzen die vorhandene globale Runtime-Übersetzung und verändern keine Theme-/Plugin-Dateien.
+Neu in v0.12.12:
 
-### Status v0.12.11
+- separates Modul `ITKT_Dynamic_Runtime`
+- `@wordpress/i18n` Plural-Bridge für `ngettext` und `ngettext_with_context`
+- erneutes Anwenden der Übersetzungen nach WooCommerce Blocks Cart-/Checkout-Updates
+- erneutes Anwenden nach klassischen WooCommerce Fragment-, Coupon-, Versand- und Checkout-Events
+- Beobachtung dynamisch geänderter `placeholder`, `title`, `aria-label` und Button-Werte
 
-**Implementiert und lokal validiert, aber noch nicht auf der realen Staging-Seite bestätigt.**
+### Status
+
+**v0.12.12 ist implementiert und lokal validiert, aber noch nicht auf der realen Staging-Seite bestätigt.**
 
 Lokale Prüfungen:
-- PHP-Syntaxprüfung erfolgreich.
-- JavaScript-Syntaxprüfung erfolgreich.
-- Installations-ZIP geprüft.
+- alle PHP-Dateien: Syntaxprüfung erfolgreich
+- alle JavaScript-Dateien: Syntaxprüfung erfolgreich
+- Installations-ZIP: Integrität erfolgreich geprüft
 
-Nächster Realtest nach Installation:
-1. Als Administrator die deutsche Standardsprache öffnen.
-2. Shop, Produktseite, Filter, Mini-Cart, Warenkorb, Checkout, Mein Konto, Wishlist und mindestens ein Popup/Offcanvas öffnen.
-3. Backend → IT-Kayali Translate → Frontend Texte öffnen.
-4. Prüfen, ob die Texte nach Bereich erscheinen.
-5. Testweise einen Text für EN/AR übersetzen und speichern.
-6. EN/AR öffnen und prüfen, ob die Runtime-Übersetzung greift.
+Nächster Realtest:
+1. v0.12.12 installieren.
+2. Als Administrator DE öffnen.
+3. Shop, Produktseite, Filter, Mini-Cart, Warenkorb, Checkout, Mein Konto, Wishlist und Popups öffnen.
+4. Mindestens eine Fehlermeldung/Notice auslösen, z. B. Checkout-Validierung oder Warenkorb-Hinweis.
+5. Backend → Frontend Texte prüfen: richtige Bereichszuordnung, insbesondere Mini-Cart und Hinweise/Fehler.
+6. Einen neu erkannten Text für EN/AR übersetzen.
+7. EN/AR prüfen und WooCommerce AJAX/Cart/Checkout-Aktionen auslösen.
+8. Prüfen, dass Übersetzungen nach Fragment-/Blocks-Refresh erhalten bleiben.
 
 ## Ziel bis „Plugin fertig“
 
@@ -102,12 +105,11 @@ Wichtig: Der Sprachwechsel muss immer auf derselben logischen Zielseite bleiben.
 
 ### P2 – Frontend-Texte im Backend vollständig
 
-- Automatische Erfassung weiter verfeinern.
-- Doppelte/falsche technische Texte reduzieren.
-- Bereichserkennung verbessern.
-- Direkte Übersetzung je aktiver Sprache.
-- Suche/Filter/Status vollständig nutzbar.
-- Später optional Sammelaktionen/Bulk-Übersetzung.
+- automatische Erfassung weiter verfeinern
+- doppelte/falsche technische Texte reduzieren
+- Bereichserkennung verbessern
+- direkte Übersetzung je aktiver Sprache
+- Suche/Filter/Status vollständig nutzbar
 
 ### P3 – Dynamische Übersetzungen vervollständigen
 
@@ -126,8 +128,6 @@ Systematisch prüfen:
 - dynamische Popup-/Offcanvas-Inhalte
 
 ### P4 – Live-Übersetzung erweitern
-
-Frontend-Live-Modus weiter ausbauen für:
 
 - Kategorien
 - Menüs
@@ -154,7 +154,7 @@ Einbauen für:
 - Plugin-Einstellungen
 - Sprachkonfiguration
 - String-Übersetzungen
-- visuelle/globalen Übersetzungen
+- visuelle/globale Übersetzungen
 - Produktübersetzungen
 - Taxonomieübersetzungen
 - relevante Plugin-Metadaten
