@@ -2,7 +2,31 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.12**.
+Current development version: **0.12.13**.
+
+## [0.12.13]
+
+### Added
+- New `ITKT_Backup` module and **IT-Kayali Translate → Backup / Restore** admin page.
+- JSON export for ITKT settings and language configuration.
+- Backup of ITKT string/source/translation tables.
+- Backup of `_itkt_*` post and term metadata, including product and taxonomy translation data.
+- Snapshot of linked translated WordPress content so existing translated pages/posts can be restored in place.
+
+### Restore safety
+- Restore never creates products, pages, posts or terms, preventing accidental duplication.
+- Existing translated content is updated only when its original WordPress ID still exists; missing IDs are skipped and reported.
+- Restore replaces ITKT-managed string tables and `_itkt_*` metadata from the selected backup.
+- Runtime/rewrite/search derived state is invalidated after restore so it can rebuild from canonical restored data.
+- Export/restore requires `manage_options` and WordPress nonces.
+- Restore accepts only the ITKT backup schema, has a 25 MB file limit, and requires explicit confirmation.
+
+### Validation
+- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` Stable tag synchronized to 0.12.13.
+- All PHP files pass local syntax validation.
+- Bundled JavaScript syntax validation still passes.
+- Installation ZIP integrity validation passes.
+- Real staging Backup/Restore verification is still required before P6 is marked complete.
 
 ## [0.12.12]
 
