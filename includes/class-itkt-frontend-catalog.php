@@ -155,10 +155,10 @@ class ITKT_Frontend_Catalog {
         wp_send_json_success( array( 'stored' => $stored, 'area' => $area ) );
     }
 
+    /** All active languages are editable here. The default language is optional and can be used
+     *  to correct theme/plugin labels that remain in English on the default storefront. */
     private function target_languages() {
-        $langs = ITKT_Languages::instance()->get_active();
-        unset( $langs[ ITKT_Languages::instance()->get_default_code() ] );
-        return $langs;
+        return ITKT_Languages::instance()->get_active();
     }
 
     private function area_counts() {
@@ -186,6 +186,9 @@ class ITKT_Frontend_Catalog {
         $service = ITKT_Strings::instance();
         $targets = $this->target_languages();
         $target_codes = array_keys( $targets );
+        $status_codes = $target_codes;
+        $default_code = ITKT_Languages::instance()->get_default_code();
+        $status_codes = array_values( array_diff( $status_codes, array( $default_code ) ) );
         $labels = $this->area_labels();
         $areas  = $this->area_counts();
         $area   = sanitize_key( $_GET['area'] ?? '' );
@@ -202,7 +205,7 @@ class ITKT_Frontend_Catalog {
             'source_type' => 'frontend',
             'source_key'  => $area,
             'status'      => $status,
-            'targets'     => $target_codes,
+            'targets'     => $status_codes,
         ) );
         $rows = (array) $result['rows'];
         $ids = array_map( function( $row ) { return absint( $row->id ); }, $rows );
@@ -211,8 +214,8 @@ class ITKT_Frontend_Catalog {
         $this->header( 'Frontend Texte', 'Sichtbare Texte automatisch nach Bereich sammeln und direkt je Sprache übersetzen. Erfassung läuft beim Durchklicken der Standardsprache als Administrator.' );
         ?>
         <section class="itkt-card">
-            <div class="itkt-card-head"><div><span class="itkt-kicker">AUTOMATISCHE ERFASSUNG</span><h2>Frontend-Textkatalog</h2></div><span class="itkt-pill green">v0.12.12</span></div>
-            <p>Gehe im Frontend in der Standardsprache als Administrator durch Shop, Produktseiten, Warenkorb, Checkout, Konto und Popups. Neue sichtbare Texte, Hinweise, Fehlermeldungen sowie unterstützte Labels/Attribute werden automatisch erfasst. Preise, Mengen und technische Werte werden ignoriert.</p>
+            <div class="itkt-card-head"><div><span class="itkt-kicker">AUTOMATISCHE ERFASSUNG</span><h2>Frontend-Textkatalog</h2></div><span class="itkt-pill green">v<?php echo esc_html( ITKT_VERSION ); ?></span></div>
+            <p>Gehe im Frontend in der Standardsprache als Administrator durch Shop, Produktseiten, Warenkorb, Checkout, Konto und Popups. Neue sichtbare Texte, Hinweise, Fehlermeldungen sowie unterstützte Labels/Attribute werden automatisch erfasst. Preise, Mengen und technische Werte werden ignoriert. Die Standardsprache ist ebenfalls editierbar, damit z. B. englische Theme-/WoodMart-Texte auf einer deutschen Standardsprache direkt korrigiert werden können.</p>
             <div class="itkt-front-area-tabs">
                 <a class="<?php echo '' === $area ? 'is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( array( 'page'=>'itkt-frontend-strings','status'=>$status ), admin_url( 'admin.php' ) ) ); ?>">Alle <strong><?php echo intval( array_sum( $areas ) ); ?></strong></a>
                 <?php foreach ( $areas as $key=>$count ) : ?>
@@ -242,13 +245,13 @@ class ITKT_Frontend_Catalog {
                     <input type="hidden" name="action" value="itkt_save_frontend_strings">
                     <input type="hidden" name="return_url" value="<?php echo esc_attr( remove_query_arg( 'saved' ) ); ?>">
                     <div class="itkt-front-table-wrap"><table class="widefat striped itkt-front-table">
-                        <thead><tr><th>Bereich / Original</th><?php foreach ( $targets as $code=>$lang ) : ?><th><?php echo esc_html( strtoupper( $code ) . ' · ' . ( $lang['native_name'] ?? $code ) ); ?></th><?php endforeach; ?></tr></thead>
+                        <thead><tr><th>Bereich / Original</th><?php foreach ( $targets as $code=>$lang ) : ?><th><?php echo esc_html( strtoupper( $code ) . ' · ' . ( $lang['native_name'] ?? $code ) . ( $code === $default_code ? ' · Standard' : '' ) ); ?></th><?php endforeach; ?></tr></thead>
                         <tbody>
                         <?php foreach ( $rows as $row ) : $row_area = $this->valid_area( $row->source_key ?? 'other' ); ?>
                             <tr>
                                 <td class="itkt-front-source"><span class="itkt-pill gray"><?php echo esc_html( $labels[ $row_area ] ?? $row_area ); ?></span><strong><?php echo esc_html( $row->original ); ?></strong><?php if ( ! empty( $row->source_file ) ) : ?><small title="<?php echo esc_attr( $row->source_file ); ?>"><?php echo esc_html( wp_parse_url( $row->source_file, PHP_URL_PATH ) ?: $row->source_file ); ?></small><?php endif; ?></td>
                                 <?php foreach ( $targets as $code=>$lang ) : $value = $translations[ absint( $row->id ) ][ $code ] ?? ''; ?>
-                                    <td><textarea name="translations[<?php echo absint( $row->id ); ?>][<?php echo esc_attr( $code ); ?>]" rows="3" placeholder="Übersetzung …"><?php echo esc_textarea( $value ); ?></textarea></td>
+                                    <td><textarea name="translations[<?php echo absint( $row->id ); ?>][<?php echo esc_attr( $code ); ?>]" rows="3" placeholder="<?php echo esc_attr( $code === $default_code ? 'Optional: Standardsprache überschreiben …' : 'Übersetzung …' ); ?>"><?php echo esc_textarea( $value ); ?></textarea><?php if ( $code === $default_code ) : ?><small>Leer = Original/Theme-Standard verwenden.</small><?php endif; ?></td>
                                 <?php endforeach; ?>
                             </tr>
                         <?php endforeach; ?>

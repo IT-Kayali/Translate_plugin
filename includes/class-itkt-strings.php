@@ -134,8 +134,6 @@ class ITKT_Strings {
     private function runtime_translation( $text, $domain, $context ) {
         if ( ! ITKT_Plugin::module_enabled( 'strings' ) || '' === $text ) { return null; }
         $code = ITKT_Languages::instance()->current_code();
-        if ( $code === ITKT_Languages::instance()->get_default_code() ) { return null; }
-
         if ( ! isset( $this->runtime_cache[ $code ] ) ) {
             $this->runtime_cache[ $code ] = $this->load_language_cache( $code );
         }
@@ -255,7 +253,7 @@ class ITKT_Strings {
     public function global_runtime_map( $language ) {
         global $wpdb;
         $language = sanitize_key( (string) $language );
-        if ( ! $language || $language === ITKT_Languages::instance()->get_default_code() ) {
+        if ( ! $language ) {
             return array( 'exact'=>array(), 'patterns'=>array() );
         }
         $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
@@ -339,7 +337,6 @@ class ITKT_Strings {
     private function runtime_global_exact_translation( $translated_text, $source_text = '' ) {
         if ( ! ITKT_Plugin::module_enabled( 'strings' ) ) { return null; }
         $code = ITKT_Languages::instance()->current_code();
-        if ( $code === ITKT_Languages::instance()->get_default_code() ) { return null; }
         if ( ! isset( $this->global_runtime_cache[ $code ] ) ) {
             $this->global_runtime_cache[ $code ] = $this->global_runtime_map( $code );
         }
@@ -360,7 +357,7 @@ class ITKT_Strings {
         global $wpdb;
         $language = sanitize_key( (string) $language );
         $default = ITKT_Languages::instance()->get_default_code();
-        if ( ! $language || $language === $default || ! class_exists( 'ITKT_Native_Translations' ) ) {
+        if ( ! $language || ! class_exists( 'ITKT_Native_Translations' ) ) {
             return array( 'gettext'=>array(), 'gettextContext'=>array() );
         }
 
@@ -568,7 +565,7 @@ class ITKT_Strings {
     public function visual_runtime_map( $language ) {
         global $wpdb;
         $language = sanitize_key( (string) $language );
-        if ( ! $language || $language === ITKT_Languages::instance()->get_default_code() ) { return array(); }
+        if ( ! $language ) { return array(); }
         $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
         $cache_key = 'visual_map_' . md5( $language . '|' . $runtime_version );
         $cached = wp_cache_get( $cache_key, 'itkt-runtime' );

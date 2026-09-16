@@ -587,8 +587,7 @@
 
   function refreshRuntimeTranslations() {
     var lang = ITKTFrontend.currentLang || '';
-    var def = ITKTFrontend.defaultLang || '';
-    if (!lang || lang === def || !ITKTFrontend.runtimeAjaxUrl) {
+    if (!lang || !ITKTFrontend.runtimeAjaxUrl) {
       applyGlobalRuntimeTranslations(document);
       applyVisualTranslations(document);
       return Promise.resolve(false);

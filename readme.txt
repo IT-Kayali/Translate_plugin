@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.14
+Stable tag: 0.12.15
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -46,6 +46,12 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.15 =
+* Frontend Texte can now optionally override the configured default storefront language.
+* Live/global/native frontend text overrides can be saved for the default language without editing third-party source files.
+* Cached default-language pages fetch the newest runtime string map after load.
+* JavaScript/native runtime maps and plural runtime also support explicit default-language overrides.
 
 = 0.12.14 =
 * Production-finalization candidate for the current shop workflow.

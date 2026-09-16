@@ -255,16 +255,13 @@ class ITKT_Inline_Editor {
             foreach ( ITKT_Languages::instance()->get_active() as $lang => $row ) {
                 $override = ITKT_Strings::instance()->get_translation( $string_id, $lang );
                 $base = $native->translate( (string)$native_match['source'], (string)$native_match['domain'], $lang, (string)($native_match['context'] ?? '') );
-                if ( $lang === $default ) {
-                    if ( null === $base || '' === $base ) { $base = $original; }
-                    $values[ $lang ] = $native->editor_value( $base );
-                    $defaults[ $lang ] = '';
-                } else {
-                    // Only the user's override belongs in the editable field. Empty means:
-                    // use the native WooCommerce/WoodMart language-pack translation.
-                    $values[ $lang ] = '' !== $override ? $native->editor_value( $override ) : '';
-                    $defaults[ $lang ] = ( null === $base || '' === $base ) ? '' : $native->editor_value( $base );
-                }
+                if ( $lang === $default && ( null === $base || '' === $base ) ) { $base = $original; }
+                // Only the explicit ITKT override belongs in the editable field for every language,
+                // including the configured default language. Empty always means: use the native/theme
+                // default shown underneath the field. This makes stubborn English labels on a German
+                // storefront correctable without modifying WooCommerce/WoodMart source files.
+                $values[ $lang ] = '' !== $override ? $native->editor_value( $override ) : '';
+                $defaults[ $lang ] = ( null === $base || '' === $base ) ? '' : $native->editor_value( $base );
             }
             $legacy = ITKT_Strings::instance()->global_string( $original, $global_mode );
             $native_domain = sanitize_key( (string) ( $native_match['domain'] ?? '' ) );
@@ -292,13 +289,10 @@ class ITKT_Inline_Editor {
                     $tax_values = array();
                     $tax_defaults = array();
                     foreach ( ITKT_Languages::instance()->get_active() as $lang => $row ) {
-                        if ( $lang === $default ) {
-                            $tax_values[ $lang ] = $tax_source;
-                            $tax_defaults[ $lang ] = '';
-                        } else {
-                            $tax_values[ $lang ] = ITKT_Strings::instance()->get_translation( $tax_string_id, $lang );
-                            $tax_defaults[ $lang ] = ITKT_WooCommerce::instance()->default_tax_label_translation( $tax_source, $lang );
-                        }
+                        $tax_values[ $lang ] = ITKT_Strings::instance()->get_translation( $tax_string_id, $lang );
+                        $tax_defaults[ $lang ] = ( $lang === $default )
+                            ? $tax_source
+                            : ITKT_WooCommerce::instance()->default_tax_label_translation( $tax_source, $lang );
                     }
                     $fields[] = array(
                         'key' => 'tax_label_' . $tax_string_id,
@@ -332,7 +326,8 @@ class ITKT_Inline_Editor {
         $default = ITKT_Languages::instance()->get_default_code();
         $values = array();
         foreach ( ITKT_Languages::instance()->get_active() as $lang => $row ) {
-            $values[ $lang ] = ( $lang === $default ) ? $original : ITKT_Strings::instance()->get_translation( $string_id, $lang );
+            $saved_value = ITKT_Strings::instance()->get_translation( $string_id, $lang );
+            $values[ $lang ] = ( $lang === $default && '' === $saved_value ) ? $original : $saved_value;
         }
         $scope_labels = array(
             'header'  => 'Header / Navigation',
@@ -395,7 +390,8 @@ class ITKT_Inline_Editor {
 
             $values = array();
             foreach ( ITKT_Languages::instance()->get_active() as $lang => $row ) {
-                $values[ $lang ] = ( $lang === $default ) ? $original : ITKT_Strings::instance()->get_translation( $string_id, $lang );
+                $saved_value = ITKT_Strings::instance()->get_translation( $string_id, $lang );
+                $values[ $lang ] = ( $lang === $default && '' === $saved_value ) ? $original : $saved_value;
             }
 
             $fields[] = array(
@@ -544,11 +540,15 @@ class ITKT_Inline_Editor {
 
         foreach ( (array) $values as $lang => $field_values ) {
             $lang = sanitize_key( $lang );
-            if ( $lang === $default || empty( $active[ $lang ] ) || ! is_array( $field_values ) ) { continue; }
+            if ( empty( $active[ $lang ] ) || ! is_array( $field_values ) ) { continue; }
             foreach ( $field_values as $field_key => $translation ) {
                 $field_key = strtolower( preg_replace( '/[^A-Fa-f0-9]/', '', (string) $field_key ) );
                 if ( empty( $by_key[ $field_key ]['id'] ) ) { continue; }
                 $translation = (string) $translation;
+                if ( $lang === $default && trim( $translation ) === trim( (string) ( $by_key[ $field_key ]['source'] ?? '' ) ) ) {
+                    ITKT_Strings::instance()->delete_translation( absint( $by_key[ $field_key ]['id'] ), $lang );
+                    continue;
+                }
                 if ( '' === trim( $translation ) ) {
                     ITKT_Strings::instance()->delete_translation( absint( $by_key[ $field_key ]['id'] ), $lang );
                     continue;
@@ -576,7 +576,7 @@ class ITKT_Inline_Editor {
 
         foreach ( (array) $values as $lang => $value ) {
             $lang = sanitize_key( $lang );
-            if ( $lang === $default || empty( $active[ $lang ] ) ) { continue; }
+            if ( empty( $active[ $lang ] ) ) { continue; }
 
             // V0.11.4 may submit more than one field for a WooCommerce system string. The main
             // gettext override remains visual_text; tax_label_ID fields are independent configured
@@ -607,7 +607,9 @@ class ITKT_Inline_Editor {
                     continue;
                 }
                 $field_value = sanitize_text_field( (string) $field_value );
-                if ( '' === trim( $field_value ) ) {
+                if ( $lang === $default && trim( $field_value ) === trim( (string) ( $tax_row['original'] ?? '' ) ) ) {
+                    ITKT_Strings::instance()->delete_translation( $tax_string_id, $lang );
+                } elseif ( '' === trim( $field_value ) ) {
                     ITKT_Strings::instance()->delete_translation( $tax_string_id, $lang );
                 } else {
                     ITKT_Strings::instance()->save_translation( $tax_string_id, $lang, $field_value );
@@ -627,8 +629,12 @@ class ITKT_Inline_Editor {
         $active  = ITKT_Languages::instance()->get_active();
         foreach ( $values as $lang => $value ) {
             $lang = sanitize_key( $lang );
-            if ( $lang === $default || empty( $active[ $lang ] ) ) { continue; }
+            if ( empty( $active[ $lang ] ) ) { continue; }
             $value = (string) $value;
+            if ( $lang === $default && trim( $value ) === trim( (string) $original ) ) {
+                ITKT_Strings::instance()->delete_translation( $string_id, $lang );
+                continue;
+            }
             if ( '' === trim( $value ) ) {
                 ITKT_Strings::instance()->delete_translation( $string_id, $lang );
                 continue;

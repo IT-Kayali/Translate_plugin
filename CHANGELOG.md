@@ -2,7 +2,28 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.14**.
+Current development version: **0.12.15**.
+
+
+## [0.12.15]
+
+### Added / improved
+- **Frontend Texte** now shows the configured default language as an optional editable override.
+- Default-language frontend overrides can correct stubborn third-party source labels (for example English WoodMart/WooCommerce text on a German default storefront) without changing theme/plugin files.
+- Live/global/native frontend string overrides can now be stored for the default language.
+- Global and locator-based visual runtime maps honor explicit default-language overrides.
+- PHP gettext runtime and JavaScript i18n runtime can honor explicit default-language overrides.
+- Dynamic plural runtime is also available in the default storefront language.
+- The frontend fetches the latest runtime string map after load even in the default language, reducing stale full-page-cache output after a text correction.
+
+### Safety
+- Leaving a default-language override empty uses the original/native theme or plugin value.
+- Saving the unchanged original visual text removes the redundant default-language override instead of storing a duplicate.
+- Product/page source content remains unchanged; this feature is limited to string/visual runtime overrides.
+
+### Validation
+- PHP and JavaScript syntax validation required before release ZIP handoff.
+- Real-site verification is still required before v0.12.15 is marked production-confirmed.
 
 ## [0.12.14]
 

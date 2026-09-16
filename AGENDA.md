@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.14 – Produktionskandidat**  
+**Aktueller Entwicklungsstand: v0.12.15 – Produktionskandidat**  
 **Letzte Aktualisierung: 16.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -123,6 +123,10 @@ v0.12.14 ergänzt:
 - WP Fastest Cache automatische Leerung, wenn dessen API verfügbar ist
 - offener Hook `itkt_after_cache_purge` für Server-/Hosting-Cache-Integrationen
 - Cache-Invalidierung nach Restore
+
+### v0.12.15 – Standardsprache direkt korrigierbar
+
+Der Frontend-Textkatalog und der Live-/Runtime-String-Layer erlauben jetzt auch einen **optionalen Override der Standardsprache**. Damit können sichtbare Fremdtexte wie englische WoodMart-/WooCommerce-Labels auf einer deutschen Standardsprache direkt in ITKT korrigiert werden. Leer lassen bedeutet weiterhin: Original/native Standard verwenden. Der Runtime-Refresh wird auch in der Standardsprache nachgeladen, damit Full-Page-Cache keine alte Korrektur festhält.
 
 ## Was jetzt wirklich noch offen ist
 

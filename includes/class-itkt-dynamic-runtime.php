@@ -52,7 +52,7 @@ class ITKT_Dynamic_Runtime {
         $language = sanitize_key( (string) $language );
         $default  = ITKT_Languages::instance()->get_default_code();
         $empty    = array( 'ngettext'=>array(), 'ngettextContext'=>array() );
-        if ( ! $language || $language === $default || ! $this->enabled() ) { return $empty; }
+        if ( ! $language || ! $this->enabled() ) { return $empty; }
 
         $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
         $cache_key = 'plural_' . md5( $language . '|' . $runtime_version );
@@ -129,8 +129,6 @@ class ITKT_Dynamic_Runtime {
     public function assets() {
         if ( is_admin() || ! $this->enabled() ) { return; }
         $code = ITKT_Languages::instance()->current_code();
-        if ( $code === ITKT_Languages::instance()->get_default_code() ) { return; }
-
         $plural = $this->plural_map( $code );
         wp_enqueue_script(
             'itkt-dynamic-runtime',

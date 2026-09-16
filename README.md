@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.14**
+**Current development version: v0.12.15**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,7 +12,14 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.14 is the current production-finalization candidate.
+- v0.12.15 is the current production-finalization candidate.
+
+
+## v0.12.15 – default-language frontend overrides
+
+The **Frontend Texte** table now includes the configured default language as an optional override column. This is intended for third-party labels that remain in their source language even on the default storefront, for example English WoodMart/WooCommerce UI labels on a German shop. Leaving the default-language field empty keeps the original/native value.
+
+The same explicit override model is available to live/global/native frontend strings. Global, visual, PHP gettext and JavaScript runtime maps can now honor a saved override for the default language. The frontend also refreshes the runtime map after page load for the default language, so a full-page cache cannot permanently pin an older default-language label.
 
 ## v0.12.14 – production finalization
 
