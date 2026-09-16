@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.12
+Stable tag: 0.12.13
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -46,6 +46,12 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.13 =
+* Added Backup / Restore for IT-Kayali Translate configuration and translation data.
+* Backups include language/settings options, string tables, product/taxonomy translation metadata and snapshots of linked translated WordPress content.
+* Restore replaces only ITKT-managed translation data and never creates duplicate products, pages, posts or terms.
+* Missing content IDs are skipped instead of being recreated; derived routing/search/runtime caches are rebuilt after restore.
 
 = 0.12.12 =
 * Extended frontend text discovery for notices, aria-label/title attributes, select options and dynamic controls.
