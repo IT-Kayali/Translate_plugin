@@ -2,101 +2,73 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.13**.
+Current development version: **0.12.14**.
+
+## [0.12.14]
+
+### WooCommerce routing
+- Language switching now resolves physical WooCommerce Shop, Cart and Checkout pages before normal translated-page routing.
+- Checkout `order-pay` and `order-received` endpoint state is preserved across language switches.
+- Safe current query parameters are retained without leaking old ITKT language/rescue/preview parameters.
+- Existing v0.12.10 My Account endpoint rescue remains unchanged and continues to take precedence.
+
+### Live translation
+- Expanded visual/live scopes for Mini-Cart, Wishlist, Popups/Offcanvas, Notices/Errors, Product, Category, Shop and Search.
+- Header, Footer, Menu, Mini-Cart, Wishlist, Popup, Notices, shared widgets, Shop/Search and other reusable UI labels can use global translation mode where appropriate.
+- Product/category-specific content remains separated from generic global runtime replacements.
+
+### JavaScript i18n
+- Dynamic plural runtime now uses browser `Intl.PluralRules` when available.
+- Native plural maps expose locale categories instead of only hard-coded `number === 1` logic.
+- Arabic native forms support zero/one/two/few/many/other categories where available.
+- Fallback remains compatible with browsers that lack `Intl.PluralRules`.
+
+### Performance / cache
+- Added `ITKT_Cache` coordinator.
+- Translation-related cache purges are coalesced to one shutdown operation per request.
+- Runtime data generation is invalidated when string translations are saved/deleted.
+- Global DOM runtime maps, JavaScript gettext maps, visual maps and plural maps use versioned WordPress object-cache entries.
+- WordPress object cache is flushed after ITKT translation changes.
+- WP Fastest Cache is cleared automatically when its programmatic API/class is available.
+- Added `itkt_after_cache_purge` integration action for host/server caches.
+- Backup restore now triggers the common ITKT cache invalidation path.
+
+### Validation
+- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` Stable tag synchronized to 0.12.14.
+- PHP syntax validation passes for all plugin PHP files.
+- JavaScript syntax validation passes for all bundled JS files.
+- Installation ZIP integrity validation passes.
+- Real-site acceptance is still required before calling v0.12.14 fully production-confirmed.
 
 ## [0.12.13]
 
 ### Added
-- New `ITKT_Backup` module and **IT-Kayali Translate → Backup / Restore** admin page.
-- JSON export for ITKT settings and language configuration.
-- Backup of ITKT string/source/translation tables.
-- Backup of `_itkt_*` post and term metadata, including product and taxonomy translation data.
-- Snapshot of linked translated WordPress content so existing translated pages/posts can be restored in place.
+- `ITKT_Backup` module and **Backup / Restore** admin page.
+- JSON export for settings, languages, ITKT string tables, `_itkt_*` post/term metadata and translated-content snapshots.
 
 ### Restore safety
-- Restore never creates products, pages, posts or terms, preventing accidental duplication.
-- Existing translated content is updated only when its original WordPress ID still exists; missing IDs are skipped and reported.
-- Restore replaces ITKT-managed string tables and `_itkt_*` metadata from the selected backup.
-- Runtime/rewrite/search derived state is invalidated after restore so it can rebuild from canonical restored data.
-- Export/restore requires `manage_options` and WordPress nonces.
-- Restore accepts only the ITKT backup schema, has a 25 MB file limit, and requires explicit confirmation.
-
-### Validation
-- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` Stable tag synchronized to 0.12.13.
-- All PHP files pass local syntax validation.
-- Bundled JavaScript syntax validation still passes.
-- Installation ZIP integrity validation passes.
-- Real staging Backup/Restore verification is still required before P6 is marked complete.
+- Restore never creates products, pages, posts or taxonomy terms.
+- Existing translated content is updated only when its WordPress ID still exists.
+- Missing IDs are skipped and reported.
+- Runtime/rewrite/search derived state is invalidated after restore.
 
 ## [0.12.12]
-
-### Added
-- New modular `ITKT_Dynamic_Runtime` frontend runtime extension.
-- JavaScript plural runtime handling for `@wordpress/i18n` `ngettext` and `ngettext_with_context`.
-- Additional WooCommerce Blocks/cart/checkout refresh events.
-- Additional classic WooCommerce refresh triggers for checkout errors, coupons and shipping-method updates.
-- Frontend text discovery for `aria-label`, `title`, placeholders, button values and select-option labels.
-- Separate **Notices / Errors** frontend-text area.
-
-### Improved
-- Mini-Cart detection now wins before generic popup/offcanvas classification.
-- Frontend-catalog MutationObserver also reacts to supported attribute changes.
-- Dynamic runtime re-applies published translation maps after AJAX/fragment rerenders.
-
-### Validation
-- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` stable tag synchronized to 0.12.12.
-- All PHP files pass syntax validation locally.
-- All bundled JavaScript files pass syntax validation locally.
-- Installation ZIP integrity test passes.
-- Real staging verification of the v0.12.11/v0.12.12 frontend-text and dynamic-runtime phase is still required before marking it complete.
+- Added `ITKT_Dynamic_Runtime` for WooCommerce/WoodMart/AJAX/Blocks rerenders.
+- Added JavaScript `ngettext` / contextual plural bridge.
+- Expanded Frontend Texte discovery for notices, attributes, controls and dynamic content.
+- Improved Mini-Cart versus generic popup/offcanvas classification.
 
 ## [0.12.11]
-
-### Added
-- New `ITKT_Frontend_Catalog` module.
-- New backend page **Frontend Texte** grouped by Shop, Search, Product, Category, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas, Header, Footer, Menu and Other.
-- Automatic admin-only discovery of supported visible frontend labels while browsing the configured default language.
-- Direct translation fields in the backend table for every active non-default language.
-- AJAX/DOM MutationObserver discovery for dynamically inserted content.
-- WooCommerce fragment/cart/checkout event rescanning.
-- Popup/offcanvas/drawer detection.
-- Captured frontend labels are stored through the existing global-string system so the current runtime translation layer can reuse them without modifying third-party source files.
-
-### Safety / scope
-- Discovery writes are restricted to logged-in administrators with `manage_options`.
-- Capture runs only in the default storefront language to prevent translated text from becoming a source string.
-- Common price, quantity, order-detail/customer-detail and technical product-value containers are excluded.
-
-### Validation
-- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` stable tag synchronized to 0.12.11.
-- All PHP files pass syntax validation locally.
-- Existing frontend runtime JavaScript plus new `frontend-catalog.js` pass syntax validation.
-- Installation ZIP integrity test passes.
-- Real staging verification of the new frontend catalog is still required before marking the feature complete.
+- Added `ITKT_Frontend_Catalog` and **Frontend Texte** backend table.
+- Added admin-only default-language discovery and direct per-language editing.
+- Added AJAX/MutationObserver discovery for fragments, popups and offcanvas content.
 
 ## [0.12.10]
+- Fixed WooCommerce My Account non-default-language endpoint routing with an independent rescue marker.
+- Real staging test confirmed the Dashboard-fallback issue resolved in the tested flow.
 
-### Fixed
-- Added independent `itkt_wc_endpoint` rescue state for non-default-language WooCommerce My Account requests.
-- My Account links keep pretty endpoint paths while the server receives canonical endpoint state.
-- Account navigation is protected against WoodMart/other scripts collapsing endpoint clicks back to Dashboard.
-
-### Validation
-- Real staging test completed successfully: the non-default-language My Account dashboard-fallback issue is resolved in the tested flow.
-
-## [0.12.9]
-- Preserved the active WooCommerce account endpoint during language switching.
-- Added direct endpoint content dispatch fallback.
-- Hardened WoodMart/account navigation.
-- Real staging test still showed Dashboard fallback, so the issue remained open until 0.12.10.
-
-## [0.12.8]
-- Hardened physical WooCommerce system-page resolution for My Account endpoints.
-- Rebuilt language-prefixed account endpoint links.
-- Added runtime query-state synchronization and frontend fallback handling.
-
-## [0.12.1 - 0.12.7]
-- Expanded WooCommerce taxonomy translation, My Account routing, Checkout/WoodMart compatibility and dynamic storefront handling.
+## [0.12.1 - 0.12.9]
+- Expanded WooCommerce taxonomy translation, account routing, Checkout/WoodMart compatibility and dynamic storefront handling.
 
 ## [0.12.0]
 - Hardened Mini-Cart, Cart/Checkout Blocks and My Account language handling.
@@ -105,7 +77,7 @@ Current development version: **0.12.13**.
 - Added canonical WooCommerce/WordPress gettext handling, native language-pack fallback, protected variables and storefront-only locale separation.
 
 ## [0.10.x]
-- Added frontend live translation, global system strings, cached/AJAX runtime refresh and content-only RTL support.
+- Added frontend live translation, reusable global strings, cached/AJAX runtime refresh and content-only RTL support.
 
 ## Earlier milestones
 - Language management and linked WordPress translations.
