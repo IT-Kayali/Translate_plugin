@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.13
+Stable tag: 0.12.14
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -47,11 +47,23 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 
 == Changelog ==
 
+= 0.12.14 =
+* Production-finalization candidate for the current shop workflow.
+* Language switching now keeps physical WooCommerce Cart, Checkout and Shop pages stable across languages; checkout order-pay/order-received endpoint state is preserved.
+* Expanded live-translation scopes for Header, Footer, Menu, Mini-Cart, Wishlist, Popups/Offcanvas, Notices, Shop and Search.
+* Improved JavaScript plural handling with locale-aware Intl.PluralRules categories, including Arabic cardinal forms when available in native catalogs.
+* Added runtime-map object caching keyed by an ITKT translation generation to reduce repeated database work on frontend requests.
+* Translation changes now coalesce cache invalidation and clear WordPress object cache plus WP Fastest Cache when available.
+* Backup restore now invalidates runtime/cache generations after a successful restore.
+* Code-side work for WooCommerce routing, frontend strings, dynamic/AJAX translation, live translation, JS i18n, backup/restore and cache handling is implemented; final real-site acceptance remains required.
+
 = 0.12.13 =
 * Added Backup / Restore for IT-Kayali Translate configuration and translation data.
 * Backups include language/settings options, string tables, product/taxonomy translation metadata and snapshots of linked translated WordPress content.
 * Restore replaces only ITKT-managed translation data and never creates duplicate products, pages, posts or terms.
 * Missing content IDs are skipped instead of being recreated; derived routing/search/runtime caches are rebuilt after restore.
+
+
 
 = 0.12.12 =
 * Extended frontend text discovery for notices, aria-label/title attributes, select options and dynamic controls.
