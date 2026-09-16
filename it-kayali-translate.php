@@ -3,7 +3,7 @@
  * Plugin Name: IT-Kayali Translate
  * Plugin URI: https://it-kayali.de
  * Description: Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and theme adapters.
- * Version: 0.12.11
+ * Version: 0.12.12
  * Author: IT-Kayali
  * Author URI: https://it-kayali.de
  * Text Domain: it-kayali-translate
@@ -12,7 +12,7 @@
  * Requires PHP: 8.0
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-define( 'ITKT_VERSION', '0.12.11' );
+define( 'ITKT_VERSION', '0.12.12' );
 define( 'ITKT_FILE', __FILE__ );
 define( 'ITKT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ITKT_URL', plugin_dir_url( __FILE__ ) );
@@ -35,8 +35,10 @@ require_once ITKT_DIR . 'includes/class-itkt-strings.php';
 require_once ITKT_DIR . 'includes/class-itkt-diagnostics.php';
 require_once ITKT_DIR . 'includes/class-itkt-inline-editor.php';
 require_once ITKT_DIR . 'includes/class-itkt-frontend-catalog.php';
+require_once ITKT_DIR . 'includes/class-itkt-dynamic-runtime.php';
 require_once ITKT_DIR . 'includes/class-itkt-admin.php';
 
 register_activation_hook( __FILE__, array( 'ITKT_Plugin', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'ITKT_Plugin', 'deactivate' ) );
 ITKT_Plugin::instance()->boot();
+ITKT_Dynamic_Runtime::instance();
