@@ -4,8 +4,14 @@
 
   var cfg = ITKTDynamicRuntime || {};
 
+  var pluralRules = null;
+  try { if (window.Intl && Intl.PluralRules) pluralRules = new Intl.PluralRules(cfg.locale || cfg.language || undefined); } catch(e) {}
+
   function pluralValue(row, number, fallback){
     if (!row || typeof row !== 'object') return fallback;
+    var category = '';
+    if (pluralRules) { try { category = pluralRules.select(Number(number)); } catch(e) {} }
+    if (category && row.forms && typeof row.forms[category] === 'string' && row.forms[category] !== '') return row.forms[category];
     var value = Number(number) === 1 ? row.single : row.plural;
     return typeof value === 'string' && value !== '' ? value : fallback;
   }

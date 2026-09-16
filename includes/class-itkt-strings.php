@@ -150,6 +150,10 @@ class ITKT_Strings {
 
     private function load_language_cache( $code ) {
         global $wpdb;
+        $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        $cache_key = 'gettext_' . md5( sanitize_key( (string) $code ) . '|' . $runtime_version );
+        $cached = wp_cache_get( $cache_key, 'itkt-runtime' );
+        if ( is_array( $cached ) ) { return $cached; }
         $strings = $this->table( 'strings' );
         $translations = $this->table( 'string_translations' );
         $rows = $wpdb->get_results( $wpdb->prepare(
@@ -158,6 +162,7 @@ class ITKT_Strings {
         ), ARRAY_A );
         $cache = array();
         foreach ( (array) $rows as $row ) { $cache[ $row['string_hash'] ] = (string) $row['translation']; }
+        wp_cache_set( $cache_key, $cache, 'itkt-runtime', HOUR_IN_SECONDS );
         return $cache;
     }
 
@@ -253,6 +258,10 @@ class ITKT_Strings {
         if ( ! $language || $language === ITKT_Languages::instance()->get_default_code() ) {
             return array( 'exact'=>array(), 'patterns'=>array() );
         }
+        $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        $cache_key = 'global_map_' . md5( $language . '|' . $runtime_version );
+        $cached = wp_cache_get( $cache_key, 'itkt-runtime' );
+        if ( is_array( $cached ) ) { return $cached; }
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT s.context AS mode, s.original, t.translation FROM " . $this->table( 'string_translations' ) . " t INNER JOIN " . $this->table( 'strings' ) . " s ON s.id=t.string_id WHERE s.domain=%s AND t.language=%s AND t.translation<>''",
             'itkt-global', $language
@@ -322,6 +331,7 @@ class ITKT_Strings {
             }
             if ( $native_patterns ) { $out['patterns'] = array_merge( $native_patterns, $out['patterns'] ); }
         }
+        wp_cache_set( $cache_key, $out, 'itkt-runtime', HOUR_IN_SECONDS );
         return $out;
     }
 
@@ -353,6 +363,11 @@ class ITKT_Strings {
         if ( ! $language || $language === $default || ! class_exists( 'ITKT_Native_Translations' ) ) {
             return array( 'gettext'=>array(), 'gettextContext'=>array() );
         }
+
+        $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        $cache_key = 'js_i18n_' . md5( $language . '|' . $runtime_version );
+        $cached = wp_cache_get( $cache_key, 'itkt-runtime' );
+        if ( is_array( $cached ) ) { return $cached; }
 
         $native = ITKT_Native_Translations::instance();
         $rows = $wpdb->get_results( $wpdb->prepare(
@@ -414,6 +429,7 @@ class ITKT_Strings {
                 $out['gettextContext'][$domain][$context][$source] = $target;
             }
         }
+        wp_cache_set( $cache_key, $out, 'itkt-runtime', HOUR_IN_SECONDS );
         return $out;
     }
 
@@ -461,6 +477,9 @@ class ITKT_Strings {
             $wpdb->insert( $table, array_merge( array( 'string_id'=>$string_id, 'language'=>$language ), $data ), array( '%d','%s','%s','%s' ) );
         }
         unset( $this->runtime_cache[ $language ], $this->global_runtime_cache[ $language ] );
+        $version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        update_option( 'itkt_runtime_data_version', $version + 1, false );
+        do_action( 'itkt_string_translation_saved', $string_id, $language, $translation );
         return true;
     }
 
@@ -475,6 +494,9 @@ class ITKT_Strings {
             array( '%d','%s' )
         );
         unset( $this->runtime_cache[ $language ], $this->global_runtime_cache[ $language ] );
+        $version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        update_option( 'itkt_runtime_data_version', $version + 1, false );
+        do_action( 'itkt_string_translation_deleted', $string_id, $language );
         return true;
     }
 
@@ -547,6 +569,10 @@ class ITKT_Strings {
         global $wpdb;
         $language = sanitize_key( (string) $language );
         if ( ! $language || $language === ITKT_Languages::instance()->get_default_code() ) { return array(); }
+        $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        $cache_key = 'visual_map_' . md5( $language . '|' . $runtime_version );
+        $cached = wp_cache_get( $cache_key, 'itkt-runtime' );
+        if ( is_array( $cached ) ) { return $cached; }
         $rows = $wpdb->get_results( $wpdb->prepare(
             'SELECT s.context AS fingerprint, t.translation FROM ' . $this->table( 'string_translations' ) . ' t INNER JOIN ' . $this->table( 'strings' ) . ' s ON s.id=t.string_id WHERE s.domain=%s AND t.language=%s AND t.translation<>\'\'',
             'itkt-visual', $language
@@ -556,6 +582,7 @@ class ITKT_Strings {
             $fingerprint = preg_replace( '/[^A-Fa-f0-9]/', '', (string) ( $row['fingerprint'] ?? '' ) );
             if ( $fingerprint ) { $out[ strtolower( $fingerprint ) ] = (string) $row['translation']; }
         }
+        wp_cache_set( $cache_key, $out, 'itkt-runtime', HOUR_IN_SECONDS );
         return $out;
     }
 

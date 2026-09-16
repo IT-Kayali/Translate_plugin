@@ -650,14 +650,22 @@
 
   function visualScope(el) {
     if (!el || !el.closest) return '';
-    if (el.closest('.cart-widget-side,.woocommerce-mini-cart,.woocommerce-mini-cart__buttons,.woocommerce-mini-cart__total,.wd-side-hidden')) return 'cart';
+    if (el.closest('.woocommerce-error,.woocommerce-message,.woocommerce-info,.wc-block-components-notice-banner,[role="alert"],.wd-notice,.wd-alert')) return 'notices';
+    if (el.closest('.cart-widget-side,.woocommerce-mini-cart,.woocommerce-mini-cart__buttons,.woocommerce-mini-cart__total,.wd-cart-content,.wd-header-cart')) return 'mini-cart';
     if (el.closest('.woocommerce-checkout,.wc-block-checkout,.wp-block-woocommerce-checkout,.wd-checkout-steps,.woodmart-checkout-steps,.checkout-steps')) return 'checkout';
-    if (el.closest('.woocommerce-MyAccount-navigation,.woocommerce-MyAccount-content')) return 'account';
+    if (el.closest('.woocommerce-cart-form,.cart-collaterals,.wc-block-cart,.wp-block-woocommerce-cart')) return 'cart';
+    if (el.closest('.woocommerce-MyAccount-navigation,.woocommerce-MyAccount-content,.wd-my-account')) return 'account';
+    if (el.closest('.wishlist_table,.wd-wishlist-content,[class*="wishlist"]')) return 'wishlist';
     if (el.closest('[class*="filter-panel"],[class*="filter-drawer"],[class*="product-filter"],[id*="product-filter"],[class*="filters"],[class*="filter"],[id*="filter"]')) return 'filter';
+    if (el.closest('[role="dialog"],[aria-modal="true"],.popup,.wd-popup,.mfp-wrap,.offcanvas,.off-canvas,[class*="offcanvas"],[class*="drawer"],.wd-side-hidden')) return 'popup';
     if (el.closest('nav,.wd-nav,.mobile-nav,.menu')) return 'menu';
     if (el.closest('footer,.site-footer,.footer-container,.wd-footer,.wd-prefooter,.copyrights-wrapper')) return 'footer';
     if (el.closest('header,.site-header,.whb-header,.whb-main-header,.wd-header')) return 'header';
-    if (el.closest('.woocommerce,.wc-block-cart,.wp-block-woocommerce-cart,.wc-block-components-sidebar-layout')) return 'woocommerce';
+    if (el.closest('.single-product,.summary.entry-summary,.woocommerce-tabs')) return 'product';
+    if (document.body && document.body.classList.contains('search-results')) return 'search';
+    if (document.body && document.body.classList.contains('tax-product_cat')) return 'category';
+    if (document.body && (document.body.classList.contains('post-type-archive-product') || document.body.classList.contains('woocommerce-shop'))) return 'shop';
+    if (el.closest('.woocommerce,.wc-block-components-sidebar-layout')) return 'woocommerce';
     if (el.closest('.widget,.widget-area,.sidebar-container')) return 'widget';
     return 'global';
   }

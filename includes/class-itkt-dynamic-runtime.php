@@ -29,6 +29,20 @@ class ITKT_Dynamic_Runtime {
         return $wpdb->prefix . 'itkt_' . $name;
     }
 
+    /** Representative counts for CLDR cardinal categories used by supported languages. */
+    private function plural_samples( $language ) {
+        $language = sanitize_key( (string) $language );
+        if ( 'ar' === $language ) {
+            return array( 'zero'=>0, 'one'=>1, 'two'=>2, 'few'=>3, 'many'=>11, 'other'=>100 );
+        }
+        if ( 'tr' === $language ) {
+            return array( 'other'=>2 );
+        }
+        // German, English, French, Spanish, Swedish and Dutch are safely represented by
+        // one/other for the native gettext catalogs bundled by WordPress/WooCommerce.
+        return array( 'one'=>1, 'other'=>2 );
+    }
+
     /**
      * Build a compact plural map for the active frontend language.
      * Existing manual ITKT overrides win; otherwise the installed native catalog is used.
@@ -39,6 +53,11 @@ class ITKT_Dynamic_Runtime {
         $default  = ITKT_Languages::instance()->get_default_code();
         $empty    = array( 'ngettext'=>array(), 'ngettextContext'=>array() );
         if ( ! $language || $language === $default || ! $this->enabled() ) { return $empty; }
+
+        $runtime_version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        $cache_key = 'plural_' . md5( $language . '|' . $runtime_version );
+        $cached = wp_cache_get( $cache_key, 'itkt-runtime' );
+        if ( is_array( $cached ) ) { return $cached; }
 
         $native = ITKT_Native_Translations::instance();
         $rows = $wpdb->get_results( $wpdb->prepare(
@@ -79,18 +98,21 @@ class ITKT_Dynamic_Runtime {
             if ( '' === $single || '' === $plural ) { continue; }
 
             $override = trim( (string) ( $row['translation'] ?? '' ) );
-            if ( '' !== $override ) {
-                $one = $native->materialize_tokens( $override, $single );
-                $many = $one;
-            } else {
-                $one = (string) ( $native->translate_plural( $single, $plural, 1, $domain, $language, $context ) ?? '' );
-                $many = (string) ( $native->translate_plural( $single, $plural, 2, $domain, $language, $context ) ?? '' );
+            $forms = array();
+            foreach ( $this->plural_samples( $language ) as $category => $number ) {
+                if ( '' !== $override ) {
+                    $translated = $native->materialize_tokens( $override, $single );
+                } else {
+                    $translated = (string) ( $native->translate_plural( $single, $plural, $number, $domain, $language, $context ) ?? '' );
+                }
+                if ( '' === $translated ) { $translated = ( 1 === (int) $number ) ? $single : $plural; }
+                $forms[ $category ] = $translated;
             }
-            if ( '' === $one ) { $one = $single; }
-            if ( '' === $many ) { $many = $plural; }
+            $one  = (string) ( $forms['one'] ?? reset( $forms ) ?: $single );
+            $many = (string) ( $forms['other'] ?? end( $forms ) ?: $plural );
 
             $key = $single . "\0" . $plural;
-            $value = array( 'single'=>$one, 'plural'=>$many );
+            $value = array( 'single'=>$one, 'plural'=>$many, 'forms'=>$forms );
             if ( '' === $context ) {
                 if ( ! isset( $out['ngettext'][ $domain ] ) ) { $out['ngettext'][ $domain ] = array(); }
                 $out['ngettext'][ $domain ][ $key ] = $value;
@@ -100,6 +122,7 @@ class ITKT_Dynamic_Runtime {
                 $out['ngettextContext'][ $domain ][ $context ][ $key ] = $value;
             }
         }
+        wp_cache_set( $cache_key, $out, 'itkt-runtime', HOUR_IN_SECONDS );
         return $out;
     }
 
@@ -116,8 +139,11 @@ class ITKT_Dynamic_Runtime {
             ITKT_VERSION,
             true
         );
+        $active = ITKT_Languages::instance()->get_active();
+        $locale = (string) ( $active[ $code ]['locale'] ?? $code );
         wp_localize_script( 'itkt-dynamic-runtime', 'ITKTDynamicRuntime', array(
             'language'        => $code,
+            'locale'          => str_replace( '_', '-', $locale ),
             'ngettext'        => $plural['ngettext'],
             'ngettextContext' => $plural['ngettextContext'],
         ) );

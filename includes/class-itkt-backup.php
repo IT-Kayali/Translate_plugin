@@ -31,7 +31,7 @@ class ITKT_Backup {
     }
 
     private function excluded_options() {
-        return array( 'itkt_rewrite_version','itkt_product_search_index_version','itkt_taxonomy_runtime_version','itkt_strings_db_version','itkt_diagnostic_log','itkt_diagnostic_stats' );
+        return array( 'itkt_rewrite_version','itkt_product_search_index_version','itkt_taxonomy_runtime_version','itkt_strings_db_version','itkt_diagnostic_log','itkt_diagnostic_stats','itkt_runtime_data_version' );
     }
 
     private function tables() {
@@ -213,8 +213,10 @@ class ITKT_Backup {
             delete_option( 'itkt_rewrite_version' );
             delete_option( 'itkt_product_search_index_version' );
             delete_option( 'itkt_taxonomy_runtime_version' );
+            delete_option( 'itkt_runtime_data_version' );
             $wpdb->query( 'COMMIT' );
             wp_cache_flush();
+            do_action( 'itkt_backup_restored', $result );
             return $result;
         } catch ( Throwable $e ) {
             $wpdb->query( 'ROLLBACK' );

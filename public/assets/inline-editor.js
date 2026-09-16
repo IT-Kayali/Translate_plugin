@@ -109,9 +109,17 @@
       header:'Header-Text',
       footer:'Footer-/Widget-Text',
       menu:'Menütext',
-      cart:'Warenkorb-/Mini-Cart-Text',
+      'mini-cart':'Mini-Cart-Text',
+      cart:'Warenkorb-Text',
       checkout:'Checkout-Text',
       account:'Mein-Konto-Text',
+      wishlist:'Wishlist-Text',
+      popup:'Popup-/Offcanvas-Text',
+      notices:'Hinweis-/Fehlermeldung',
+      product:'Produktseiten-Text',
+      category:'Kategorie-Text',
+      shop:'Shop-Text',
+      search:'Such-Text',
       woocommerce:'WooCommerce-Text',
       filter:'Filter-/Plugin-Text',
       widget:'Widget-Text',
@@ -121,7 +129,7 @@
 
 
   function visualTranslationMode(scope, original) {
-    var reusable = ['menu','cart','checkout','account','woocommerce','filter'];
+    var reusable = ['header','footer','menu','mini-cart','cart','checkout','account','wishlist','popup','notices','woocommerce','filter','widget','search','shop'];
     if (reusable.indexOf(scope || '') === -1) return { mode:'local', source:original || '' };
     var source = original || '';
     if (window.ITKTVisualTools && typeof window.ITKTVisualTools.template === 'function') {

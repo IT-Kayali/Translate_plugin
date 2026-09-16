@@ -533,6 +533,93 @@ class ITKT_Frontend {
         return user_trailingslashit( $url );
     }
 
+    /** Preserve Cart/Checkout/Shop state when switching language. */
+    private function language_url_for_current_woocommerce_system_request( $code ) {
+        if ( ! ITKT_Plugin::module_enabled( 'woocommerce' ) || ! function_exists( 'wc_get_page_id' ) ) { return ''; }
+        $code = sanitize_key( (string) $code );
+
+        $page_key = '';
+        if ( function_exists( 'is_cart' ) && is_cart() ) { $page_key = 'cart'; }
+        elseif ( function_exists( 'is_checkout' ) && is_checkout() ) { $page_key = 'checkout'; }
+        elseif ( function_exists( 'is_shop' ) && is_shop() ) { $page_key = 'shop'; }
+
+        // Some themes/builders make WooCommerce conditionals unreliable on virtual /LANG/ URLs.
+        // Fall back to the real browser path and compare it to the physical WooCommerce pages.
+        if ( '' === $page_key ) {
+            $path = $this->requested_path_after_language_prefix();
+            foreach ( array( 'cart','checkout','shop' ) as $candidate ) {
+                $id = absint( wc_get_page_id( $candidate ) );
+                if ( ! $id ) { continue; }
+                $base = trim( $this->post_source_path( $id ), '/' );
+                if ( $base && ( $path === $base || 0 === strpos( $path . '/', $base . '/' ) ) ) {
+                    $page_key = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if ( '' === $page_key ) { return ''; }
+        $page_id = absint( wc_get_page_id( $page_key ) );
+        if ( ! $page_id ) { return ''; }
+        $url = $this->language_url_for_system_page( $page_id, $code, false );
+        if ( ! $url ) { return ''; }
+
+        if ( 'checkout' === $page_key ) {
+            $state = $this->current_woocommerce_checkout_endpoint_state();
+            if ( $state && ! empty( $state['slug'] ) ) {
+                $url = trailingslashit( $url ) . trim( (string) $state['slug'], '/' );
+                if ( '' !== (string) ( $state['value'] ?? '' ) ) { $url .= '/' . trim( (string) $state['value'], '/' ); }
+                $url = user_trailingslashit( $url );
+            }
+        }
+        return $this->add_current_query_args( $url );
+    }
+
+    /** Resolve checkout endpoint state from query vars first, then from the real browser path. */
+    private function current_woocommerce_checkout_endpoint_state() {
+        $map = array(
+            'order-pay'      => get_option( 'woocommerce_checkout_pay_endpoint', 'order-pay' ),
+            'order-received' => get_option( 'woocommerce_checkout_order_received_endpoint', 'order-received' ),
+        );
+        if ( function_exists( 'WC' ) && WC() && isset( WC()->query ) && is_object( WC()->query ) && method_exists( WC()->query, 'get_query_vars' ) ) {
+            foreach ( (array) WC()->query->get_query_vars() as $key => $slug ) {
+                if ( in_array( $key, array( 'order-pay','order-received' ), true ) && '' !== trim( (string) $slug ) ) { $map[ $key ] = $slug; }
+            }
+        }
+        foreach ( $map as $key => $slug ) {
+            $value = function_exists( 'get_query_var' ) ? get_query_var( $key, null ) : null;
+            if ( null !== $value && false !== $value && '' !== (string) $value ) {
+                return array( 'key'=>$key, 'slug'=>trim( (string) $slug, '/' ), 'value'=>sanitize_text_field( (string) $value ) );
+            }
+        }
+
+        $checkout_id = absint( wc_get_page_id( 'checkout' ) );
+        $base = $checkout_id ? trim( $this->post_source_path( $checkout_id ), '/' ) : '';
+        $path = $this->requested_path_after_language_prefix();
+        if ( ! $base || ! $path || ( $path !== $base && 0 !== strpos( $path . '/', $base . '/' ) ) ) { return array(); }
+        $tail = trim( substr( $path, strlen( $base ) ), '/' );
+        if ( '' === $tail ) { return array(); }
+        $parts = explode( '/', $tail );
+        $first = rawurldecode( (string) ( $parts[0] ?? '' ) );
+        foreach ( $map as $key => $slug ) {
+            if ( trim( (string) $slug, '/' ) === trim( $first, '/' ) ) {
+                return array( 'key'=>$key, 'slug'=>trim( (string) $slug, '/' ), 'value'=>sanitize_text_field( rawurldecode( (string) ( $parts[1] ?? '' ) ) ) );
+            }
+        }
+        return array();
+    }
+
+    /** Add safe current query args to a URL without leaking language/preview controls. */
+    private function add_current_query_args( $url ) {
+        $args = array();
+        foreach ( (array) $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $key = sanitize_key( $key );
+            if ( in_array( $key, array( 'itkt_lang','lang','preview','preview_id','preview_nonce','itkt_wc_endpoint','itkt_wc_value' ), true ) ) { continue; }
+            if ( is_scalar( $value ) ) { $args[ $key ] = sanitize_text_field( wp_unslash( $value ) ); }
+        }
+        return $args ? add_query_arg( $args, $url ) : $url;
+    }
+
     /**
      * Last routing fail-safe for Unicode WooCommerce product URLs.
      *
@@ -1620,6 +1707,11 @@ class ITKT_Frontend {
         // sending the visitor back to the account dashboard.
         $account_url = $this->language_url_for_current_account_request( $code );
         if ( $account_url ) { return $account_url; }
+
+        // Cart, Checkout (including order-pay/order-received) and Shop use their physical
+        // WooCommerce system pages so language switching cannot jump to a translated duplicate.
+        $system_url = $this->language_url_for_current_woocommerce_system_request( $code );
+        if ( $system_url ) { return $system_url; }
 
         if ( is_singular() ) {
             $id = get_queried_object_id();
