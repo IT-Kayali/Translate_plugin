@@ -2,7 +2,29 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.11**.
+Current development version: **0.12.12**.
+
+## [0.12.12]
+
+### Added
+- New modular `ITKT_Dynamic_Runtime` frontend runtime extension.
+- JavaScript plural runtime handling for `@wordpress/i18n` `ngettext` and `ngettext_with_context`.
+- Additional WooCommerce Blocks/cart/checkout refresh events.
+- Additional classic WooCommerce refresh triggers for checkout errors, coupons and shipping-method updates.
+- Frontend text discovery for `aria-label`, `title`, placeholders, button values and select-option labels.
+- Separate **Notices / Errors** frontend-text area.
+
+### Improved
+- Mini-Cart detection now wins before generic popup/offcanvas classification.
+- Frontend-catalog MutationObserver also reacts to supported attribute changes.
+- Dynamic runtime re-applies published translation maps after AJAX/fragment rerenders.
+
+### Validation
+- Plugin header, `ITKT_VERSION` and WordPress `readme.txt` stable tag synchronized to 0.12.12.
+- All PHP files pass syntax validation locally.
+- All bundled JavaScript files pass syntax validation locally.
+- Installation ZIP integrity test passes.
+- Real staging verification of the v0.12.11/v0.12.12 frontend-text and dynamic-runtime phase is still required before marking it complete.
 
 ## [0.12.11]
 
