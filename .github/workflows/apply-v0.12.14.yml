@@ -1,0 +1,59 @@
+name: Apply v0.12.14 production candidate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0.12.14.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Decode and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .repo-update/v0.12.14.part-00 .repo-update/v0.12.14.part-01 | base64 --decode > /tmp/itkt-v0.12.14-code.patch.gz
+          echo '2e998d81e7284f2fbbb4dc4aae63feb9ec63bcb586c981115d52f7fd3a5fe2fa  /tmp/itkt-v0.12.14-code.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/itkt-v0.12.14-code.patch.gz > /tmp/itkt-v0.12.14-code.patch
+          echo 'b339f39d7f39a0e375fcff199befa25a76aa9f5dea31feffa9a85cd7967cb66c  /tmp/itkt-v0.12.14-code.patch' | sha256sum -c -
+          git apply --check /tmp/itkt-v0.12.14-code.patch
+          git apply /tmp/itkt-v0.12.14-code.patch
+
+      - name: Validate production candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Version: 0.12.14' it-kayali-translate.php
+          grep -q "ITKT_VERSION', '0.12.14'" it-kayali-translate.php
+          test -f includes/class-itkt-cache.php
+          find . -name '*.php' -type f -print0 | xargs -0 -n1 php -l >/tmp/php-lint.txt
+          find public admin -name '*.js' -type f -print0 | xargs -0 -n1 node --check
+
+      - name: Commit clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .repo-update
+          rm -f .github/workflows/apply-v0.12.14.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git config user.name 'IT-Kayali'
+          git config user.email 'ghaithkayali99@gmail.com'
+          git add -A
+          git commit -m 'feat: v0.12.14 production finalization candidate [skip ci]'
+          git push origin HEAD:main
