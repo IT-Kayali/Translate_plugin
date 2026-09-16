@@ -87,6 +87,7 @@ class ITKT_Frontend_Catalog {
             'account'   => 'Mein Konto',
             'wishlist'  => 'Wishlist',
             'popup'     => 'Popups / Offcanvas',
+            'notices'   => 'Hinweise / Fehlermeldungen',
             'header'    => 'Header',
             'footer'    => 'Footer',
             'menu'      => 'Menü',
@@ -210,8 +211,8 @@ class ITKT_Frontend_Catalog {
         $this->header( 'Frontend Texte', 'Sichtbare Texte automatisch nach Bereich sammeln und direkt je Sprache übersetzen. Erfassung läuft beim Durchklicken der Standardsprache als Administrator.' );
         ?>
         <section class="itkt-card">
-            <div class="itkt-card-head"><div><span class="itkt-kicker">AUTOMATISCHE ERFASSUNG</span><h2>Frontend-Textkatalog</h2></div><span class="itkt-pill green">v0.12.11</span></div>
-            <p>Gehe im Frontend in der Standardsprache als Administrator durch Shop, Produktseiten, Warenkorb, Checkout, Konto und Popups. Neue sichtbare Texte werden automatisch erfasst. Preise, Mengen und technische Werte werden ignoriert.</p>
+            <div class="itkt-card-head"><div><span class="itkt-kicker">AUTOMATISCHE ERFASSUNG</span><h2>Frontend-Textkatalog</h2></div><span class="itkt-pill green">v0.12.12</span></div>
+            <p>Gehe im Frontend in der Standardsprache als Administrator durch Shop, Produktseiten, Warenkorb, Checkout, Konto und Popups. Neue sichtbare Texte, Hinweise, Fehlermeldungen sowie unterstützte Labels/Attribute werden automatisch erfasst. Preise, Mengen und technische Werte werden ignoriert.</p>
             <div class="itkt-front-area-tabs">
                 <a class="<?php echo '' === $area ? 'is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( array( 'page'=>'itkt-frontend-strings','status'=>$status ), admin_url( 'admin.php' ) ) ); ?>">Alle <strong><?php echo intval( array_sum( $areas ) ); ?></strong></a>
                 <?php foreach ( $areas as $key=>$count ) : ?>
