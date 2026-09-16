@@ -1,73 +1,115 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.13**
+**Current development version: v0.12.14**
 
-IT-Kayali Translate is a modular multilingual WordPress plugin focused first on a complete, stable multilingual storefront for the current project. Commercial licensing/distribution work is intentionally postponed until the plugin itself is finished and stable.
+IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
-## Current confirmed state
+## Current state
 
-- v0.12.10 fixed the WooCommerce **My Account** language-endpoint problem on the real staging site.
-- The repository root contains the installable plugin source directly.
 - WooCommerce products remain one physical product ID across all languages.
-- WordPress/Elementor content, WooCommerce product fields, taxonomy labels, routing, string translation, frontend live translation and SEO foundations are already present.
+- WordPress/Elementor content, product fields, taxonomies, attributes, string translation, routing, SEO, frontend live translation and RTL foundations are implemented.
+- v0.12.10 fixed the WooCommerce **My Account** non-default-language endpoint problem and was confirmed on the real staging site.
+- v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
+- v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
+- v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
+- v0.12.14 is the current production-finalization candidate.
 
-## v0.12.11–v0.12.12 – frontend/dynamic runtime phase
+## v0.12.14 – production finalization
 
-The backend page **IT-Kayali Translate → Frontend Texte** automatically discovers supported visible storefront strings while an administrator browses the configured default language.
+### WooCommerce route stability
 
-The catalog covers Shop, Search, Product, Category/archive, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas, Notices/Errors, Header, Footer, Menu and Other.
+The language switcher now treats WooCommerce system pages as physical system pages before normal translated page routing:
 
-Discovery also includes supported `placeholder`, `aria-label`, `title`, button-value and select-option text. A modular `ITKT_Dynamic_Runtime` re-applies translations after WooCommerce/WoodMart/AJAX/Blocks updates and adds JavaScript plural handling for `@wordpress/i18n` `ngettext` and `ngettext_with_context`.
+- Shop
+- Cart
+- Checkout
+- Checkout `order-pay`
+- Checkout `order-received`
+- My Account and its endpoints
 
-## v0.12.13 – Backup / Restore
+This prevents a language switch from accidentally jumping to a translated duplicate, dashboard or unrelated page. Existing filter/search/query parameters are preserved when safe.
 
-A new **IT-Kayali Translate → Backup / Restore** page provides a plugin-owned JSON backup for:
+### Frontend live translation coverage
 
-- ITKT settings and language configuration
-- string/source/translation tables
+The live translation runtime now distinguishes more reusable areas:
+
+- Header
+- Footer / widgets
+- Menu
+- Mini-Cart
+- Cart
+- Checkout
+- My Account
+- Wishlist
+- Popups / Offcanvas / Drawer
+- Notices / Errors
+- Filters
+- Shop / Search
+- shared WooCommerce and widget strings
+
+Reusable shared areas are stored as global strings, while product/category-specific content can continue to use product/taxonomy translation models instead of unsafe global replacement.
+
+### JavaScript i18n / plurals
+
+Dynamic `@wordpress/i18n` plural handling now uses `Intl.PluralRules` when available and publishes locale-aware native forms. Arabic receives zero/one/two/few/many/other categories from the native catalog where available. Browsers without `Intl.PluralRules` keep the safe singular/plural fallback.
+
+### Performance and cache handling
+
+- Runtime gettext/global/visual/JS/plural maps use a translation-generation cache key.
+- Repeated frontend database work is reduced when an object cache is available.
+- Translation saves invalidate ITKT runtime generations.
+- Cache invalidation requests are coalesced and run once per request.
+- WordPress object cache is flushed after translation changes.
+- WP Fastest Cache is cleared automatically when its supported programmatic API is available.
+- A public `itkt_after_cache_purge` action remains available for hosting/server-cache integrations without hard-coding vendor internals.
+- Successful Backup/Restore also invalidates runtime/cache state.
+
+## Frontend Texte
+
+**IT-Kayali Translate → Frontend Texte** automatically discovers supported visible storefront text while an administrator browses the configured default language. It groups strings by Shop, Search, Product, Category/archive, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas, Notices/Errors, Header, Footer, Menu and Other.
+
+Discovery includes supported visible text plus `placeholder`, `aria-label`, `title`, button values and select options. Dynamic WooCommerce/AJAX/fragment content is rescanned after rerenders. Common prices, quantities and technical values are intentionally excluded.
+
+## Backup / Restore
+
+**IT-Kayali Translate → Backup / Restore** exports a plugin-owned JSON backup containing:
+
+- ITKT settings and active language configuration
+- ITKT string/source/translation tables
 - frontend/global string translations
 - product translation metadata
-- taxonomy translation metadata
+- taxonomy/attribute translation metadata
 - linked translated WordPress content snapshots
 
-Restore replaces only ITKT-managed translation data. It does **not** create duplicate products, pages, posts or taxonomy terms. Existing translated content is updated by its existing WordPress ID; missing IDs are reported and skipped. Derived rewrite/search/runtime state is rebuilt after restore.
+Restore updates only existing IDs and never creates duplicate products/pages/posts/terms. Missing IDs are skipped and reported.
 
-Export and restore are restricted to administrators and protected by WordPress nonces. Restore accepts only the ITKT backup format and requires an explicit confirmation checkbox.
+## Final acceptance before calling the production plugin fully finished
 
-### Verification status
+The code-side work for the requested production scope is implemented. The remaining step is one complete real-site acceptance pass on staging/production-like data:
 
-v0.12.13 passes local PHP syntax validation and installation ZIP integrity validation. The Backup/Restore workflow still needs one real staging export-and-restore test before P6 is marked complete.
+1. DE / EN / AR: Shop, Search, Product, Category, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas.
+2. Switch language on each relevant screen and confirm the same logical target remains open.
+3. Verify Frontend Texte classification and direct EN/AR translation.
+4. Trigger WooCommerce notices/errors, shipping/payment updates and AJAX/Blocks rerenders and confirm translations remain applied.
+5. Check Live Translation in Header/Footer/Menu/Popup/Offcanvas/Wishlist/Notices.
+6. Export a backup, change one harmless translation, restore the backup and confirm the old value returns without duplicates.
+7. Test public pages with WP Fastest Cache and the IONOS/server cache enabled, including after saving a translation.
 
-The v0.12.11/v0.12.12 frontend-catalog and dynamic-runtime work also still requires systematic real-site verification across the WooCommerce flows below.
-
-## Product priorities before calling the plugin finished
-
-The current goal is a finished production plugin, not a sellable marketplace product. The remaining work is:
-
-1. Complete WooCommerce end-to-end verification in DE/EN/AR: Shop, Search, Product, Categories, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist and Popups/Offcanvas. Language switching must stay on the same logical destination.
-2. Finish/refine the backend frontend-text table: reduce false/duplicate technical strings, improve area detection, and verify direct translation for all active languages.
-3. Complete real-site dynamic WooCommerce/WoodMart/AJAX/Blocks coverage, including payment, shipping, validation, notices and checkout labels.
-4. Expand/verify live translation for categories, menus, global strings, Header/Footer, WoodMart content, Popups and Offcanvas/Drawer.
-5. Finish and verify JavaScript i18n for dynamic strings, safe plural handling and AJAX/fragment rerenders.
-6. Verify the new Backup/Restore flow on staging with a real export, deliberate test change and successful restore.
-7. Complete performance/cache testing for many products/strings, WooCommerce/WoodMart AJAX, WooCommerce Blocks, WP Fastest Cache, IONOS cache and full-page caching.
-
-Commercial licensing, customer updater infrastructure and marketplace preparation are deferred until later.
+Do not mark an item complete until the real-site test confirms it.
 
 ## Main architecture rules
 
 - WooCommerce products are never duplicated per language.
 - Prices, SKU, stock, images, variants and technical product data stay shared.
-- Theme/plugin source files are read-only; translations are stored separately.
-- Frontend language is independent from WordPress admin language.
+- Theme/plugin source files are never modified for translations.
+- Frontend language remains independent from the WordPress admin language.
 - RTL can affect text/content without forcing Header/Footer/layout mirroring.
-- Automatic translation handling must not modify CSS, IDs, markup structure, images or technical URLs.
-- Transactional emails/invoices should remain in the configured standard language unless explicitly changed later.
-- New integrations should remain modular/adaptable rather than project-specific core hacks.
+- Automatic translation handling must not alter CSS, IDs, markup structure, images or technical URLs.
+- Transactional emails/invoices stay in the configured default storefront language unless deliberately changed later.
 
 ## Supported languages
 
-Current language management includes DE, AR, EN, FR, ES, TR, SV and NL. Active languages determine which translation columns/workflows are shown.
+DE, AR, EN, FR, ES, TR, SV and NL are available. Active languages determine the translation columns/workflows shown in the admin.
 
 ## Repository structure
 
@@ -83,29 +125,11 @@ CHANGELOG.md
 AGENDA.md
 ```
 
-The repository root is the plugin source. GitHub **Code → Download ZIP** can be used as a source archive; finished development versions are additionally delivered as installable WordPress ZIPs in chat.
+The repository root is the plugin source. GitHub **Code → Download ZIP** can be used as a source archive; tested development builds are also delivered as installable WordPress ZIP files in chat.
 
 ## New-chat handoff rule
 
-Before changing the plugin in a new chat, read:
-
-1. `README.md`
-2. `CHANGELOG.md`
-3. `AGENDA.md`
-4. the current plugin source
-
-For every new functional version, keep synchronized:
-
-- plugin header version
-- `ITKT_VERSION`
-- WordPress `readme.txt` Stable tag
-- `README.md`
-- `CHANGELOG.md`
-- `AGENDA.md`
-- GitHub source
-- installable ZIP delivered in chat
-
-Do not mark a bug/feature complete until the relevant real-site test confirms it.
+Before changing the plugin in a new chat, read `README.md`, `CHANGELOG.md`, `AGENDA.md` and the current source. Every functional release must synchronize the plugin header, `ITKT_VERSION`, `readme.txt` Stable tag, GitHub source/docs and the installable ZIP.
 
 ## Website
 
