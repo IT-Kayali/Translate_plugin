@@ -72,6 +72,7 @@ class ITKT_Plugin {
         ITKT_Diagnostics::instance();
         ITKT_Inline_Editor::instance();
         ITKT_Frontend_Catalog::instance();
+        ITKT_Backup::instance();
 
         // Flush only once per routing version. Needed when updating an already-active plugin ZIP.
         if ( get_option( 'itkt_rewrite_version' ) !== ITKT_VERSION ) {
