@@ -34,15 +34,31 @@ jobs:
           git apply --check /tmp/itkt-v0.12.14-code.patch
           git apply /tmp/itkt-v0.12.14-code.patch
 
-      - name: Validate production candidate
+      - name: Validate version and required files
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'Version: 0.12.14' it-kayali-translate.php
-          grep -q "ITKT_VERSION', '0.12.14'" it-kayali-translate.php
+          grep -n 'Version: 0.12.14' it-kayali-translate.php
+          grep -n "ITKT_VERSION', '0.12.14'" it-kayali-translate.php
           test -f includes/class-itkt-cache.php
-          find . -name '*.php' -type f -print0 | xargs -0 -n1 php -l >/tmp/php-lint.txt
-          find public admin -name '*.js' -type f -print0 | xargs -0 -n1 node --check
+
+      - name: PHP 8.2 syntax validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Linting $file"
+            php -l "$file"
+          done < <(find . -name '*.php' -type f -print0)
+
+      - name: JavaScript syntax validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find public admin -name '*.js' -type f -print0)
 
       - name: Commit clean source
         shell: bash
