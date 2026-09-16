@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.15 – Produktionskandidat**  
+**Aktueller Entwicklungsstand: v0.12.16 – Produktionskandidat**  
 **Letzte Aktualisierung: 16.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -128,13 +128,27 @@ v0.12.14 ergänzt:
 
 Der Frontend-Textkatalog und der Live-/Runtime-String-Layer erlauben jetzt auch einen **optionalen Override der Standardsprache**. Damit können sichtbare Fremdtexte wie englische WoodMart-/WooCommerce-Labels auf einer deutschen Standardsprache direkt in ITKT korrigiert werden. Leer lassen bedeutet weiterhin: Original/native Standard verwenden. Der Runtime-Refresh wird auch in der Standardsprache nachgeladen, damit Full-Page-Cache keine alte Korrektur festhält.
 
+### v0.12.16 – Produktions-Preflight
+
+Der bestehende Bereich **IT-Kayali Translate → Systemstatus** prüft jetzt zusätzlich automatisch:
+
+- alle drei String-Translation-Datenbanktabellen
+- ob der Frontend-Textkatalog bereits echte Shop-Texte erfasst hat
+- WooCommerce-Systemseiten Shop, Warenkorb, Checkout und Mein Konto
+- zentrale Mein-Konto-Endpunkte
+- registrierte Sprachisolation für transaktionale WooCommerce-E-Mails
+- geladene Module für Dynamic Runtime, Backup/Restore und Cache-Invalidierung
+- WP Fastest Cache Integration, wenn WP Fastest Cache erkannt wird
+
+Damit können Konfigurations-/Schemafehler vor dem manuellen Browser-Endtest erkannt werden.
+
 ## Was jetzt wirklich noch offen ist
 
 **Kein großer Funktionsblock fehlt mehr im Code für deinen aktuellen Einsatzzweck.** Offen ist die abschließende reale Abnahme auf der Website. Dabei müssen wir eventuelle konkrete WoodMart-/WooCommerce-Sonderfälle reparieren, die nur in deiner echten Installation sichtbar werden.
 
 ### Finaler Realtest
 
-1. v0.12.14 installieren und WP Fastest Cache + IONOS/Server-Cache einmal leeren.
+1. v0.12.16 installieren, **Systemstatus** öffnen und alle Hinweise prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
 2. DE, EN und AR vollständig durchgehen: Shop → Suche → Produkt → Kategorie → Filter → Mini-Cart → Warenkorb → Checkout → Mein Konto → Wishlist → Popup/Offcanvas.
 3. Auf jeder relevanten Seite Sprache wechseln und prüfen, dass dieselbe logische Seite/dasselbe Produkt/Endpoint erhalten bleibt.
 4. Als Admin in DE alle Bereiche einmal öffnen, danach **Frontend Texte** prüfen und einige EN/AR-Texte speichern.

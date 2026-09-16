@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.15**
+**Current development version: v0.12.16**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,8 +12,22 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.15 is the current production-finalization candidate.
+- v0.12.16 is the current production-finalization candidate with an expanded production preflight/self-test.
 
+
+## v0.12.16 – production preflight
+
+The existing **Systemstatus** self-test now checks more of the real production prerequisites before final sign-off:
+
+- all three String Translation database tables
+- whether the Frontend Texte catalog has already captured live storefront strings
+- WooCommerce Shop, Cart, Checkout and My Account page assignments
+- central My Account endpoint configuration
+- registration of the WooCommerce transactional-email language isolation
+- availability of Dynamic Runtime, Backup/Restore and cache invalidation
+- WP Fastest Cache integration when the cache plugin is detected
+
+These checks do not replace the browser acceptance matrix, but they catch configuration/schema problems before manual DE/EN/AR testing.
 
 ## v0.12.15 – default-language frontend overrides
 

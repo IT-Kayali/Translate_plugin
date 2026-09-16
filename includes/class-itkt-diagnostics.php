@@ -192,9 +192,118 @@ class ITKT_Diagnostics {
         }
 
         if ( ITKT_Plugin::module_enabled( 'strings' ) ) {
-            $table = $wpdb->prefix . 'itkt_strings';
-            $exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
-            $add( 'strings_table', 'String-Translation Datenbank', $exists === $table, $exists === $table ? 'String-Tabelle ist vorhanden.' : 'String-Tabelle fehlt; Plugin einmal deaktivieren/aktivieren oder Schema reparieren.' );
+            $expected_tables = array(
+                $wpdb->prefix . 'itkt_strings'             => 'Strings',
+                $wpdb->prefix . 'itkt_string_sources'      => 'Quellen',
+                $wpdb->prefix . 'itkt_string_translations' => 'Übersetzungen',
+            );
+            $missing_tables = array();
+            foreach ( $expected_tables as $table => $label ) {
+                $exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+                if ( $exists !== $table ) { $missing_tables[] = $label; }
+            }
+            $tables_ok = empty( $missing_tables );
+            $add(
+                'strings_schema',
+                'String-Translation Datenbank',
+                $tables_ok,
+                $tables_ok ? 'Alle String-Translation Tabellen sind vorhanden.' : 'Fehlende Tabellen: ' . implode( ', ', $missing_tables ) . '. Plugin einmal deaktivieren/aktivieren oder Schema reparieren.'
+            );
+
+            $catalog_table = $wpdb->prefix . 'itkt_string_sources';
+            $frontend_count = $tables_ok ? absint( $wpdb->get_var( "SELECT COUNT(DISTINCT string_id) FROM {$catalog_table} WHERE source_type='frontend'" ) ) : 0;
+            $add(
+                'frontend_catalog',
+                'Frontend-Textkatalog',
+                $frontend_count > 0,
+                $frontend_count > 0 ? $frontend_count . ' Frontend-Text(e) wurden bereits automatisch erfasst.' : 'Noch keine Frontend-Texte erfasst. Als Administrator die Standardsprache einmal durch Shop, Checkout, Konto und Popups durchgehen.',
+                'warning'
+            );
+        }
+
+        if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && function_exists( 'wc_get_page_id' ) ) {
+            $required_pages = array(
+                'shop'      => 'Shop',
+                'cart'      => 'Warenkorb',
+                'checkout'  => 'Checkout',
+                'myaccount' => 'Mein Konto',
+            );
+            $missing_pages = array();
+            foreach ( $required_pages as $key => $label ) {
+                $page_id = (int) wc_get_page_id( $key );
+                if ( $page_id <= 0 || ! get_post( $page_id ) || 'trash' === get_post_status( $page_id ) ) {
+                    $missing_pages[] = $label;
+                }
+            }
+            $pages_ok = empty( $missing_pages );
+            $add(
+                'woocommerce_pages',
+                'WooCommerce Systemseiten',
+                $pages_ok,
+                $pages_ok ? 'Shop, Warenkorb, Checkout und Mein Konto sind gültig zugewiesen.' : 'Fehlende/ungültige WooCommerce-Seiten: ' . implode( ', ', $missing_pages ) . '.',
+                'warning'
+            );
+
+            $endpoint_options = array(
+                'orders'          => 'woocommerce_myaccount_orders_endpoint',
+                'downloads'       => 'woocommerce_myaccount_downloads_endpoint',
+                'edit-address'    => 'woocommerce_myaccount_edit_address_endpoint',
+                'edit-account'    => 'woocommerce_myaccount_edit_account_endpoint',
+                'customer-logout' => 'woocommerce_logout_endpoint',
+            );
+            $missing_endpoints = array();
+            foreach ( $endpoint_options as $label => $option ) {
+                if ( '' === trim( (string) get_option( $option, '' ) ) ) { $missing_endpoints[] = $label; }
+            }
+            $endpoints_ok = empty( $missing_endpoints );
+            $add(
+                'woocommerce_account_endpoints',
+                'WooCommerce Konto-Endpunkte',
+                $endpoints_ok,
+                $endpoints_ok ? 'Die zentralen Mein-Konto-Endpunkte sind konfiguriert.' : 'Leere WooCommerce-Endpunkte: ' . implode( ', ', $missing_endpoints ) . '.',
+                'warning'
+            );
+
+            if ( class_exists( 'ITKT_WooCommerce' ) ) {
+                $wc_bridge = ITKT_WooCommerce::instance();
+                $email_start = has_filter( 'woocommerce_allow_switching_email_locale', array( $wc_bridge, 'email_default_context_start' ) );
+                $email_end   = has_filter( 'woocommerce_allow_restoring_email_locale', array( $wc_bridge, 'email_default_context_end' ) );
+                $email_ok = false !== $email_start && false !== $email_end;
+                $add(
+                    'woocommerce_email_isolation',
+                    'E-Mail Sprachisolation',
+                    $email_ok,
+                    $email_ok ? 'Transaktionale WooCommerce-E-Mails bleiben vom Frontend-Sprachkontext isoliert.' : 'E-Mail-Sprachisolation ist nicht vollständig registriert.',
+                    'warning'
+                );
+            }
+        }
+
+        $runtime_modules = array(
+            'ITKT_Dynamic_Runtime' => 'Dynamische Runtime',
+            'ITKT_Backup'          => 'Backup / Restore',
+            'ITKT_Cache'           => 'Cache-Invalidierung',
+        );
+        $missing_runtime = array();
+        foreach ( $runtime_modules as $class => $label ) {
+            if ( ! class_exists( $class ) ) { $missing_runtime[] = $label; }
+        }
+        $runtime_ok = empty( $missing_runtime );
+        $add(
+            'production_modules',
+            'Produktionsmodule',
+            $runtime_ok,
+            $runtime_ok ? 'Dynamische Runtime, Backup/Restore und Cache-Invalidierung sind geladen.' : 'Nicht geladen: ' . implode( ', ', $missing_runtime ) . '.'
+        );
+
+        if ( function_exists( 'wpfc_clear_all_cache' ) || class_exists( 'WpFastestCache' ) ) {
+            $add(
+                'wp_fastest_cache',
+                'WP Fastest Cache Integration',
+                true,
+                'WP Fastest Cache wurde erkannt; ITKT kann den Cache nach Übersetzungsänderungen automatisch leeren.',
+                'warning'
+            );
         }
 
         $memory = wp_convert_hr_to_bytes( ini_get( 'memory_limit' ) );

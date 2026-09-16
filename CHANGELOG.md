@@ -2,8 +2,24 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.15**.
+Current development version: **0.12.16**.
 
+
+## [0.12.16]
+
+### Production preflight / diagnostics
+- Expanded **Systemstatus** with validation for all String Translation tables.
+- Added a readiness check showing whether the Frontend Texte catalog has captured real storefront strings.
+- Added WooCommerce Shop, Cart, Checkout and My Account page assignment checks.
+- Added central My Account endpoint configuration checks.
+- Added verification that ITKT's transactional WooCommerce e-mail language isolation hooks are registered.
+- Added checks that Dynamic Runtime, Backup/Restore and cache invalidation modules are loaded.
+- Detects WP Fastest Cache integration when the plugin API/class is available.
+
+### Scope
+- No commercial/licensing features were added.
+- This version is focused only on final production readiness for the current shop.
+- Real browser acceptance in DE/EN/AR remains required before marking the plugin production-confirmed.
 
 ## [0.12.15]
 
