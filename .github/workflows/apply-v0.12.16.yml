@@ -1,0 +1,80 @@
+name: Apply v0.12.16 production preflight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0.12.16.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Decode and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .repo-update/v0.12.16.part-00 .repo-update/v0.12.16.part-01 | base64 --decode > /tmp/itkt-v0.12.16.patch.gz
+          echo '1a50f5ba556cd00a713655e33edbfd716415c66cf441a43efd61da2475a31107  /tmp/itkt-v0.12.16.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/itkt-v0.12.16.patch.gz > /tmp/itkt-v0.12.16.patch
+          echo 'd12c5e11b646cab73ccaa2e44654ebcf4c6899a1f04c71cdd537bce7d0bdae15  /tmp/itkt-v0.12.16.patch' | sha256sum -c -
+          git apply --check /tmp/itkt-v0.12.16.patch
+          git apply /tmp/itkt-v0.12.16.patch
+
+      - name: Validate version and required files
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -n 'Version: 0.12.16' it-kayali-translate.php
+          grep -n "ITKT_VERSION', '0.12.16'" it-kayali-translate.php
+          grep -n 'Stable tag: 0.12.16' readme.txt
+          grep -n 'Current development version: v0.12.16' README.md
+          test -f includes/class-itkt-diagnostics.php
+          grep -n "woocommerce_pages" includes/class-itkt-diagnostics.php
+          grep -n "woocommerce_email_isolation" includes/class-itkt-diagnostics.php
+          grep -n "production_modules" includes/class-itkt-diagnostics.php
+
+      - name: PHP 8.2 syntax validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Linting $file"
+            php -l "$file"
+          done < <(find . -name '*.php' -type f -print0)
+
+      - name: JavaScript syntax validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find public admin -name '*.js' -type f -print0)
+
+      - name: Commit clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .repo-update
+          rm -f .github/workflows/apply-v0.12.16.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git config user.name 'IT-Kayali'
+          git config user.email 'ghaithkayali99@gmail.com'
+          git add -A
+          git commit -m 'chore: v0.12.16 production preflight [skip ci]'
+          git push origin HEAD:main
