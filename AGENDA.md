@@ -1,39 +1,43 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.13**  
+**Aktueller Entwicklungsstand: v0.12.14 – Produktionskandidat**  
 **Letzte Aktualisierung: 16.09.2026**
 
-Diese Datei ist die zentrale Übergabe- und Arbeitsagenda. Der aktuelle Fokus ist ein **fertiges, stabiles Produktions-Plugin** für den eigenen Einsatz. Verkauf, Lizenzierung, Marketplace und Kunden-Updater werden bewusst auf später verschoben.
+Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
 
-## Arbeitsregel für jede neue Version
+## Arbeitsregel
 
-1. Plugin-Code aktualisieren.
-2. Versionsnummer überall synchronisieren.
-3. PHP-/JavaScript-Prüfungen und relevante Funktionstests durchführen.
-4. Installierbare WordPress-ZIP im Chat bereitstellen.
-5. Identischen Quellstand auf GitHub aktualisieren.
-6. `README.md`, `CHANGELOG.md` und `AGENDA.md` aktualisieren.
-7. Realtest dokumentieren.
-8. Erst dann gilt eine Version/Funktion als abgeschlossen.
+Bei jeder funktionalen Version müssen Quellcode, Versionsnummern, `readme.txt`, `README.md`, `CHANGELOG.md`, `AGENDA.md`, GitHub und die installierbare ZIP synchron bleiben. Eine Funktion gilt erst nach einem relevanten Realtest als bestätigt.
 
-## Bestätigter stabiler Stand
+## Bereits bestätigt
 
-### WooCommerce Mein Konto – P0 erledigt
+### P0 – WooCommerce Mein Konto
 
 v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
-- Standardsprache funktioniert.
+- DE funktioniert.
 - Nicht-Standardsprachen funktionieren im getesteten Account-Ablauf.
-- Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf Dashboard zurück.
+- Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf das Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
 
-## v0.12.11 / v0.12.12 – Frontend- und Dynamic-Runtime-Phase
+## Code-seitig jetzt umgesetzt
 
-### Frontend Texte – Backend-Zentrale
+### P1 – WooCommerce End-to-End Routing
 
-Der Bereich **IT-Kayali Translate → Frontend Texte** sammelt unterstützte sichtbare Texte automatisch, wenn ein Administrator die Standardsprache im Frontend durchklickt.
+v0.12.14 stabilisiert zusätzlich den Sprachwechsel für:
 
-Bereiche:
+- Shop
+- Warenkorb
+- Checkout
+- `order-pay`
+- `order-received`
+- Mein Konto + Endpoints
+
+Produkt-, Taxonomie-, Such- und Filterzustand nutzen weiterhin die vorhandenen ITKT-Router. Sichere Query-Parameter werden erhalten.
+
+### P2 – Frontend-Texte im Backend
+
+**IT-Kayali Translate → Frontend Texte** erfasst sichtbare Texte in der Standardsprache und ordnet sie Bereichen zu:
 
 - Shop
 - Suche
@@ -52,160 +56,100 @@ Bereiche:
 - Menü
 - Sonstige
 
-v0.12.12 erweitert die Erfassung um `placeholder`, `aria-label`, `title`, Button-Werte und Select-Optionen. Mini-Cart-Inhalte werden vor allgemeinen Popup-/Offcanvas-Bereichen erkannt.
+Erfasst werden außerdem unterstützte `placeholder`, `aria-label`, `title`, Button-Werte und Select-Optionen. Preise/Mengen/technische Werte werden soweit möglich ausgeschlossen.
 
-### Dynamische Übersetzungen / JavaScript-i18n
+### P3 – Dynamische WooCommerce/WoodMart/AJAX-Übersetzungen
 
-In v0.12.12 implementiert:
+Implementiert sind:
 
-- separates Modul `ITKT_Dynamic_Runtime`
-- `@wordpress/i18n` Plural-Bridge für `ngettext` und `ngettext_with_context`
-- erneutes Anwenden der Übersetzungen nach WooCommerce Blocks Cart-/Checkout-Updates
-- erneutes Anwenden nach klassischen WooCommerce Fragment-, Coupon-, Versand- und Checkout-Events
-- Beobachtung dynamisch geänderter `placeholder`, `title`, `aria-label` und Button-Werte
+- WooCommerce Classic-Refreshes
+- WooCommerce Blocks Cart/Checkout Events
+- WooCommerce Fragment-Refresh
+- Coupons
+- Versandmethoden
+- Checkout-Fehler
+- dynamisch geänderte Attribute
+- MutationObserver-Nachbearbeitung
+- Popup-/Offcanvas-/Mini-Cart-Nachladen
 
-**Status:** lokal validiert, vollständiger Realtest auf der Staging-Seite noch offen.
+### P4 – Live-Übersetzung
 
-## v0.12.13 – Backup / Restore
+v0.12.14 erweitert die Live-Bereiche auf:
 
-Neu ist **IT-Kayali Translate → Backup / Restore**.
-
-Das JSON-Backup enthält:
-
-- Plugin-Einstellungen
-- Sprachkonfiguration
-- ITKT String-/Source-/Translation-Tabellen
-- globale und Frontend-Stringübersetzungen
-- `_itkt_*` Post-Metadaten inkl. Produktübersetzungen
-- `_itkt_*` Term-Metadaten inkl. Taxonomieübersetzungen
-- Snapshot verknüpfter übersetzter WordPress-Inhalte
-
-Restore-Regeln:
-
-- Produkte, Seiten, Beiträge und Begriffe werden **nicht neu erstellt**.
-- Damit entstehen durch Restore keine Duplikate.
-- Vorhandene verknüpfte Inhalte werden nur über ihre existierende WordPress-ID aktualisiert.
-- Nicht mehr vorhandene IDs werden übersprungen und gemeldet.
-- ITKT-Stringtabellen und ITKT-Metadaten werden durch den Backup-Stand ersetzt.
-- Rewrite-, Such- und Runtime-Zustände werden danach neu aufgebaut.
-- Export/Restore nur für Administratoren mit Nonce-Schutz und expliziter Restore-Bestätigung.
-
-**Status P6:** implementiert und lokal validiert, aber erst nach einem echten Export-/Änderungs-/Restore-Test auf Staging abgeschlossen.
-
-## Was bis „Plugin fertig“ noch fehlt
-
-### P1 – WooCommerce komplett End-to-End
-
-DE/EN/AR zuerst vollständig prüfen und reparieren:
-
-- Shop
-- Suche
-- Produktseite
-- Kategorien
-- Filter / Attribute
+- Header
+- Footer / Widgets
+- Menü
 - Mini-Cart
 - Warenkorb
 - Checkout
 - Mein Konto
 - Wishlist
-- Popups / Offcanvas
+- Popup / Offcanvas / Drawer
+- Hinweise / Fehler
+- Filter
+- Shop / Suche
+- gemeinsame WooCommerce-/Widget-Texte
 
-Wichtig: Der Sprachwechsel muss immer auf derselben logischen Zielseite bleiben. Kein Rückfall auf Startseite, Dashboard oder falsche Produkt-/Kategorie-URL.
+### P5 – JavaScript-i18n
 
-### P2 – Frontend-Texte im Backend vollständig verifizieren/verfeinern
+- `gettext` und `gettext_with_context` Runtime vorhanden.
+- `ngettext` und `ngettext_with_context` Runtime vorhanden.
+- v0.12.14 nutzt `Intl.PluralRules` für passende Pluralkategorien.
+- Arabisch kann native zero/one/two/few/many/other-Formen verwenden.
+- AJAX-/Blocks-Neurendering löst erneut Runtime-Übersetzungen aus.
 
-- automatische Erfassung real testen
-- doppelte/falsche technische Texte reduzieren
-- Bereichserkennung verbessern, falls im Realtest nötig
-- direkte Übersetzung je aktiver Sprache prüfen
-- Suche/Filter/Status auf realen Daten prüfen
+### P6 – Backup / Restore
 
-### P3 – Dynamische Übersetzungen real vollständig prüfen
+v0.12.13 implementiert:
 
-Systematisch prüfen:
+- Einstellungen
+- Sprachen
+- String-/Source-/Translation-Tabellen
+- globale/visuelle Übersetzungen
+- Produktübersetzungen
+- Taxonomieübersetzungen
+- verknüpfte WordPress-Inhalte
 
-- WooCommerce Classic
-- WooCommerce Blocks
-- WoodMart
-- AJAX-Fragmente
-- Zahlungsarten
-- Versandtexte
-- Fehlermeldungen
-- Validierung
-- Checkout-Hinweise
-- Notices
-- dynamische Popup-/Offcanvas-Inhalte
-
-### P4 – Live-Übersetzung erweitern/verifizieren
-
-- Kategorien
-- Menüs
-- globale Strings
-- Header
-- Footer
-- WoodMart-Elemente
-- Popups
-- Offcanvas/Drawer
-- weitere dynamische Widgets
-
-### P5 – JavaScript-i18n fertig verifizieren
-
-- dynamisch nachgeladene JS-Texte
-- WooCommerce Blocks
-- sichere Pluralformen
-- AJAX-Neurendering
-- keine verlorenen Übersetzungen nach Fragment-Refresh
-
-### P6 – Backup / Restore Realtest
-
-v0.12.13 ist implementiert. Noch durchführen:
-
-1. Backup auf Staging exportieren.
-2. Eine ungefährliche Testübersetzung ändern.
-3. Backup wiederherstellen.
-4. Prüfen, dass alter Wert zurückkommt.
-5. Prüfen, dass keine Produkte/Seiten/Begriffe dupliziert wurden.
-6. Frontend EN/AR nach Restore prüfen.
-
-Danach P6 schließen.
+Restore erzeugt keine neuen Produkte/Seiten/Beiträge/Begriffe. Fehlende IDs werden übersprungen.
 
 ### P7 – Performance & Cache
 
-Abschließend testen:
+v0.12.14 ergänzt:
 
-- viele Produkte
-- viele Strings
-- WooCommerce AJAX
-- WoodMart AJAX
-- WooCommerce Blocks
-- WP Fastest Cache
-- IONOS Cache
-- Sprachwechsel nach Full-Page-Cache
-- keine falsche Sprache aus Cache
-- keine unnötigen Datenbankabfragen bei jedem Besucher
+- versionierte Runtime-Maps im WordPress Object Cache
+- weniger wiederholte Runtime-Datenbankarbeit
+- gebündelte Cache-Invalidierung pro Request
+- WordPress Object-Cache Flush nach Übersetzungsänderungen
+- WP Fastest Cache automatische Leerung, wenn dessen API verfügbar ist
+- offener Hook `itkt_after_cache_purge` für Server-/Hosting-Cache-Integrationen
+- Cache-Invalidierung nach Restore
 
-## Wichtige Produktregeln
+## Was jetzt wirklich noch offen ist
 
-- WooCommerce-Produkte werden nicht je Sprache dupliziert.
-- Theme-/Plugin-Quelldateien werden nicht verändert.
+**Kein großer Funktionsblock fehlt mehr im Code für deinen aktuellen Einsatzzweck.** Offen ist die abschließende reale Abnahme auf der Website. Dabei müssen wir eventuelle konkrete WoodMart-/WooCommerce-Sonderfälle reparieren, die nur in deiner echten Installation sichtbar werden.
+
+### Finaler Realtest
+
+1. v0.12.14 installieren und WP Fastest Cache + IONOS/Server-Cache einmal leeren.
+2. DE, EN und AR vollständig durchgehen: Shop → Suche → Produkt → Kategorie → Filter → Mini-Cart → Warenkorb → Checkout → Mein Konto → Wishlist → Popup/Offcanvas.
+3. Auf jeder relevanten Seite Sprache wechseln und prüfen, dass dieselbe logische Seite/dasselbe Produkt/Endpoint erhalten bleibt.
+4. Als Admin in DE alle Bereiche einmal öffnen, danach **Frontend Texte** prüfen und einige EN/AR-Texte speichern.
+5. Checkout-Fehler, Coupon, Versand-/Zahlungsänderung und Warenkorb-AJAX auslösen. Übersetzungen dürfen nach dem Refresh nicht wieder Deutsch werden.
+6. Live-Editor an Header, Footer, Menü, Popup/Offcanvas, Wishlist und Notice testen.
+7. Backup exportieren → harmlose Übersetzung ändern → Restore → alter Wert muss zurückkommen, ohne Duplikate.
+8. Cache aktiv lassen, Übersetzung ändern und in privatem Browser prüfen, dass die neue Übersetzung öffentlich erscheint.
+9. Erst wenn diese Matrix ohne Fehler durchläuft, wird die Version als produktiv bestätigt markiert.
+
+## Falls im Finaltest noch etwas auffällt
+
+Dann wird nur der konkrete reproduzierbare Fehler behoben; keine neuen Verkaufs-/Lizenzfeatures werden dazwischen geschoben. README, CHANGELOG und AGENDA bleiben die Übergabequelle für neue Chats.
+
+## Produktregeln
+
+- WooCommerce-Produkte werden nicht pro Sprache dupliziert.
 - Preise, SKU, Bestand, Bilder und technische Daten bleiben gemeinsam.
-- Layout, CSS, IDs, Bilder, technische URLs und Code dürfen durch Textübersetzung nicht beschädigt werden.
+- Theme-/Plugin-Quelldateien werden nicht verändert.
 - Frontend-Sprache und Adminsprache bleiben unabhängig.
-- RTL kann nur den Content/Text betreffen; Header/Footer müssen nicht gespiegelt werden.
-- Rechnungen, Lieferscheine und transaktionale E-Mails sollen in der konfigurierten Standardsprache bleiben.
-- Verkaufs-/Lizenzfunktionen erst später, nachdem diese Produktionspunkte abgeschlossen sind.
-
-## Repository-Regel
-
-`main` soll nur den echten Plugin-Quellcode plus `README.md`, `CHANGELOG.md`, `AGENDA.md` und `.gitignore` enthalten. Temporäre Import-/Patch-Dateien und einmalige Update-Workflows gehören nicht in den finalen Stand.
-
-## Neue-Chat-Übergabe
-
-Bei Fortsetzung in einem neuen Chat zuerst lesen:
-
-1. `README.md`
-2. `CHANGELOG.md`
-3. `AGENDA.md`
-4. aktuellen Plugin-Quellcode
-
-Danach immer vom neuesten GitHub-Stand weiterarbeiten.
+- RTL kann auf Content/Text beschränkt bleiben.
+- Rechnungen, Lieferscheine und transaktionale E-Mails bleiben in der konfigurierten Standardsprache.
+- Verkauf/Lizenzierung erst später.
