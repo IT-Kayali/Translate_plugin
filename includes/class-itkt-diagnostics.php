@@ -220,6 +220,39 @@ class ITKT_Diagnostics {
                 $frontend_count > 0 ? $frontend_count . ' Frontend-Text(e) wurden bereits automatisch erfasst.' : 'Noch keine Frontend-Texte erfasst. Als Administrator die Standardsprache einmal durch Shop, Checkout, Konto und Popups durchgehen.',
                 'warning'
             );
+
+            if ( $tables_ok && $frontend_count > 0 ) {
+                $active_languages = ITKT_Languages::instance()->get_active();
+                $default_language = ITKT_Languages::instance()->get_default_code();
+                unset( $active_languages[ $default_language ] );
+
+                $coverage_parts = array();
+                $coverage_complete = true;
+                $sources_table = $wpdb->prefix . 'itkt_string_sources';
+                $translations_table = $wpdb->prefix . 'itkt_string_translations';
+
+                foreach ( $active_languages as $code => $language ) {
+                    $code = sanitize_key( (string) $code );
+                    if ( ! $code ) { continue; }
+                    $translated = absint( $wpdb->get_var( $wpdb->prepare(
+                        "SELECT COUNT(DISTINCT src.string_id) FROM {$sources_table} src INNER JOIN {$translations_table} tr ON tr.string_id=src.string_id WHERE src.source_type='frontend' AND tr.language=%s AND tr.translation<>''",
+                        $code
+                    ) ) );
+                    $missing = max( 0, $frontend_count - $translated );
+                    if ( $missing > 0 ) { $coverage_complete = false; }
+                    $coverage_parts[] = strtoupper( $code ) . ': ' . $translated . '/' . $frontend_count . ( $missing ? ' (' . $missing . ' offen)' : '' );
+                }
+
+                if ( $coverage_parts ) {
+                    $add(
+                        'frontend_translation_coverage',
+                        'Frontend-Übersetzungsabdeckung',
+                        $coverage_complete,
+                        implode( ' · ', $coverage_parts ),
+                        'warning'
+                    );
+                }
+            }
         }
 
         if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && function_exists( 'wc_get_page_id' ) ) {

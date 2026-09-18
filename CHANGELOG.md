@@ -2,8 +2,23 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.17**.
+Current development version: **0.12.18**.
 
+
+## [0.12.18]
+
+### Production consistency
+- Removed outdated admin copy that incorrectly described JavaScript i18n and plural support as future work.
+- Backup/Restore now displays the current plugin version dynamically instead of a historical implementation version.
+- SEO/admin help copy no longer presents old implementation version numbers as the current feature state.
+
+### Diagnostics
+- Systemstatus now measures captured frontend-string translation coverage per active non-default language.
+- Coverage is reported as a warning-only readiness signal, so incomplete storefront text is visible without blocking the plugin from loading.
+
+### Validation
+- PHP and JavaScript syntax checks are required before ZIP handoff.
+- Real-site browser acceptance is still required before marking the current build production-confirmed.
 
 ## [0.12.17]
 
