@@ -373,6 +373,10 @@ class ITKT_SEO {
 
     public function redirect_to_translated_slug() {
         if ( is_admin() || wp_doing_ajax() || is_preview() || is_feed() || is_404() || headers_sent() ) { return; }
+        // Cart, Checkout (including order-pay/order-received) and My Account endpoints are stateful
+        // WooCommerce routes behind one physical page. SEO slug normalization must never collapse
+        // those endpoint paths back to the page base or strip required order/account state.
+        if ( ( function_exists( 'is_cart' ) && is_cart() ) || ( function_exists( 'is_checkout' ) && is_checkout() ) || ( function_exists( 'is_account_page' ) && is_account_page() ) ) { return; }
         $code = ITKT_Languages::instance()->current_code();
         if ( $code === ITKT_Languages::instance()->get_default_code() ) { return; }
         if ( ! ( is_singular() || is_tax() || is_category() || is_tag() ) ) { return; }
@@ -385,7 +389,7 @@ class ITKT_SEO {
         $query = (string) wp_parse_url( $request_uri, PHP_URL_QUERY );
         if ( $query ) {
             $args = array(); wp_parse_str( $query, $args );
-            unset( $args['itkt_lang'], $args['lang'] );
+            $args = class_exists( 'ITKT_Frontend' ) ? ITKT_Frontend::instance()->language_switch_query_args( $args, false ) : array();
             if ( $args ) { $canonical = add_query_arg( $args, $canonical ); }
         }
         wp_safe_redirect( $canonical, 301 );

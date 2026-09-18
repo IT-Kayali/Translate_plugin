@@ -564,15 +564,17 @@ class ITKT_Frontend {
         $url = $this->language_url_for_system_page( $page_id, $code, false );
         if ( ! $url ) { return ''; }
 
+        $checkout_state = array();
         if ( 'checkout' === $page_key ) {
-            $state = $this->current_woocommerce_checkout_endpoint_state();
-            if ( $state && ! empty( $state['slug'] ) ) {
-                $url = trailingslashit( $url ) . trim( (string) $state['slug'], '/' );
-                if ( '' !== (string) ( $state['value'] ?? '' ) ) { $url .= '/' . trim( (string) $state['value'], '/' ); }
+            $checkout_state = $this->current_woocommerce_checkout_endpoint_state();
+            if ( $checkout_state && ! empty( $checkout_state['slug'] ) ) {
+                $url = trailingslashit( $url ) . trim( (string) $checkout_state['slug'], '/' );
+                if ( '' !== (string) ( $checkout_state['value'] ?? '' ) ) { $url .= '/' . trim( (string) $checkout_state['value'], '/' ); }
                 $url = user_trailingslashit( $url );
             }
         }
-        return $this->add_current_query_args( $url );
+        $allow_checkout_auth = $checkout_state && in_array( (string) ( $checkout_state['key'] ?? '' ), array( 'order-pay', 'order-received' ), true );
+        return $this->add_current_query_args( $url, $allow_checkout_auth );
     }
 
     /** Resolve checkout endpoint state from query vars first, then from the real browser path. */
@@ -609,14 +611,36 @@ class ITKT_Frontend {
         return array();
     }
 
-    /** Add safe current query args to a URL without leaking language/preview controls. */
-    private function add_current_query_args( $url ) {
-        $args = array();
-        foreach ( (array) $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $key = sanitize_key( $key );
-            if ( in_array( $key, array( 'itkt_lang','lang','preview','preview_id','preview_nonce','itkt_wc_endpoint','itkt_wc_value' ), true ) ) { continue; }
-            if ( is_scalar( $value ) ) { $args[ $key ] = sanitize_text_field( wp_unslash( $value ) ); }
+    /**
+     * Keep read-only storefront state when switching languages without replaying GET actions.
+     *
+     * WooCommerce and third-party plugins often use query parameters for state-changing links
+     * (add/remove cart item, order-again, cancellation, logout, nonces, AJAX actions). Carrying
+     * those parameters onto a language-switch URL can execute the action a second time. Filter
+     * them centrally while retaining ordinary scalar search/filter/sort parameters.
+     */
+    public function language_switch_query_args( $source, $allow_checkout_auth = false ) {
+        $out = array();
+        $blocked = array(
+            'itkt_lang','lang','preview','preview_id','preview_nonce','itkt_wc_endpoint','itkt_wc_value',
+            '_wpnonce','_wp_http_referer','_ajax_nonce','nonce','security','action','wc-ajax',
+            'add-to-cart','remove_item','undo_item','order_again','cancel_order','cancel_order_nonce',
+            'apply_coupon','remove_coupon','coupon_code','update_cart','proceed','add_to_wishlist','remove_from_wishlist',
+        );
+        foreach ( (array) $source as $raw_key => $value ) {
+            if ( ! is_scalar( $value ) ) { continue; }
+            $key = sanitize_key( (string) $raw_key );
+            if ( '' === $key || in_array( $key, $blocked, true ) ) { continue; }
+            if ( false !== strpos( $key, 'nonce' ) || preg_match( '/^(?:add|remove|delete|update|apply|cancel|submit|save|logout|login|reset|do)[_-]/', $key ) ) { continue; }
+            if ( in_array( $key, array( 'key','pay_for_order' ), true ) && ! $allow_checkout_auth ) { continue; }
+            $out[ $key ] = sanitize_text_field( wp_unslash( (string) $value ) );
         }
+        return (array) apply_filters( 'itkt_language_switch_query_args', $out, (array) $source, (bool) $allow_checkout_auth );
+    }
+
+    /** Add safe current query args to a language-switch URL. */
+    private function add_current_query_args( $url, $allow_checkout_auth = false ) {
+        $args = $this->language_switch_query_args( $_GET, $allow_checkout_auth ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return $args ? add_query_arg( $args, $url ) : $url;
     }
 
@@ -1844,14 +1868,9 @@ class ITKT_Frontend {
             $url = $this->raw_home_url( '/' . $code . '/' . ( $path ? $path . '/' : '' ) );
         }
 
-        // Preserve useful current query arguments while removing old language selectors.
+        // Preserve read-only storefront state, but never replay action/nonces on a language switch.
         if ( ! $preserve_current_query ) { return $url; }
-        $args = array();
-        foreach ( (array) $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $key = sanitize_key( $key );
-            if ( in_array( $key, array( 'itkt_lang', 'lang', 'preview', 'preview_id', 'preview_nonce' ), true ) ) { continue; }
-            if ( is_scalar( $value ) ) { $args[ $key ] = sanitize_text_field( wp_unslash( $value ) ); }
-        }
+        $args = $this->language_switch_query_args( $_GET, false ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return $args ? add_query_arg( $args, $url ) : $url;
     }
 

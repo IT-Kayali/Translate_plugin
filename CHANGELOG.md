@@ -2,9 +2,23 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.20**.
+Current development version: **0.12.21**.
 
 
+
+## [0.12.21]
+
+### Frontend routing / action replay hardening
+- Centralized query-argument sanitization for language-switch URLs.
+- Read-only scalar storefront state remains preserved, while WooCommerce/cart/wishlist/order action parameters, AJAX action parameters and nonce/security values are removed.
+- Checkout `order-pay` and `order-received` keep their required `key` / `pay_for_order` context only when the current request is one of those endpoints.
+- Translated-slug canonical redirects now use the same safe query-state sanitizer.
+- SEO translated-slug redirects now bypass Cart, Checkout/order-pay/order-received and My Account routes so stateful WooCommerce endpoint paths are preserved.
+- Added the `itkt_language_switch_query_args` filter for site-specific read-only query parameters.
+
+### Validation
+- PHP and JavaScript syntax checks pass.
+- Query sanitizer regression harness verifies filter preservation, action/nonce removal and checkout-auth exception handling.
 
 ## [0.12.20]
 

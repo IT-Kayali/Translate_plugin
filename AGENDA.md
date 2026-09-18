@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.20 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.21 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 18.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -169,6 +169,10 @@ Vor der finalen Abnahme wurde Backup/Restore sicherer gemacht:
 
 
 
+### v0.12.21 – Sprachwechsel ohne Aktions-Wiederholung
+
+Der Produktions-Audit hat einen Routing-Randfall geschlossen: Sprachwechsel dürfen Filter/Suche/Sortierung behalten, aber keine zustandsändernden GET-Aktionen erneut ausführen. Daher werden Warenkorb-/Wishlist-/Bestellaktionen, AJAX-Aktionsparameter sowie Nonces/Security-Werte zentral aus Sprachwechsel-URLs entfernt. `order-pay` und `order-received` dürfen die für denselben Checkout-Endpunkt nötigen WooCommerce-Parameter gezielt behalten. Auch SEO-Canonical-Weiterleitungen nutzen dieselbe Bereinigung. Zusätzlich überspringt die SEO-Slug-Normalisierung zustandsbehaftete WooCommerce-Routen wie Warenkorb, Checkout (`order-pay`/`order-received`) und Mein Konto, damit Endpoint-Pfade nicht auf die Basis-Seite zurückfallen.
+
 ### v0.12.20 – Produktimport Produktionshärtung
 
 - CSV/XLSX-Produktimporte sind auf 25 MB, 10.000 Datenzeilen, 512 Spalten und begrenzte Zell-/XML-Größen beschränkt.
@@ -185,7 +189,7 @@ Vor der finalen Abnahme wurde Backup/Restore sicherer gemacht:
 
 ### Finaler Realtest
 
-1. v0.12.20 installieren, **Systemstatus** öffnen und alle Hinweise inklusive Frontend-Übersetzungsabdeckung prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
+1. v0.12.21 installieren, **Systemstatus** öffnen und alle Hinweise inklusive Frontend-Übersetzungsabdeckung prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
 2. DE, EN und AR vollständig durchgehen: Shop → Suche → Produkt → Kategorie → Filter → Mini-Cart → Warenkorb → Checkout → Mein Konto → Wishlist → Popup/Offcanvas.
 3. Auf jeder relevanten Seite Sprache wechseln und prüfen, dass dieselbe logische Seite/dasselbe Produkt/Endpoint erhalten bleibt.
 4. Als Admin in DE alle Bereiche einmal öffnen, danach **Frontend Texte** prüfen und einige EN/AR-Texte speichern.

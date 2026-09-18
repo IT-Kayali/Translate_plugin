@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.20
+Stable tag: 0.12.21
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -46,6 +46,14 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.21 =
+* Hardened language-switch query handling so switching languages does not replay state-changing GET actions.
+* Cart/wishlist/order actions, AJAX action parameters and nonce/security values are stripped from copied current-request query state.
+* Search/filter/sort query state remains preserved.
+* WooCommerce order-pay/order-received can retain required key/payment context for the same checkout endpoint.
+* Canonical translated-slug redirects use the same safe query-state sanitizer.
+* SEO slug redirects skip Cart, Checkout/order-pay/order-received and My Account so stateful WooCommerce endpoints are not collapsed to their base page.
 
 = 0.12.20 =
 * Hardened WooCommerce product translation CSV/XLSX import before production sign-off.

@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.20**
+**Current development version: v0.12.21**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,9 +12,18 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.20 is the current production-finalization candidate; it hardens product translation CSV/XLSX import while keeping the Backup/Restore protections and acceptance diagnostics.
+- v0.12.21 is the current production-finalization candidate; it prevents state-changing GET actions from being replayed when visitors switch storefront languages.
 
 
+
+## v0.12.21 – safe language-switch query state
+
+- Language-switch URLs now preserve ordinary scalar search/filter/sort state without replaying state-changing GET actions.
+- Cart, wishlist and order actions, AJAX action parameters and nonce/security parameters are removed before current request query arguments are copied to another language URL.
+- Checkout `order-pay` / `order-received` can still keep the WooCommerce `key` / `pay_for_order` context required for the same endpoint.
+- Canonical translated-slug redirects use the same sanitizer, avoiding action replay during SEO normalization.
+- SEO slug redirects now explicitly skip WooCommerce Cart, Checkout/order-pay/order-received and My Account routes so stateful endpoints are never collapsed back to their page base.
+- A public `itkt_language_switch_query_args` filter remains available for site-specific read-only query-state extensions.
 
 ## v0.12.20 – product import production hardening
 
