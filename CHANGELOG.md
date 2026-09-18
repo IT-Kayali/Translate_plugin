@@ -2,9 +2,23 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.21**.
+Current development version: **0.12.22**.
 
 
+
+## [0.12.22]
+
+### Runtime / AJAX production hardening
+- Added a shared debounced runtime-refresh scheduler for cached/AJAX WooCommerce storefront updates.
+- Concurrent refresh attempts are coalesced; changes arriving during an active request trigger at most one follow-up refresh.
+- Removed duplicate WooCommerce cart/fragment listeners from the dynamic runtime and kept only its additional Blocks/checkout events.
+- Public runtime-string AJAX is now GET-only and requires the plugin's XMLHttpRequest request shape.
+- Runtime cart translation no longer calls `wc_load_cart()` for browsers with no existing WooCommerce/cart session cookies.
+
+### Validation
+- PHP and JavaScript syntax checks pass.
+- Static regression checks verify the shared scheduler, duplicate-listener removal, runtime endpoint guards and cart-session hint guard.
+- Real checkout/cart/Blocks testing remains required before production confirmation.
 
 ## [0.12.21]
 

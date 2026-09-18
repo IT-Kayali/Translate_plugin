@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.21
+Stable tag: 0.12.22
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -46,6 +46,13 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.22 =
+* Coalesced WooCommerce/Blocks runtime refreshes through one shared debounce scheduler.
+* Avoids parallel duplicate runtime-map requests and queues only one follow-up refresh while a request is in flight.
+* Removed overlapping dynamic-runtime listeners already handled by the base frontend runtime.
+* Hardened the public runtime-string AJAX endpoint to the intended GET/XMLHttpRequest path.
+* Avoids initializing a WooCommerce cart/session for anonymous runtime requests without existing WooCommerce/cart session cookies.
 
 = 0.12.21 =
 * Hardened language-switch query handling so switching languages does not replay state-changing GET actions.

@@ -585,7 +585,15 @@
     } finally { runtimeApplying = false; }
   }
 
+  var runtimeRefreshTimer = 0;
+  var runtimeRefreshPromise = null;
+  var runtimeRefreshQueued = false;
+
   function refreshRuntimeTranslations() {
+    if (runtimeRefreshPromise) {
+      runtimeRefreshQueued = true;
+      return runtimeRefreshPromise;
+    }
     var lang = ITKTFrontend.currentLang || '';
     if (!lang || !ITKTFrontend.runtimeAjaxUrl) {
       applyGlobalRuntimeTranslations(document);
@@ -599,7 +607,7 @@
       url.searchParams.set('lang', lang);
       url.searchParams.set('_itkt', String(Date.now()));
     } catch(e) { return Promise.resolve(false); }
-    return fetch(url.href, { credentials:'same-origin', cache:'no-store', headers:{'X-Requested-With':'XMLHttpRequest'} })
+    runtimeRefreshPromise = fetch(url.href, { credentials:'same-origin', cache:'no-store', headers:{'X-Requested-With':'XMLHttpRequest'} })
       .then(function(r){ return r.json(); })
       .then(function(res){
         if (!res || !res.success || !res.data) return false;
@@ -613,7 +621,25 @@
         applyGlobalRuntimeTranslations(document);
         applyVisualTranslations(document);
         return true;
-      }).catch(function(){ return false; });
+      }).catch(function(){ return false; })
+      .then(function(result){
+        runtimeRefreshPromise = null;
+        if (runtimeRefreshQueued) {
+          runtimeRefreshQueued = false;
+          scheduleRuntimeRefresh(0);
+        }
+        return result;
+      });
+    return runtimeRefreshPromise;
+  }
+
+  function scheduleRuntimeRefresh(delay) {
+    delay = Math.max(0, Number(delay) || 0);
+    window.clearTimeout(runtimeRefreshTimer);
+    runtimeRefreshTimer = window.setTimeout(function(){
+      runtimeRefreshTimer = 0;
+      refreshRuntimeTranslations();
+    }, delay);
   }
 
   function cleanClasses(el) {
@@ -932,7 +958,8 @@
     zoneSelector: VISUAL_ZONE_SELECTOR,
     apply: applyVisualTranslations,
     applyGlobal: applyGlobalRuntimeTranslations,
-    refresh: refreshRuntimeTranslations
+    refresh: refreshRuntimeTranslations,
+    scheduleRefresh: scheduleRuntimeRefresh
   };
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -976,11 +1003,11 @@
 
   // WooCommerce classic fragments and Blocks can replace the cart DOM after our initial runtime
   // map was loaded. Refresh both global strings and product translations after those events.
-  document.addEventListener('wc-blocks_added_to_cart', function(){ window.setTimeout(refreshRuntimeTranslations, 40); });
-  document.addEventListener('wc-blocks_removed_from_cart', function(){ window.setTimeout(refreshRuntimeTranslations, 40); });
+  document.addEventListener('wc-blocks_added_to_cart', function(){ scheduleRuntimeRefresh(40); });
+  document.addEventListener('wc-blocks_removed_from_cart', function(){ scheduleRuntimeRefresh(40); });
   if (window.jQuery) {
     window.jQuery(document.body).on('added_to_cart removed_from_cart wc_fragments_refreshed updated_wc_div updated_cart_totals updated_checkout', function(){
-      window.setTimeout(refreshRuntimeTranslations, 40);
+      scheduleRuntimeRefresh(40);
     });
   }
 

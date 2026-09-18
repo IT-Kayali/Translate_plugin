@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.21**
+**Current development version: v0.12.22**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,7 +12,7 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.21 is the current production-finalization candidate; it prevents state-changing GET actions from being replayed when visitors switch storefront languages.
+- v0.12.22 is the current production-finalization candidate; it coalesces WooCommerce runtime refreshes and hardens the public read-only runtime endpoint against unnecessary session work.
 
 
 
@@ -24,6 +24,16 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - Canonical translated-slug redirects use the same sanitizer, avoiding action replay during SEO normalization.
 - SEO slug redirects now explicitly skip WooCommerce Cart, Checkout/order-pay/order-received and My Account routes so stateful endpoints are never collapsed back to their page base.
 - A public `itkt_language_switch_query_args` filter remains available for site-specific read-only query-state extensions.
+
+
+## v0.12.22 – runtime/AJAX production hardening
+
+- WooCommerce/Blocks runtime refreshes are debounced through one shared scheduler instead of launching overlapping fetches for the same cart/checkout event.
+- If a refresh is already in flight, additional changes queue one follow-up refresh instead of opening parallel requests.
+- The dynamic runtime listens only to events not already owned by the base frontend runtime, removing duplicate cart/fragment listeners.
+- The public `itkt_runtime_strings` endpoint is GET-only and accepts the plugin's same-origin XMLHttpRequest path rather than generic form/image-style requests.
+- Cart translation runtime no longer initializes a WooCommerce cart/session when the browser has no WooCommerce/cart session cookies.
+- This reduces avoidable admin-ajax traffic and anonymous WooCommerce session work without changing published translation data.
 
 ## v0.12.20 – product import production hardening
 

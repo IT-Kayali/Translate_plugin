@@ -33,20 +33,24 @@
     wp.hooks.addFilter('i18n.ngettext_with_context', 'itkt/dynamic-runtime-ngettext-context', ngettextContext, 100);
   }
 
-  function refresh(){
-    if (window.ITKTVisualTools && typeof window.ITKTVisualTools.refresh === 'function') {
+  function refresh(delay){
+    if (window.ITKTVisualTools && typeof window.ITKTVisualTools.scheduleRefresh === 'function') {
+      window.ITKTVisualTools.scheduleRefresh(delay || 0);
+    } else if (window.ITKTVisualTools && typeof window.ITKTVisualTools.refresh === 'function') {
       window.ITKTVisualTools.refresh();
     } else if (window.ITKTVisualTools && typeof window.ITKTVisualTools.applyGlobal === 'function') {
       window.ITKTVisualTools.applyGlobal(document);
     }
   }
 
-  ['wc-blocks_added_to_cart','wc-blocks_removed_from_cart','wc-blocks_updated_cart','wc-blocks_updated_checkout'].forEach(function(name){
-    document.addEventListener(name,function(){ window.setTimeout(refresh,50); });
+  // frontend.js already owns the common cart/fragment events. Listen only to additional
+  // Blocks/checkout events here so one WooCommerce action cannot start duplicate runtime fetches.
+  ['wc-blocks_updated_cart','wc-blocks_updated_checkout'].forEach(function(name){
+    document.addEventListener(name,function(){ refresh(50); });
   });
   if (window.jQuery) {
-    window.jQuery(document.body).on('added_to_cart removed_from_cart wc_fragments_refreshed updated_wc_div updated_cart_totals updated_checkout checkout_error applied_coupon removed_coupon updated_shipping_method country_to_state_changed',function(){
-      window.setTimeout(refresh,50);
+    window.jQuery(document.body).on('checkout_error applied_coupon removed_coupon updated_shipping_method country_to_state_changed',function(){
+      refresh(50);
     });
   }
 

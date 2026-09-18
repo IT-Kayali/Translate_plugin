@@ -1545,7 +1545,16 @@ class ITKT_Frontend {
      * otherwise keep an older localized JavaScript payload even after a translation was saved.
      */
     public function ajax_runtime_strings() {
-        $code = sanitize_key( isset( $_REQUEST['lang'] ) ? wp_unslash( $_REQUEST['lang'] ) : '' );
+        $method = strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? '' ) );
+        if ( 'GET' !== $method ) {
+            wp_send_json_error( array( 'message' => 'Method not allowed.' ), 405 );
+        }
+        $requested_with = strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '' ) ) );
+        if ( 'xmlhttprequest' !== $requested_with ) {
+            wp_send_json_error( array( 'message' => 'Invalid runtime request.' ), 400 );
+        }
+
+        $code = sanitize_key( isset( $_GET['lang'] ) ? wp_unslash( $_GET['lang'] ) : '' );
         $active = ITKT_Languages::instance()->get_active();
         if ( ! $code || empty( $active[ $code ] ) ) {
             wp_send_json_error( array( 'message' => 'Invalid language.' ), 400 );

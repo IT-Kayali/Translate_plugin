@@ -773,12 +773,27 @@ class ITKT_Product_Translations {
      * titles and displayed attribute labels/values in the selected ITKT language without cloning
      * products or changing the underlying cart data.
      */
+    /** Avoid creating/loading a WooCommerce session for anonymous runtime-map probes. */
+    private function has_frontend_cart_session_hint() {
+        foreach ( array_keys( (array) $_COOKIE ) as $cookie_name ) {
+            $cookie_name = (string) $cookie_name;
+            if ( 'woocommerce_items_in_cart' === $cookie_name || 'woocommerce_cart_hash' === $cookie_name || 0 === strpos( $cookie_name, 'wp_woocommerce_session_' ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function frontend_cart_translation_map( $language = '' ) {
         $language = sanitize_key( (string) $language );
         if ( ! $language ) { $language = ITKT_Languages::instance()->current_code(); }
         if ( ! $language || $language === ITKT_Languages::instance()->get_default_code() ) { return array(); }
         if ( ! function_exists( 'WC' ) || ! WC() ) { return array(); }
         if ( ( ! isset( WC()->cart ) || ! WC()->cart ) && function_exists( 'wc_load_cart' ) ) {
+            // The public runtime endpoint must not initialize WooCommerce sessions for crawlers or
+            // unrelated anonymous requests. Only load a cart when WooCommerce/cart cookies show
+            // that this browser already has storefront session state.
+            if ( ! $this->has_frontend_cart_session_hint() ) { return array(); }
             try { wc_load_cart(); } catch ( Throwable $e ) { /* keep runtime read-only */ }
         }
         if ( ! isset( WC()->cart ) || ! WC()->cart ) { return array(); }
