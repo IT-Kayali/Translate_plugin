@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.16**
+**Current development version: v0.12.17**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,8 +12,16 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.16 is the current production-finalization candidate with an expanded production preflight/self-test.
+- v0.12.17 is the current production-finalization candidate with a version-bound final acceptance checklist and exportable report.
 
+
+## v0.12.17 – final production acceptance assistant
+
+**Systemstatus** now contains a version-bound real-browser acceptance matrix. It is intentionally manual: routes, WoodMart drawers, AJAX/Blocks refreshes, checkout validation, cache behaviour and mobile interaction cannot be proven safely by a server-only self-test.
+
+For every active language the matrix covers Shop, Search, Product, Category, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas and same-context language switching. Cross-cutting checks cover Frontend Texte, WooCommerce AJAX/Blocks, Live Editor, Backup/Restore, cache visibility, transactional e-mail language and mobile/tablet behaviour.
+
+The Systemstatus dashboard shows a production-acceptance percentage. A version is shown as ready only when all current-version manual checks are marked complete and no critical automated self-test is failing. The complete result can be exported as a JSON acceptance report for support or handoff.
 
 ## v0.12.16 – production preflight
 

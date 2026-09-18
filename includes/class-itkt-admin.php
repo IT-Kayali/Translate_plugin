@@ -30,6 +30,9 @@ class ITKT_Admin {
         add_action( 'admin_post_itkt_repair_slug_indexes', array( $this, 'repair_slug_indexes' ) );
         add_action( 'admin_post_itkt_repair_search_indexes', array( $this, 'repair_search_indexes' ) );
         add_action( 'admin_post_itkt_flush_rewrites', array( $this, 'flush_rewrites' ) );
+        add_action( 'admin_post_itkt_save_acceptance', array( $this, 'save_acceptance' ) );
+        add_action( 'admin_post_itkt_reset_acceptance', array( $this, 'reset_acceptance' ) );
+        add_action( 'admin_post_itkt_export_acceptance', array( $this, 'export_acceptance' ) );
         add_filter( 'plugin_action_links_' . ITKT_BASENAME, array( $this, 'plugin_links' ) );
     }
 
@@ -898,12 +901,42 @@ class ITKT_Admin {
         wp_safe_redirect( admin_url( 'admin.php?page=itkt-system&diag=rewrites' ) ); exit;
     }
 
+    public function save_acceptance() {
+        if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Unauthorized' ); }
+        check_admin_referer( 'itkt_save_acceptance' );
+        ITKT_Diagnostics::instance()->save_acceptance_state( wp_unslash( $_POST['acceptance'] ?? array() ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=itkt-system&diag=acceptance-saved' ) ); exit;
+    }
+
+    public function reset_acceptance() {
+        if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Unauthorized' ); }
+        check_admin_referer( 'itkt_reset_acceptance' );
+        ITKT_Diagnostics::instance()->reset_acceptance_state();
+        wp_safe_redirect( admin_url( 'admin.php?page=itkt-system&diag=acceptance-reset' ) ); exit;
+    }
+
+    public function export_acceptance() {
+        if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Unauthorized' ); }
+        check_admin_referer( 'itkt_export_acceptance' );
+        $report = ITKT_Diagnostics::instance()->acceptance_report();
+        nocache_headers();
+        header( 'Content-Type: application/json; charset=utf-8' );
+        header( 'Content-Disposition: attachment; filename="itkt-abnahmebericht-' . sanitize_file_name( ITKT_VERSION ) . '.json"' );
+        echo wp_json_encode( $report, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+        exit;
+    }
+
     public function system(){
         $env=ITKT_Environment::detect(); global $wpdb;
         $checks=ITKT_Diagnostics::instance()->self_test();
         $log=ITKT_Diagnostics::instance()->get_log();
         $stats=ITKT_Diagnostics::instance()->stats();
+        $acceptance_catalog=ITKT_Diagnostics::instance()->acceptance_catalog();
+        $acceptance_state=ITKT_Diagnostics::instance()->acceptance_state();
+        $acceptance_summary=ITKT_Diagnostics::instance()->acceptance_summary();
         $failed=array_filter($checks,function($c){return empty($c['ok']);});
+        $critical_failed=array_filter($checks,function($c){return empty($c['ok']) && ('warning' !== ($c['severity'] ?? 'error'));});
+        $production_ready=empty($critical_failed) && !empty($acceptance_summary['complete']);
         $this->header('Systemstatus','Selbsttest, Routing-Diagnose, Übersetzungszustand und Support-Protokoll.');
         if(!empty($_GET['diag'])){
             $diag=sanitize_key($_GET['diag']);
@@ -911,6 +944,8 @@ class ITKT_Admin {
             elseif('search-repaired'===$diag){echo '<div class="notice notice-success inline"><p><strong>Produkt-Suchindex geprüft.</strong> '.intval($_GET['checked']??0).' geprüft, '.intval($_GET['repaired']??0).' aktualisiert.</p></div>';}
             elseif('rewrites'===$diag){echo '<div class="notice notice-success inline"><p><strong>Rewrite-Regeln wurden neu geladen.</strong></p></div>';}
             elseif('cleared'===$diag){echo '<div class="notice notice-success inline"><p><strong>Diagnose-Protokoll wurde geleert.</strong></p></div>';}
+            elseif('acceptance-saved'===$diag){echo '<div class="notice notice-success inline"><p><strong>Abnahmestand gespeichert.</strong> Der Fortschritt gilt für Plugin-Version '.esc_html(ITKT_VERSION).'.</p></div>';}
+            elseif('acceptance-reset'===$diag){echo '<div class="notice notice-success inline"><p><strong>Abnahmecheckliste wurde zurückgesetzt.</strong></p></div>';}
         }
         ?>
         <div class="itkt-stats-grid itkt-diagnostic-stats">
@@ -918,6 +953,7 @@ class ITKT_Admin {
             <div class="itkt-stat-card"><span>Fertige Übersetzungen</span><strong><?php echo intval($stats['complete']??0);?></strong><small>über Seiten, Beiträge und Produkte</small></div>
             <div class="itkt-stat-card"><span>Fehlend / teilweise</span><strong><?php echo intval(($stats['missing']??0)+($stats['partial']??0));?></strong><small>noch zu bearbeiten</small></div>
             <div class="itkt-stat-card"><span>Veraltet</span><strong><?php echo intval($stats['outdated']??0);?></strong><small>Original wurde nachträglich geändert</small></div>
+            <div class="itkt-stat-card"><span>Produktionsabnahme</span><strong><?php echo intval($acceptance_summary['done']);?>/<?php echo intval($acceptance_summary['total']);?></strong><small><?php echo $production_ready?'Bereit zur Produktivbestätigung':intval($acceptance_summary['percent']).'% des Realtests bestätigt';?></small></div>
         </div>
         <div class="itkt-grid-2">
             <section class="itkt-card"><div class="itkt-card-head"><div><span class="itkt-kicker">SELBSTTEST</span><h2>Systemgesundheit</h2></div><span class="itkt-pill <?php echo $failed?'orange':'green';?>"><?php echo $failed?'Prüfen':'OK';?></span></div>
@@ -933,6 +969,29 @@ class ITKT_Admin {
                 <div class="itkt-notice blue"><strong>Routing-Hinweis:</strong> Wenn eine Sprach-Produktseite nach einem Update 404 zeigt, zuerst „Rewrite-Regeln neu laden“ und anschließend den Produkt-Slug-Index prüfen.</div>
             </section>
         </div>
+        <section class="itkt-card">
+            <div class="itkt-card-head"><div><span class="itkt-kicker">FINALER REALTEST</span><h2>Produktionsabnahme</h2></div><span class="itkt-pill <?php echo $production_ready?'green':'orange';?>"><?php echo $production_ready?'BEREIT':intval($acceptance_summary['percent']).'%';?></span></div>
+            <p>Diese Checkliste dokumentiert nur echte Browser-Tests. Ein Häkchen bedeutet: Der Punkt wurde in der aktuellen Version <strong><?php echo esc_html(ITKT_VERSION);?></strong> real geprüft. Nach einem Versionswechsel beginnt die Abnahme bewusst wieder bei 0 %.</p>
+            <?php if(!$acceptance_summary['valid_version'] && !empty($acceptance_state['checks'])):?><div class="itkt-notice orange"><strong>Neue Plugin-Version erkannt.</strong> Alte Häkchen werden nicht als aktuelle Abnahme gewertet.</div><?php endif;?>
+            <?php if($production_ready):?><div class="itkt-notice green"><strong>Abnahmematrix vollständig.</strong> Alle manuellen Punkte sind bestätigt und es gibt keinen fehlgeschlagenen kritischen Selbsttest.</div><?php elseif($critical_failed):?><div class="itkt-notice orange"><strong>Noch nicht produktionsbereit:</strong> <?php echo intval(count($critical_failed));?> kritische(r) Selbsttest(s) müssen zuerst gelöst werden.</div><?php endif;?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php'));?>">
+                <?php wp_nonce_field('itkt_save_acceptance');?><input type="hidden" name="action" value="itkt_save_acceptance">
+                <div class="itkt-acceptance-list">
+                    <?php foreach($acceptance_catalog as $section_key=>$section):?>
+                        <details class="itkt-acceptance-section" <?php echo 0===strpos($section_key,'lang_')?'open':'';?>>
+                            <summary><strong><?php echo esc_html($section['label']);?></strong></summary>
+                            <div class="itkt-check-list">
+                                <?php foreach((array)$section['items'] as $id=>$label):$checked=$acceptance_summary['valid_version']&&!empty($acceptance_state['checks'][$id]);?>
+                                    <label class="itkt-check-row <?php echo $checked?'is-ok':'';?>"><input type="checkbox" name="acceptance[<?php echo esc_attr($id);?>]" value="1" <?php checked($checked);?>><div><strong><?php echo esc_html($label);?></strong><small><?php echo $checked?'Bestätigt':'Noch offen';?></small></div></label>
+                                <?php endforeach;?>
+                            </div>
+                        </details>
+                    <?php endforeach;?>
+                </div>
+                <p><button class="button button-primary itkt-primary" type="submit">Abnahmestand speichern</button> <a class="button" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=itkt_export_acceptance'),'itkt_export_acceptance'));?>">Abnahmebericht exportieren</a> <a class="button" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=itkt_reset_acceptance'),'itkt_reset_acceptance'));?>" onclick="return confirm('Abnahmecheckliste wirklich zurücksetzen?');">Checkliste zurücksetzen</a></p>
+                <?php if(!empty($acceptance_summary['updated_at'])):?><small>Zuletzt gespeichert: <?php echo esc_html($acceptance_summary['updated_at']);?></small><?php endif;?>
+            </form>
+        </section>
         <div class="itkt-grid-2">
             <section class="itkt-card"><span class="itkt-kicker">UMGEBUNG</span><h2>Kompatibilität</h2><div class="itkt-compat-list"><?php foreach($env as $item):?><div><span class="itkt-dot <?php echo $item['active']?'ok':'';?>"></span><strong><?php echo esc_html($item['label']);?></strong><span><?php echo $item['active']?'Aktiv':'Nicht aktiv';?> <?php echo esc_html($item['version']);?></span></div><?php endforeach;?></div></section>
             <section class="itkt-card"><span class="itkt-kicker">SERVER</span><h2>Technische Daten</h2><dl class="itkt-system-list"><div><dt>Plugin</dt><dd><?php echo esc_html(ITKT_VERSION);?></dd></div><div><dt>PHP</dt><dd><?php echo esc_html(PHP_VERSION);?></dd></div><div><dt>WordPress</dt><dd><?php echo esc_html(get_bloginfo('version'));?></dd></div><div><dt>Datenbank</dt><dd><?php echo esc_html($wpdb->db_version());?></dd></div><div><dt>Theme</dt><dd><?php echo esc_html(ITKT_Environment::theme_name());?></dd></div><div><dt>Permalinks</dt><dd><?php echo esc_html(get_option('permalink_structure')?:'Einfach');?></dd></div></dl></section>

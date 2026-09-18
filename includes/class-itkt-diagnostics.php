@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class ITKT_Diagnostics {
     const LOG_OPTION = 'itkt_diagnostic_log';
     const STATS_TRANSIENT = 'itkt_diagnostic_stats';
+    const ACCEPTANCE_OPTION = 'itkt_acceptance_status';
     private static $instance = null;
 
     public static function instance() {
@@ -310,6 +311,153 @@ class ITKT_Diagnostics {
         $add( 'memory', 'PHP Memory Limit', $memory < 0 || $memory >= 128 * MB_IN_BYTES, ini_get( 'memory_limit' ) . ' PHP Memory Limit.', 'warning' );
 
         return $checks;
+    }
+
+    /**
+     * Manual production acceptance matrix. These checks deliberately stay manual because they
+     * describe real browser behaviour (AJAX, WoodMart drawers, checkout and language switching)
+     * that cannot be proven safely by a server-side self-test alone.
+     */
+    public function acceptance_catalog() {
+        $languages = ITKT_Languages::instance()->get_active();
+        $sections = array();
+
+        $journey = array(
+            'shop'       => 'Shop öffnet korrekt und sichtbare Texte passen.',
+            'search'     => 'Suche liefert passende Ergebnisse und bleibt in der Sprache.',
+            'product'    => 'Produktseite bleibt beim Sprachwechsel beim selben Produkt.',
+            'category'   => 'Kategorie/Archiv bleibt beim Sprachwechsel im selben Kontext.',
+            'filters'    => 'Filter/Attribute funktionieren und dynamische Texte bleiben übersetzt.',
+            'mini_cart'  => 'Mini-Cart/Drawer funktioniert nach AJAX und bleibt übersetzt.',
+            'cart'       => 'Warenkorb funktioniert inklusive Mengen-/Entfernen-Refresh.',
+            'checkout'   => 'Checkout funktioniert inklusive Versand, Zahlung und Validierung.',
+            'account'    => 'Mein Konto und Endpunkte öffnen ohne Dashboard-Fallback.',
+            'wishlist'   => 'Wishlist funktioniert und bleibt in der aktiven Sprache.',
+            'popup'      => 'Popups/Offcanvas-Inhalte werden korrekt übersetzt.',
+            'switch'     => 'Sprachwechsel behält dieselbe logische Seite bzw. denselben Endpoint.',
+        );
+
+        foreach ( $languages as $code => $language ) {
+            $code = sanitize_key( (string) $code );
+            if ( ! $code ) { continue; }
+            $label = trim( (string) ( $language['native_name'] ?? strtoupper( $code ) ) );
+            $items = array();
+            foreach ( $journey as $key => $item_label ) {
+                $items[ $code . '__' . $key ] = $item_label;
+            }
+            $sections[ 'lang_' . $code ] = array(
+                'label' => strtoupper( $code ) . ' · ' . $label,
+                'items' => $items,
+            );
+        }
+
+        $sections['cross'] = array(
+            'label' => 'Dynamik, Editor, Backup & Cache',
+            'items' => array(
+                'cross__frontend_catalog' => 'Frontend Texte nach dem Durchklicken prüfen und mindestens einen Text speichern.',
+                'cross__ajax'             => 'WooCommerce AJAX/Blocks testen: Warenkorb, Coupon, Versand/Zahlung und Checkout-Fehler.',
+                'cross__live_editor'      => 'Live-Editor an Header, Footer, Menü, Popup/Offcanvas, Wishlist und Notice testen.',
+                'cross__backup_restore'   => 'Backup exportieren, harmlose Übersetzung ändern und per Restore wiederherstellen.',
+                'cross__cache'            => 'Mit aktivem Cache eine Übersetzung ändern und in privatem Browser kontrollieren.',
+                'cross__email'            => 'Transaktionale WooCommerce-E-Mail prüfen: Ausgabe bleibt in der Standardsprache.',
+                'cross__mobile'           => 'Mindestens einen vollständigen Durchlauf auf Handy/Tablet prüfen.',
+            ),
+        );
+
+        return $sections;
+    }
+
+    public function acceptance_state() {
+        $state = get_option( self::ACCEPTANCE_OPTION, array() );
+        if ( ! is_array( $state ) ) { $state = array(); }
+        $checks = isset( $state['checks'] ) && is_array( $state['checks'] ) ? $state['checks'] : array();
+        return array(
+            'version'    => (string) ( $state['version'] ?? '' ),
+            'checks'     => $checks,
+            'updated_at' => (string) ( $state['updated_at'] ?? '' ),
+        );
+    }
+
+    public function save_acceptance_state( $submitted ) {
+        $allowed = array();
+        foreach ( $this->acceptance_catalog() as $section ) {
+            foreach ( (array) ( $section['items'] ?? array() ) as $id => $label ) {
+                $allowed[ sanitize_key( (string) $id ) ] = true;
+            }
+        }
+
+        $checks = array();
+        foreach ( (array) $submitted as $id => $value ) {
+            $id = sanitize_key( (string) $id );
+            if ( isset( $allowed[ $id ] ) && ! empty( $value ) ) { $checks[ $id ] = 1; }
+        }
+
+        $state = array(
+            'version'    => ITKT_VERSION,
+            'checks'     => $checks,
+            'updated_at' => current_time( 'mysql' ),
+        );
+        update_option( self::ACCEPTANCE_OPTION, $state, false );
+        return $state;
+    }
+
+    public function reset_acceptance_state() {
+        delete_option( self::ACCEPTANCE_OPTION );
+    }
+
+    public function acceptance_summary() {
+        $catalog = $this->acceptance_catalog();
+        $state = $this->acceptance_state();
+        $valid_version = (string) $state['version'] === (string) ITKT_VERSION;
+        $done = 0; $total = 0;
+        foreach ( $catalog as $section ) {
+            foreach ( (array) ( $section['items'] ?? array() ) as $id => $label ) {
+                $total++;
+                if ( $valid_version && ! empty( $state['checks'][ $id ] ) ) { $done++; }
+            }
+        }
+        return array(
+            'done'          => $done,
+            'total'         => $total,
+            'percent'       => $total ? (int) round( ( $done / $total ) * 100 ) : 0,
+            'complete'      => $total > 0 && $done === $total,
+            'valid_version' => $valid_version,
+            'updated_at'    => $state['updated_at'],
+        );
+    }
+
+    public function acceptance_report() {
+        $catalog = $this->acceptance_catalog();
+        $state = $this->acceptance_state();
+        $summary = $this->acceptance_summary();
+        $checks = array();
+        foreach ( $catalog as $section_key => $section ) {
+            $items = array();
+            foreach ( (array) ( $section['items'] ?? array() ) as $id => $label ) {
+                $items[] = array(
+                    'id'     => $id,
+                    'label'  => $label,
+                    'passed' => $summary['valid_version'] && ! empty( $state['checks'][ $id ] ),
+                );
+            }
+            $checks[] = array(
+                'section' => $section_key,
+                'label'   => (string) ( $section['label'] ?? $section_key ),
+                'items'   => $items,
+            );
+        }
+
+        return array(
+            'plugin'        => 'IT-Kayali Translate',
+            'version'       => ITKT_VERSION,
+            'generated_at'  => current_time( 'mysql' ),
+            'site'          => home_url( '/' ),
+            'default_lang'  => ITKT_Languages::instance()->get_default_code(),
+            'active_langs'  => array_keys( ITKT_Languages::instance()->get_active() ),
+            'summary'       => $summary,
+            'manual_checks' => $checks,
+            'system_checks' => $this->self_test(),
+        );
     }
 
     public function repair_search_indexes() {

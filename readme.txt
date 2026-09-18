@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.16
+Stable tag: 0.12.17
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -46,6 +46,12 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.17 =
+* Added a version-bound production acceptance checklist to Systemstatus.
+* The checklist covers the complete active-language storefront journey plus AJAX, live editor, backup/restore, cache, transactional e-mail language and mobile checks.
+* Added JSON export of the final acceptance report for support/documentation.
+* Production readiness is shown only when all manual checks for the current version are complete and no critical automated self-test is failing.
 
 = 0.12.16 =
 * Expanded Systemstatus preflight checks for WooCommerce system pages and My Account endpoints.

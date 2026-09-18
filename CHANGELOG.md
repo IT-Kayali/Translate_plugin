@@ -2,8 +2,23 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.16**.
+Current development version: **0.12.17**.
 
+
+## [0.12.17]
+
+### Final production acceptance
+- Added a version-bound manual browser acceptance checklist to **Systemstatus**.
+- The checklist is generated for every active language and covers Shop, Search, Product, Category, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas and same-context language switching.
+- Added cross-cutting checks for Frontend Texte, WooCommerce AJAX/Blocks, Live Editor, Backup/Restore, cache visibility, transactional e-mail language and mobile/tablet behaviour.
+- Added a clear production-acceptance progress indicator.
+- A build is marked ready only when the current-version manual matrix is complete and no critical automated self-test is failing.
+- Added JSON export of the acceptance report including system checks and manual results.
+- Old checklist state is not treated as current after a version change.
+
+### Scope
+- No sales, licensing or customer-updater work was added.
+- This version is dedicated to closing the real-site acceptance phase for the current shop.
 
 ## [0.12.16]
 

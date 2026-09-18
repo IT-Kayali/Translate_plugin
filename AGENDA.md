@@ -1,7 +1,7 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.16 – Produktionskandidat**  
-**Letzte Aktualisierung: 16.09.2026**
+**Aktueller Entwicklungsstand: v0.12.17 – Produktionskandidat / finale Abnahme**  
+**Letzte Aktualisierung: 18.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
 
@@ -141,6 +141,12 @@ Der bestehende Bereich **IT-Kayali Translate → Systemstatus** prüft jetzt zus
 - WP Fastest Cache Integration, wenn WP Fastest Cache erkannt wird
 
 Damit können Konfigurations-/Schemafehler vor dem manuellen Browser-Endtest erkannt werden.
+
+### v0.12.17 – Abnahme-Assistent
+
+Der Bereich **Systemstatus** enthält jetzt eine versionsgebundene Produktionsabnahme. Für jede aktive Sprache werden Shop, Suche, Produkt, Kategorie, Filter, Mini-Cart, Warenkorb, Checkout, Mein Konto, Wishlist, Popups/Offcanvas und der Sprachwechsel im gleichen Kontext dokumentiert. Zusätzlich gibt es globale Checks für Frontend Texte, WooCommerce AJAX/Blocks, Live-Editor, Backup/Restore, Cache, transaktionale E-Mails und Mobile/Tablet.
+
+Der Fortschritt wird im Systemstatus angezeigt. **BEREIT** erscheint erst, wenn alle manuellen Punkte der aktuellen Version bestätigt sind und kein kritischer automatischer Selbsttest fehlschlägt. Ein JSON-Abnahmebericht kann direkt exportiert werden. Alte Häkchen werden nach einem Versionswechsel nicht automatisch als neue Abnahme gewertet.
 
 ## Was jetzt wirklich noch offen ist
 
