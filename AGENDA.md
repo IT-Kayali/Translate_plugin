@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.18 – Produktionskandidat / finale Abnahme**  
+**Aktueller Entwicklungsstand: v0.12.19 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 18.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -155,13 +155,26 @@ Der Fortschritt wird im Systemstatus angezeigt. **BEREIT** erscheint erst, wenn 
 - Alte Versionshinweise in SEO-/Admin-Hilfetexten wurden neutralisiert.
 - Der Systemstatus zeigt jetzt pro aktiver Nicht-Standardsprache, wie viele automatisch erfasste Frontend-Texte tatsächlich übersetzt sind. Fehlende Frontend-Texte erscheinen als Warnung vor der finalen Abnahme.
 
+### v0.12.19 – Backup/Restore Produktionshärtung
+
+Vor der finalen Abnahme wurde Backup/Restore sicherer gemacht:
+
+- Restore akzeptiert nur Backups derselben WordPress-Site / desselben Netzwerk-Kontexts, damit ID-basierte Daten nicht versehentlich an fremde Inhalte gehängt werden.
+- Unvollständige Backup-Dateien werden vor jeder destruktiven Änderung abgelehnt.
+- Beziehungen der String-Tabellen werden vor dem Restore geprüft.
+- `_itkt_*` Post-/Term-Metadaten werden nur für noch existierende IDs wiederhergestellt; übersprungene Datensätze werden gezählt und gemeldet.
+- Inhalts-Snapshots werden nur zurückgeschrieben, wenn der aktuelle Post-Type weiterhin zum Backup passt.
+- `dbDelta`/Schema-Arbeiten laufen vor der Datentransaktion, damit MySQL-DDL keinen impliziten Commit mitten im Restore auslöst.
+- Nach einem fehlgeschlagenen Restore wird zusätzlich der Object Cache geleert.
+
+
 ## Was jetzt wirklich noch offen ist
 
 **Kein großer Funktionsblock fehlt mehr im Code für deinen aktuellen Einsatzzweck.** Offen ist die abschließende reale Abnahme auf der Website. Dabei müssen wir eventuelle konkrete WoodMart-/WooCommerce-Sonderfälle reparieren, die nur in deiner echten Installation sichtbar werden.
 
 ### Finaler Realtest
 
-1. v0.12.18 installieren, **Systemstatus** öffnen und alle Hinweise inklusive Frontend-Übersetzungsabdeckung prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
+1. v0.12.19 installieren, **Systemstatus** öffnen und alle Hinweise inklusive Frontend-Übersetzungsabdeckung prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
 2. DE, EN und AR vollständig durchgehen: Shop → Suche → Produkt → Kategorie → Filter → Mini-Cart → Warenkorb → Checkout → Mein Konto → Wishlist → Popup/Offcanvas.
 3. Auf jeder relevanten Seite Sprache wechseln und prüfen, dass dieselbe logische Seite/dasselbe Produkt/Endpoint erhalten bleibt.
 4. Als Admin in DE alle Bereiche einmal öffnen, danach **Frontend Texte** prüfen und einige EN/AR-Texte speichern.

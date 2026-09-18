@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.18**
+**Current development version: v0.12.19**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,7 +12,16 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.18 is the current production-finalization candidate; it keeps the v0.12.17 acceptance assistant and adds consistency/coverage diagnostics.
+- v0.12.19 is the current production-finalization candidate; it hardens Backup / Restore safety while keeping the v0.12.17 acceptance assistant and v0.12.18 coverage diagnostics.
+
+
+## v0.12.19 – Backup / Restore production hardening
+
+Before final sign-off, Backup / Restore was tightened so a malformed or wrong-site JSON file cannot silently overwrite ID-based translation data. Restore now validates the complete expected backup structure and string-table relationships before any destructive restore operation begins.
+
+Backups are intentionally restored only to the same WordPress site/network context. This prevents post, term and translation IDs from a different installation from being attached to unrelated content. Post/term metadata is restored only when the referenced object still exists, and linked content snapshots are updated only when the current post type matches the snapshot. Skipped rows are reported after restore.
+
+The String Translation schema is now ensured before the data transaction starts because MySQL DDL/dbDelta operations may implicitly commit. Failed restore transactions also flush the WordPress object cache so a rolled-back restore cannot leave stale cached option/content values behind.
 
 
 ## v0.12.18 – production consistency and coverage checks
@@ -117,7 +126,7 @@ Discovery includes supported visible text plus `placeholder`, `aria-label`, `tit
 - taxonomy/attribute translation metadata
 - linked translated WordPress content snapshots
 
-Restore updates only existing IDs and never creates duplicate products/pages/posts/terms. Missing IDs are skipped and reported.
+Restore updates only existing IDs and never creates duplicate products/pages/posts/terms. Missing IDs are skipped and reported. For production safety, restore accepts backups only from the same WordPress site/network context.
 
 ## Final acceptance before calling the production plugin fully finished
 

@@ -123,10 +123,60 @@ class ITKT_Backup {
         exit;
     }
 
+    private function normalized_site_identity( $url ) {
+        $parts = wp_parse_url( (string) $url );
+        if ( ! is_array( $parts ) ) { return ''; }
+        $host = strtolower( (string) ( $parts['host'] ?? '' ) );
+        $path = trim( (string) ( $parts['path'] ?? '' ), '/' );
+        return $host . ( $path ? '/' . $path : '' );
+    }
+
+    private function validate_string_table_relations( $tables ) {
+        $string_ids = array();
+        foreach ( (array) ( $tables['strings'] ?? array() ) as $row ) {
+            if ( ! is_array( $row ) ) { return false; }
+            $id = absint( $row['id'] ?? 0 );
+            if ( ! $id || isset( $string_ids[ $id ] ) ) { return false; }
+            $string_ids[ $id ] = true;
+        }
+        foreach ( array( 'string_sources', 'string_translations' ) as $key ) {
+            foreach ( (array) ( $tables[ $key ] ?? array() ) as $row ) {
+                if ( ! is_array( $row ) ) { return false; }
+                $string_id = absint( $row['string_id'] ?? 0 );
+                if ( ! $string_id || ! isset( $string_ids[ $string_id ] ) ) { return false; }
+            }
+        }
+        return true;
+    }
+
     private function validate( $payload ) {
         if ( ! is_array( $payload ) || self::FORMAT !== ( $payload['format'] ?? '' ) ) { return new WP_Error( 'invalid_backup', 'Die Datei ist kein gültiges IT-Kayali-Translate-Backup.' ); }
         if ( self::SCHEMA !== absint( $payload['schema'] ?? 0 ) ) { return new WP_Error( 'invalid_schema', 'Diese Backup-Version wird nicht unterstützt.' ); }
         if ( empty( $payload['data'] ) || ! is_array( $payload['data'] ) ) { return new WP_Error( 'missing_data', 'Backup-Daten fehlen.' ); }
+
+        $backup_site = $this->normalized_site_identity( $payload['site_url'] ?? '' );
+        $current_site = $this->normalized_site_identity( home_url( '/' ) );
+        if ( ! $backup_site || ! $current_site || ! hash_equals( $current_site, $backup_site ) ) {
+            return new WP_Error( 'site_mismatch', 'Dieses Backup gehört zu einer anderen Website. Die Wiederherstellung wurde zum Schutz vorhandener Daten abgebrochen.' );
+        }
+        if ( isset( $payload['blog_id'] ) && absint( $payload['blog_id'] ) !== (int) get_current_blog_id() ) {
+            return new WP_Error( 'blog_mismatch', 'Dieses Backup gehört zu einer anderen WordPress-Site im Netzwerk.' );
+        }
+
+        $data = $payload['data'];
+        foreach ( array( 'options', 'tables', 'postmeta', 'termmeta', 'content_posts' ) as $key ) {
+            if ( ! array_key_exists( $key, $data ) || ! is_array( $data[ $key ] ) ) {
+                return new WP_Error( 'incomplete_backup', 'Das Backup ist unvollständig und wurde nicht wiederhergestellt.' );
+            }
+        }
+        foreach ( array( 'strings', 'string_sources', 'string_translations' ) as $key ) {
+            if ( ! array_key_exists( $key, $data['tables'] ) || ! is_array( $data['tables'][ $key ] ) ) {
+                return new WP_Error( 'incomplete_tables', 'Das Backup enthält nicht alle erforderlichen String-Tabellen.' );
+            }
+        }
+        if ( ! $this->validate_string_table_relations( $data['tables'] ) ) {
+            return new WP_Error( 'invalid_relations', 'Die String-Daten im Backup sind inkonsistent. Es wurden keine Daten verändert.' );
+        }
         return true;
     }
 
@@ -144,7 +194,6 @@ class ITKT_Backup {
 
     private function restore_tables( $tables ) {
         global $wpdb;
-        ITKT_Strings::install_schema();
         $names = $this->tables();
         foreach ( array( 'string_translations','string_sources','strings' ) as $key ) { $wpdb->query( 'DELETE FROM ' . $names[ $key ] ); }
         $count = 0;
@@ -162,28 +211,35 @@ class ITKT_Backup {
         return $count;
     }
 
-    private function restore_meta( $table, $id_column, $rows ) {
+    private function restore_meta( $table, $id_column, $rows, $entity_type ) {
         global $wpdb;
         $like = $wpdb->esc_like( '_itkt_' ) . '%';
         $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE meta_key LIKE %s", $like ) );
-        $count = 0;
+        $restored = 0;
+        $skipped = 0;
         foreach ( (array) $rows as $row ) {
             $id = absint( $row[ $id_column ] ?? 0 );
             $key = (string) ( $row['meta_key'] ?? '' );
-            if ( ! $id || 0 !== strpos( $key, '_itkt_' ) ) { continue; }
+            if ( ! $id || 0 !== strpos( $key, '_itkt_' ) ) { $skipped++; continue; }
+
+            $exists = 'term' === $entity_type ? term_exists( $id ) : get_post( $id );
+            if ( ! $exists ) { $skipped++; continue; }
+
             if ( false === $wpdb->insert( $table, array( $id_column=>$id,'meta_key'=>$key,'meta_value'=>(string)($row['meta_value'] ?? '') ), array('%d','%s','%s') ) ) {
                 throw new RuntimeException( 'ITKT-Metadaten konnten nicht vollständig wiederhergestellt werden.' );
             }
-            $count++;
+            $restored++;
         }
-        return $count;
+        return array( 'restored'=>$restored, 'skipped'=>$skipped );
     }
 
     private function restore_posts( $posts ) {
         $updated = 0; $skipped = 0;
         foreach ( (array) $posts as $row ) {
             $id = absint( $row['ID'] ?? 0 );
-            if ( ! $id || ! get_post( $id ) ) { $skipped++; continue; }
+            $current = $id ? get_post( $id ) : null;
+            if ( ! $current ) { $skipped++; continue; }
+            if ( ! empty( $row['post_type'] ) && (string) $row['post_type'] !== (string) $current->post_type ) { $skipped++; continue; }
             $data = array( 'ID'=>$id );
             foreach ( array('post_title','post_content','post_excerpt','post_name','post_status') as $field ) {
                 if ( array_key_exists( $field, $row ) ) { $data[ $field ] = (string) $row[ $field ]; }
@@ -201,13 +257,17 @@ class ITKT_Backup {
         $valid = $this->validate( $payload );
         if ( is_wp_error( $valid ) ) { return $valid; }
         $data = $payload['data'];
+
+        // dbDelta may execute DDL, which can implicitly commit in MySQL. Ensure the schema before
+        // starting the data transaction so a failed restore can still roll back its destructive writes.
+        ITKT_Strings::install_schema();
         $wpdb->query( 'START TRANSACTION' );
         try {
             $result = array(
                 'options'=>$this->restore_options( $data['options'] ?? array() ),
                 'table_rows'=>$this->restore_tables( $data['tables'] ?? array() ),
-                'postmeta'=>$this->restore_meta( $wpdb->postmeta, 'post_id', $data['postmeta'] ?? array() ),
-                'termmeta'=>$this->restore_meta( $wpdb->termmeta, 'term_id', $data['termmeta'] ?? array() ),
+                'postmeta'=>$this->restore_meta( $wpdb->postmeta, 'post_id', $data['postmeta'] ?? array(), 'post' ),
+                'termmeta'=>$this->restore_meta( $wpdb->termmeta, 'term_id', $data['termmeta'] ?? array(), 'term' ),
                 'content_posts'=>$this->restore_posts( $data['content_posts'] ?? array() ),
             );
             delete_option( 'itkt_rewrite_version' );
@@ -220,6 +280,8 @@ class ITKT_Backup {
             return $result;
         } catch ( Throwable $e ) {
             $wpdb->query( 'ROLLBACK' );
+            // WordPress may already have primed object-cache entries during the failed transaction.
+            wp_cache_flush();
             return new WP_Error( 'restore_failed', 'Restore fehlgeschlagen: ' . $e->getMessage() );
         }
     }
@@ -243,9 +305,11 @@ class ITKT_Backup {
         $result = $this->apply_backup( $payload );
         if ( is_wp_error( $result ) ) { $this->redirect( 'error', $result->get_error_message() ); }
         $this->redirect( 'success', sprintf(
-            'Restore abgeschlossen: %d Optionen, %d Tabellenzeilen, %d Post-Metadaten, %d Term-Metadaten, %d Inhalte aktualisiert, %d fehlende Inhalte übersprungen.',
-            absint($result['options']),absint($result['table_rows']),absint($result['postmeta']),absint($result['termmeta']),
-            absint($result['content_posts']['updated'] ?? 0),absint($result['content_posts']['skipped'] ?? 0)
+            'Restore abgeschlossen: %d Optionen, %d Tabellenzeilen, %d Post-Metadaten, %d Term-Metadaten, %d Inhalte aktualisiert. Übersprungen: %d Post-Metadaten, %d Term-Metadaten, %d Inhalte.',
+            absint($result['options']),absint($result['table_rows']),
+            absint($result['postmeta']['restored'] ?? 0),absint($result['termmeta']['restored'] ?? 0),
+            absint($result['content_posts']['updated'] ?? 0),absint($result['postmeta']['skipped'] ?? 0),
+            absint($result['termmeta']['skipped'] ?? 0),absint($result['content_posts']['skipped'] ?? 0)
         ) );
     }
 
@@ -277,10 +341,10 @@ class ITKT_Backup {
             </section>
             <section class="itkt-card">
                 <div class="itkt-card-head"><div><span class="itkt-kicker">WIEDERHERSTELLUNG</span><h2>Backup wiederherstellen</h2></div><span class="itkt-pill gray">ohne Duplikate</span></div>
-                <p>Restore ersetzt nur ITKT-verwaltete String-Daten und <code>_itkt_*</code>-Metadaten. Produkte, Seiten, Beiträge und Begriffe werden nicht neu erstellt. Fehlende IDs werden übersprungen.</p>
+                <p>Restore ersetzt nur ITKT-verwaltete String-Daten und <code>_itkt_*</code>-Metadaten. Produkte, Seiten, Beiträge und Begriffe werden nicht neu erstellt. Fehlende IDs werden übersprungen. Aus Sicherheitsgründen muss das Backup von derselben WordPress-Site stammen.</p>
                 <form method="post" enctype="multipart/form-data" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="itkt_restore_backup"><?php wp_nonce_field('itkt_restore_backup'); ?><p><input type="file" name="itkt_backup_file" accept="application/json,.json" required></p><label><input type="checkbox" name="confirm_restore" value="1" required> Ich bestätige, dass aktuelle ITKT-Übersetzungsdaten durch den Backup-Stand ersetzt werden dürfen.</label><p><button class="button" type="submit">Backup wiederherstellen</button></p></form>
             </section>
-            <section class="itkt-card"><h2>Sicherheit</h2><p>Nur Administratoren können Export/Restore ausführen. Import akzeptiert nur das ITKT-JSON-Format bis 25 MB. Abgeleitete Routing-/Such-/Runtime-Caches werden anschließend neu aufgebaut.</p></section>
+            <section class="itkt-card"><h2>Sicherheit</h2><p>Nur Administratoren können Export/Restore ausführen. Import akzeptiert nur das ITKT-JSON-Format bis 25 MB und prüft Site-Zuordnung, Pflichtbereiche sowie interne String-Beziehungen vor dem Überschreiben. Abgeleitete Routing-/Such-/Runtime-Caches werden anschließend neu aufgebaut.</p></section>
         </div>
         <?php
     }

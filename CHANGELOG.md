@@ -2,8 +2,23 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.18**.
+Current development version: **0.12.19**.
 
+
+## [0.12.19]
+
+### Backup / Restore production hardening
+- Restore now verifies that the backup belongs to the same WordPress site/network context before applying ID-based data.
+- Rejects incomplete backup payloads before any destructive restore operation starts.
+- Validates String Translation table relationships before replacing table contents.
+- Post/term `_itkt_*` metadata is restored only for object IDs that still exist; skipped metadata is counted and reported.
+- Linked translated-content snapshots are restored only when the current post type still matches the backup snapshot.
+- String schema/dbDelta preparation now runs before the data transaction to avoid DDL implicitly breaking rollback guarantees.
+- Failed restores flush the WordPress object cache after rollback to avoid stale cached values.
+
+### Scope
+- No commercial/licensing work was added.
+- This release closes a production-safety gap in the existing Backup / Restore feature.
 
 ## [0.12.18]
 
