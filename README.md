@@ -202,6 +202,18 @@ AGENDA.md
 
 The repository root is the plugin source. GitHub **Code → Download ZIP** can be used as a source archive; tested development builds are also delivered as installable WordPress ZIP files in chat.
 
+## Verbindliche Update-Regel
+
+Ab jetzt gilt für jede erfolgreiche funktionale Änderung am Plugin:
+
+- **README.md wird automatisch im selben Arbeitsgang ergänzt.** Dafür ist keine zusätzliche Aufforderung nötig.
+- Der README-Eintrag beschreibt mindestens die neue Version, die konkrete Änderung und den Validierungsstatus.
+- Gleichzeitig werden bei einem funktionalen Release auch **CHANGELOG.md**, **AGENDA.md**, **readme.txt Stable tag**, Plugin-Header / `ITKT_VERSION`, GitHub-`main` und die installierbare ZIP synchron gehalten.
+- Eine funktionale Änderung gilt erst als vollständig abgeschlossen, wenn der aktuelle Stand auch in GitHub **README.md** dokumentiert ist.
+- Reine Dokumentations-/Workflow-Änderungen benötigen keinen Plugin-Versionssprung.
+
+GitHub prüft diese Regel zusätzlich über einen dauerhaften Docs-Sync-Workflow: Ändert ein Commit produktiven Plugin-Code, ohne die Release-Dokumentation im selben Commit mitzuführen, schlägt die Prüfung fehl.
+
 ## New-chat handoff rule
 
 Before changing the plugin in a new chat, read `README.md`, `CHANGELOG.md`, `AGENDA.md` and the current source. Every functional release must synchronize the plugin header, `ITKT_VERSION`, `readme.txt` Stable tag, GitHub source/docs and the installable ZIP.
