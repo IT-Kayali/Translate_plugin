@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.19**
+**Current development version: v0.12.20**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,8 +12,19 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.19 is the current production-finalization candidate; it hardens Backup / Restore safety while keeping the v0.12.17 acceptance assistant and v0.12.18 coverage diagnostics.
+- v0.12.20 is the current production-finalization candidate; it hardens product translation CSV/XLSX import while keeping the Backup/Restore protections and acceptance diagnostics.
 
+
+
+## v0.12.20 – product import production hardening
+
+- Product translation CSV/XLSX uploads are capped at 25 MB and bounded to 10,000 data rows, 512 columns and safe per-cell/XML sizes.
+- XLSX XML input rejects `DOCTYPE` / `ENTITY` declarations and is parsed with network access disabled.
+- Workbook relationship targets are restricted to worksheet XML inside `xl/worksheets/`.
+- Duplicate normalized column names are rejected and duplicate product rows are skipped.
+- When an import row contains both `product_id` and `sku`, the current product SKU must match before the row can modify translations. If the ID is unavailable, SKU lookup remains the safe fallback.
+- The importer checks `edit_post` for every resolved product before saving translation data.
+- These checks are intended to prevent oversized/malformed spreadsheet input and accidental cross-product updates during production imports.
 
 ## v0.12.19 – Backup / Restore production hardening
 

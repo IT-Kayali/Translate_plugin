@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.19 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.20 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 18.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -168,13 +168,24 @@ Vor der finalen Abnahme wurde Backup/Restore sicherer gemacht:
 - Nach einem fehlgeschlagenen Restore wird zusätzlich der Object Cache geleert.
 
 
+
+### v0.12.20 – Produktimport Produktionshärtung
+
+- CSV/XLSX-Produktimporte sind auf 25 MB, 10.000 Datenzeilen, 512 Spalten und begrenzte Zell-/XML-Größen beschränkt.
+- XLSX-XML mit `DOCTYPE` oder `ENTITY` wird abgelehnt; XML wird ohne Netzwerkzugriff geparst.
+- Workbook-Beziehungen dürfen nur auf Worksheet-XML unter `xl/worksheets/` zeigen.
+- Doppelte normalisierte Spaltennamen werden vor Änderungen abgelehnt.
+- Mehrere Zeilen für dasselbe Produkt werden nicht mehrfach angewendet.
+- Wenn Produkt-ID und SKU gemeinsam vorhanden sind, muss die aktuelle SKU übereinstimmen; dadurch kann eine alte/fremde Produkt-ID nicht still das falsche Produkt ändern.
+- Für jedes aufgelöste Produkt wird vor dem Speichern die konkrete `edit_post`-Berechtigung geprüft.
+
 ## Was jetzt wirklich noch offen ist
 
 **Kein großer Funktionsblock fehlt mehr im Code für deinen aktuellen Einsatzzweck.** Offen ist die abschließende reale Abnahme auf der Website. Dabei müssen wir eventuelle konkrete WoodMart-/WooCommerce-Sonderfälle reparieren, die nur in deiner echten Installation sichtbar werden.
 
 ### Finaler Realtest
 
-1. v0.12.19 installieren, **Systemstatus** öffnen und alle Hinweise inklusive Frontend-Übersetzungsabdeckung prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
+1. v0.12.20 installieren, **Systemstatus** öffnen und alle Hinweise inklusive Frontend-Übersetzungsabdeckung prüfen; danach WP Fastest Cache + IONOS/Server-Cache einmal leeren.
 2. DE, EN und AR vollständig durchgehen: Shop → Suche → Produkt → Kategorie → Filter → Mini-Cart → Warenkorb → Checkout → Mein Konto → Wishlist → Popup/Offcanvas.
 3. Auf jeder relevanten Seite Sprache wechseln und prüfen, dass dieselbe logische Seite/dasselbe Produkt/Endpoint erhalten bleibt.
 4. Als Admin in DE alle Bereiche einmal öffnen, danach **Frontend Texte** prüfen und einige EN/AR-Texte speichern.

@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.19
+Stable tag: 0.12.20
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -46,6 +46,15 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.20 =
+* Hardened WooCommerce product translation CSV/XLSX import before production sign-off.
+* Import files are limited to 25 MB, 10,000 data rows, 512 columns and bounded cell/XML sizes.
+* XLSX XML parts reject DOCTYPE/ENTITY declarations and are parsed with network access disabled.
+* Workbook relationships may only resolve to worksheet XML below xl/worksheets/.
+* Duplicate column names are rejected; duplicate product rows are skipped.
+* When product_id and SKU are both present, a SKU mismatch prevents the row from updating the wrong product.
+* Each resolved product is checked with edit_post capability before translation data is changed.
 
 = 0.12.19 =
 * Hardened Backup / Restore before production sign-off.

@@ -2,8 +2,25 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.19**.
+Current development version: **0.12.20**.
 
+
+
+## [0.12.20]
+
+### Product import hardening
+- Added a 25 MB upload limit for product translation CSV/XLSX imports.
+- Added row, column, cell and parsed XML size limits to reduce memory/CPU abuse from malformed imports.
+- XLSX XML now rejects `DOCTYPE` / `ENTITY` declarations and is parsed with `LIBXML_NONET`.
+- Workbook relationship targets are restricted to worksheet XML under `xl/worksheets/`.
+- Duplicate normalized headers are rejected before data changes start.
+- Duplicate rows resolving to the same product are skipped.
+- Rows containing both Product ID and SKU now require the current SKU to match, preventing stale/cross-site IDs from updating the wrong product.
+- Product-level `edit_post` permission is verified for each resolved product before saving translations.
+
+### Validation
+- PHP and JavaScript syntax checks remain required before ZIP handoff.
+- Real-site import and storefront acceptance are still required before marking the build production-confirmed.
 
 ## [0.12.19]
 

@@ -3,6 +3,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class ITKT_Admin {
     private static $instance = null;
+    private const PRODUCT_IMPORT_MAX_UPLOAD_BYTES = 26214400; // 25 MiB.
+    private const PRODUCT_IMPORT_MAX_XML_BYTES = 33554432; // 32 MiB per parsed XLSX XML part.
+    private const PRODUCT_IMPORT_MAX_ROWS = 10000;
+    private const PRODUCT_IMPORT_MAX_COLUMNS = 512;
+    private const PRODUCT_IMPORT_MAX_CELL_BYTES = 2097152; // 2 MiB per cell.
+    private const PRODUCT_IMPORT_MAX_SHARED_STRINGS = 100000;
     public static function instance() { if ( null === self::$instance ) { self::$instance = new self(); } return self::$instance; }
 
     private function __construct() {
@@ -385,7 +391,7 @@ class ITKT_Admin {
                 <p><small><strong>Empfohlen für ChatGPT:</strong> die <code>.xlsx</code>-Datei hochladen. Die Datei wird zuerst vollständig auf dem Server erzeugt und anschließend mit fester Dateigröße übertragen.</small></p>
             </section>
             <section class="itkt-card"><span class="itkt-kicker">EXCEL IMPORT</span><h2>Übersetzungen importieren</h2>
-                <p>Du kannst die exportierte <strong>.xlsx</strong>-Datei direkt in Excel oder ChatGPT bearbeiten und anschließend wieder importieren. CSV bleibt ebenfalls unterstützt.</p>
+                <p>Du kannst die exportierte <strong>.xlsx</strong>-Datei direkt in Excel oder ChatGPT bearbeiten und anschließend wieder importieren. CSV bleibt ebenfalls unterstützt. Sicherheitsgrenzen: maximal 25 MB und 10.000 Datenzeilen.</p>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php'));?>" enctype="multipart/form-data">
                     <?php wp_nonce_field('itkt_import_products');?><input type="hidden" name="action" value="itkt_import_products">
                     <label class="itkt-file-drop"><span class="dashicons dashicons-media-spreadsheet"></span><strong>Excel- oder CSV-Datei auswählen</strong><small>.xlsx empfohlen · .csv weiterhin unterstützt</small><input type="file" name="itkt_file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" required></label>
@@ -543,12 +549,25 @@ class ITKT_Admin {
         $this->stream_download_file($path,'text/csv; charset=UTF-8','it-kayali-product-translations-'.gmdate('Y-m-d').'.csv');
     }
 
+    private function import_cell_within_limit( $value ) {
+        return strlen( (string) $value ) <= self::PRODUCT_IMPORT_MAX_CELL_BYTES;
+    }
+
     private function read_csv_import_file($tmp){
         $fh=fopen($tmp,'r');if(!$fh)return new WP_Error('itkt_csv_read','CSV-Datei konnte nicht gelesen werden.');
         $first=fgets($fh);if(false===$first){fclose($fh);return new WP_Error('itkt_csv_empty','CSV-Datei ist leer.');}
         $first=preg_replace('/^\xEF\xBB\xBF/','',$first);$delimiter=substr_count($first,';')>=substr_count($first,',')?';':',';rewind($fh);
         $headers=fgetcsv($fh,0,$delimiter,'"','\\');if(!$headers){fclose($fh);return new WP_Error('itkt_csv_headers','CSV-Kopfzeile fehlt.');}
-        $rows=array();while(($row=fgetcsv($fh,0,$delimiter,'"','\\'))!==false)$rows[]=$row;fclose($fh);return array($headers,$rows);
+        if(count($headers)>self::PRODUCT_IMPORT_MAX_COLUMNS){fclose($fh);return new WP_Error('itkt_import_columns_limit','Die Importdatei enthält zu viele Spalten.');}
+        foreach($headers as $value){if(!$this->import_cell_within_limit($value)){fclose($fh);return new WP_Error('itkt_import_cell_limit','Eine Zelle überschreitet das Sicherheitslimit.');}}
+        $rows=array();$row_count=0;
+        while(($row=fgetcsv($fh,0,$delimiter,'"','\\'))!==false){
+            $row_count++;if($row_count>self::PRODUCT_IMPORT_MAX_ROWS){fclose($fh);return new WP_Error('itkt_import_rows_limit','Die Importdatei enthält mehr als 10.000 Datenzeilen.');}
+            if(count($row)>self::PRODUCT_IMPORT_MAX_COLUMNS){fclose($fh);return new WP_Error('itkt_import_columns_limit','Die Importdatei enthält zu viele Spalten.');}
+            foreach($row as $value){if(!$this->import_cell_within_limit($value)){fclose($fh);return new WP_Error('itkt_import_cell_limit','Eine Zelle überschreitet das Sicherheitslimit.');}}
+            $rows[]=$row;
+        }
+        fclose($fh);return array($headers,$rows);
     }
 
     private function normalize_xlsx_path($base,$target){
@@ -556,17 +575,48 @@ class ITKT_Admin {
         $parts=explode('/',trim(dirname($base).'/'.$target,'/'));$stack=array();foreach($parts as $part){if(''===$part||'.'===$part)continue;if('..'===$part){array_pop($stack);continue;}$stack[]=$part;}return implode('/',$stack);
     }
 
+    private function xlsx_xml_part( $zip, $path, $required = true ) {
+        $stat = $zip->statName( $path );
+        if ( false === $stat ) {
+            return $required ? new WP_Error( 'itkt_xlsx_part', 'Excel-Datei ist unvollständig: ' . $path ) : '';
+        }
+        $size = absint( $stat['size'] ?? 0 );
+        if ( $size > self::PRODUCT_IMPORT_MAX_XML_BYTES ) {
+            return new WP_Error( 'itkt_xlsx_part_size', 'Ein Excel-Bestandteil überschreitet das Sicherheitslimit.' );
+        }
+        $xml = $zip->getFromName( $path );
+        if ( false === $xml ) {
+            return $required ? new WP_Error( 'itkt_xlsx_part', 'Excel-Bestandteil konnte nicht gelesen werden: ' . $path ) : '';
+        }
+        if ( false !== stripos( $xml, '<!DOCTYPE' ) || false !== stripos( $xml, '<!ENTITY' ) ) {
+            return new WP_Error( 'itkt_xlsx_unsafe_xml', 'Die Excel-Datei enthält nicht erlaubte XML-Deklarationen.' );
+        }
+        return $xml;
+    }
+
+    private function xlsx_parse_xml( $xml, $label ) {
+        $previous = libxml_use_internal_errors( true );
+        libxml_clear_errors();
+        $flags = defined( 'LIBXML_NONET' ) ? LIBXML_NONET : 0;
+        if ( defined( 'LIBXML_COMPACT' ) ) { $flags |= LIBXML_COMPACT; }
+        $sx = simplexml_load_string( (string) $xml, 'SimpleXMLElement', $flags );
+        libxml_clear_errors();
+        libxml_use_internal_errors( $previous );
+        return false === $sx ? new WP_Error( 'itkt_xlsx_xml', $label . ' ist ungültig.' ) : $sx;
+    }
+
     private function xlsx_shared_strings($zip){
-        $xml=$zip->getFromName('xl/sharedStrings.xml');if(false===$xml)return array();$sx=@simplexml_load_string($xml);if(!$sx)return array();$ns=$sx->getNamespaces(true);$main=$ns['']??'http://schemas.openxmlformats.org/spreadsheetml/2006/main';$out=array();
-        foreach($sx->children($main)->si as $si){$si->registerXPathNamespace('x',$main);$parts=$si->xpath('.//x:t');$text='';foreach((array)$parts as $part)$text.=(string)$part;$out[]=$text;}
+        $xml=$this->xlsx_xml_part($zip,'xl/sharedStrings.xml',false);if(is_wp_error($xml))return $xml;if(''===$xml)return array();
+        $sx=$this->xlsx_parse_xml($xml,'Excel Shared-Strings');if(is_wp_error($sx))return $sx;$ns=$sx->getNamespaces(true);$main=$ns['']??'http://schemas.openxmlformats.org/spreadsheetml/2006/main';$out=array();$count=0;
+        foreach($sx->children($main)->si as $si){$count++;if($count>self::PRODUCT_IMPORT_MAX_SHARED_STRINGS)return new WP_Error('itkt_xlsx_strings_limit','Die Excel-Datei enthält zu viele Shared-Strings.');$si->registerXPathNamespace('x',$main);$parts=$si->xpath('.//x:t');$text='';foreach((array)$parts as $part)$text.=(string)$part;if(!$this->import_cell_within_limit($text))return new WP_Error('itkt_import_cell_limit','Eine Excel-Zelle überschreitet das Sicherheitslimit.');$out[]=$text;}
         return $out;
     }
 
     private function xlsx_first_sheet_path($zip){
-        $workbook=$zip->getFromName('xl/workbook.xml');$rels=$zip->getFromName('xl/_rels/workbook.xml.rels');if(false===$workbook||false===$rels)return 'xl/worksheets/sheet1.xml';
-        $wb=@simplexml_load_string($workbook);$rx=@simplexml_load_string($rels);if(!$wb||!$rx)return 'xl/worksheets/sheet1.xml';$ns=$wb->getNamespaces(true);$main=$ns['']??'http://schemas.openxmlformats.org/spreadsheetml/2006/main';$sheets=$wb->children($main)->sheets;if(!$sheets||!isset($sheets->sheet[0]))return 'xl/worksheets/sheet1.xml';
-        $attrs=$sheets->sheet[0]->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');$rid=(string)($attrs['id']??'');if(!$rid)return 'xl/worksheets/sheet1.xml';$rns=$rx->getNamespaces(true);$rmain=$rns['']??'http://schemas.openxmlformats.org/package/2006/relationships';foreach($rx->children($rmain)->Relationship as $rel){$a=$rel->attributes();if((string)$a['Id']===$rid)return $this->normalize_xlsx_path('xl/workbook.xml',(string)$a['Target']);}
-        return 'xl/worksheets/sheet1.xml';
+        $workbook=$this->xlsx_xml_part($zip,'xl/workbook.xml',true);if(is_wp_error($workbook))return $workbook;$rels=$this->xlsx_xml_part($zip,'xl/_rels/workbook.xml.rels',true);if(is_wp_error($rels))return $rels;
+        $wb=$this->xlsx_parse_xml($workbook,'Excel-Arbeitsmappe');if(is_wp_error($wb))return $wb;$rx=$this->xlsx_parse_xml($rels,'Excel-Beziehungen');if(is_wp_error($rx))return $rx;$ns=$wb->getNamespaces(true);$main=$ns['']??'http://schemas.openxmlformats.org/spreadsheetml/2006/main';$sheets=$wb->children($main)->sheets;if(!$sheets||!isset($sheets->sheet[0]))return new WP_Error('itkt_xlsx_sheet','Excel-Arbeitsblatt wurde nicht gefunden.');
+        $attrs=$sheets->sheet[0]->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships');$rid=(string)($attrs['id']??'');if(!$rid)return new WP_Error('itkt_xlsx_sheet','Excel-Arbeitsblatt-Verknüpfung fehlt.');$rns=$rx->getNamespaces(true);$rmain=$rns['']??'http://schemas.openxmlformats.org/package/2006/relationships';foreach($rx->children($rmain)->Relationship as $rel){$a=$rel->attributes();if((string)$a['Id']===$rid){$path=$this->normalize_xlsx_path('xl/workbook.xml',(string)$a['Target']);if(!preg_match('#^xl/worksheets/[^/]+\.xml$#i',$path))return new WP_Error('itkt_xlsx_sheet_path','Ungültiger Excel-Arbeitsblattpfad.');return $path;}}
+        return new WP_Error('itkt_xlsx_sheet','Excel-Arbeitsblatt wurde nicht gefunden.');
     }
 
     private function xlsx_cell_value($cell,$main,$shared){
@@ -578,15 +628,31 @@ class ITKT_Admin {
     }
 
     private function read_xlsx_import_file($tmp){
-        if(!class_exists('ZipArchive'))return new WP_Error('itkt_zip_missing','XLSX-Import benötigt die PHP-Erweiterung ZipArchive.');$zip=new ZipArchive();if(true!==$zip->open($tmp))return new WP_Error('itkt_xlsx_open','Excel-Datei konnte nicht geöffnet werden.');$shared=$this->xlsx_shared_strings($zip);$sheet_path=$this->xlsx_first_sheet_path($zip);$xml=$zip->getFromName($sheet_path);if(false===$xml){$zip->close();return new WP_Error('itkt_xlsx_sheet','Excel-Arbeitsblatt wurde nicht gefunden.');}$sx=@simplexml_load_string($xml);if(!$sx){$zip->close();return new WP_Error('itkt_xlsx_xml','Excel-Arbeitsblatt ist ungültig.');}$ns=$sx->getNamespaces(true);$main=$ns['']??'http://schemas.openxmlformats.org/spreadsheetml/2006/main';$rows=array();
-        foreach($sx->children($main)->sheetData->row as $row_node){$line=array();$fallback_col=0;foreach($row_node->children($main)->c as $cell){$ref=(string)($cell->attributes()['r']??'');if($ref&&preg_match('/^([A-Z]+)\d+$/i',$ref,$m))$col=$this->xlsx_column_index($m[1]);else $col=$fallback_col;$line[$col]=$this->xlsx_cell_value($cell,$main,$shared);$fallback_col=$col+1;}if($line){ksort($line);$max=max(array_keys($line));$full=array_fill(0,$max+1,'');foreach($line as $i=>$value)$full[$i]=$value;$rows[]=$full;}}
+        if(!class_exists('ZipArchive'))return new WP_Error('itkt_zip_missing','XLSX-Import benötigt die PHP-Erweiterung ZipArchive.');
+        $zip=new ZipArchive();if(true!==$zip->open($tmp))return new WP_Error('itkt_xlsx_open','Excel-Datei konnte nicht geöffnet werden.');
+        $shared=$this->xlsx_shared_strings($zip);if(is_wp_error($shared)){$zip->close();return $shared;}
+        $sheet_path=$this->xlsx_first_sheet_path($zip);if(is_wp_error($sheet_path)){$zip->close();return $sheet_path;}
+        $xml=$this->xlsx_xml_part($zip,$sheet_path,true);if(is_wp_error($xml)){$zip->close();return $xml;}
+        $sx=$this->xlsx_parse_xml($xml,'Excel-Arbeitsblatt');if(is_wp_error($sx)){$zip->close();return $sx;}$ns=$sx->getNamespaces(true);$main=$ns['']??'http://schemas.openxmlformats.org/spreadsheetml/2006/main';$rows=array();$row_count=0;
+        foreach($sx->children($main)->sheetData->row as $row_node){
+            $row_count++;if($row_count>self::PRODUCT_IMPORT_MAX_ROWS+1){$zip->close();return new WP_Error('itkt_import_rows_limit','Die Excel-Datei enthält mehr als 10.000 Datenzeilen.');}
+            $line=array();$fallback_col=0;
+            foreach($row_node->children($main)->c as $cell){$ref=(string)($cell->attributes()['r']??'');if($ref&&preg_match('/^([A-Z]+)\d+$/i',$ref,$m))$col=$this->xlsx_column_index($m[1]);else $col=$fallback_col;if($col>=self::PRODUCT_IMPORT_MAX_COLUMNS){$zip->close();return new WP_Error('itkt_import_columns_limit','Die Excel-Datei enthält zu viele Spalten.');}$value=$this->xlsx_cell_value($cell,$main,$shared);if(!$this->import_cell_within_limit($value)){$zip->close();return new WP_Error('itkt_import_cell_limit','Eine Excel-Zelle überschreitet das Sicherheitslimit.');}$line[$col]=$value;$fallback_col=$col+1;}
+            if($line){ksort($line);$max=max(array_keys($line));if($max>=self::PRODUCT_IMPORT_MAX_COLUMNS){$zip->close();return new WP_Error('itkt_import_columns_limit','Die Excel-Datei enthält zu viele Spalten.');}$full=array_fill(0,$max+1,'');foreach($line as $i=>$value)$full[$i]=$value;$rows[]=$full;}
+        }
         $zip->close();if(!$rows)return new WP_Error('itkt_xlsx_empty','Excel-Datei enthält keine Daten.');$headers=array_shift($rows);return array($headers,$rows);
     }
 
     private function apply_product_import_rows($headers,$rows,$clear){
-        $headers=array_map(function($h){return sanitize_key(trim(preg_replace('/^\xEF\xBB\xBF/','',(string)$h)));},$headers);$index=array_flip($headers);if(!isset($index['product_id'])&&!isset($index['sku']))return new WP_Error('itkt_import_columns','Datei benötigt product_id oder sku.');
-        $attribute_slots=array();foreach($headers as $header){if(preg_match('/^attribute_(\d+)_key$/',$header,$m))$attribute_slots[(int)$m[1]]=true;}ksort($attribute_slots);$targets=$this->active_targets();$updated=0;$skipped=0;
-        foreach((array)$rows as $row){if(!array_filter($row,function($v){return ''!==trim((string)$v);}))continue;$id=isset($index['product_id'])?absint($row[$index['product_id']]??0):0;if(!$id&&isset($index['sku'])){$sku=sanitize_text_field($this->csv_import_cell($row[$index['sku']]??''));if($sku&&function_exists('wc_get_product_id_by_sku'))$id=absint(wc_get_product_id_by_sku($sku));}if(!$id||'product'!==get_post_type($id)){$skipped++;continue;}
+        $headers=array_map(function($h){return sanitize_key(trim(preg_replace('/^\xEF\xBB\xBF/','',(string)$h)));},$headers);if(count($headers)>self::PRODUCT_IMPORT_MAX_COLUMNS)return new WP_Error('itkt_import_columns_limit','Die Importdatei enthält zu viele Spalten.');
+        $non_empty_headers=array_values(array_filter($headers,function($h){return ''!==$h;}));if(count($non_empty_headers)!==count(array_unique($non_empty_headers)))return new WP_Error('itkt_import_duplicate_columns','Die Importdatei enthält doppelte Spaltennamen.');
+        $index=array_flip($headers);if(!isset($index['product_id'])&&!isset($index['sku']))return new WP_Error('itkt_import_columns','Datei benötigt product_id oder sku.');
+        $attribute_slots=array();foreach($headers as $header){if(preg_match('/^attribute_(\d+)_key$/',$header,$m))$attribute_slots[(int)$m[1]]=true;}ksort($attribute_slots);$targets=$this->active_targets();$updated=0;$skipped=0;$seen=array();
+        foreach((array)$rows as $row){if(!array_filter($row,function($v){return ''!==trim((string)$v);}))continue;
+            $row_id=isset($index['product_id'])?absint($row[$index['product_id']]??0):0;$row_sku=isset($index['sku'])?sanitize_text_field($this->csv_import_cell($row[$index['sku']]??'')):'';$id=0;
+            if($row_id&&'product'===get_post_type($row_id)){$current_sku=(string)get_post_meta($row_id,'_sku',true);if(''!==$row_sku&&!hash_equals($current_sku,$row_sku)){$skipped++;continue;}$id=$row_id;}
+            elseif(''!==$row_sku&&function_exists('wc_get_product_id_by_sku')){$id=absint(wc_get_product_id_by_sku($row_sku));}
+            if(!$id||'product'!==get_post_type($id)||!current_user_can('edit_post',$id)||isset($seen[$id])){$skipped++;continue;}$seen[$id]=true;
             $source_custom=ITKT_Product_Translations::instance()->custom_attributes($id);$source_keys=array_keys($source_custom);$changed=false;
             foreach($targets as $code=>$lang){$old=ITKT_Product_Translations::instance()->get($id,$code);$data=array('title'=>$old['title']??'','short_description'=>$old['short_description']??'','description'=>$old['description']??'','slug'=>$old['slug']??'','seo_title'=>$old['seo_title']??'','seo_description'=>$old['seo_description']??'','custom_attributes'=>(array)($old['custom_attributes']??array()));$lang_changed=false;
                 foreach(array('title','short_description','description','slug','seo_title','seo_description') as $field){$key=$code.'_'.$field;if('description'===$field){$new_key=$code.'_long_description';$legacy_key=$code.'_description';$key=isset($index[$new_key])?$new_key:$legacy_key;}if(!isset($index[$key]))continue;$value=$this->csv_import_cell($row[$index[$key]]??'');if($clear||''!==trim($value)){$data[$field]=$value;$lang_changed=true;}}
@@ -599,7 +665,11 @@ class ITKT_Admin {
     }
 
     public function import_products(){
-        if(!current_user_can('edit_products'))wp_die('Unauthorized');check_admin_referer('itkt_import_products');if(empty($_FILES['itkt_file']['tmp_name'])||!is_uploaded_file($_FILES['itkt_file']['tmp_name']))wp_die('Keine gültige Excel- oder CSV-Datei hochgeladen.');$tmp=$_FILES['itkt_file']['tmp_name'];$name=sanitize_file_name($_FILES['itkt_file']['name']??'');$ext=strtolower(pathinfo($name,PATHINFO_EXTENSION));$parsed=('xlsx'===$ext)?$this->read_xlsx_import_file($tmp):(('csv'===$ext)?$this->read_csv_import_file($tmp):new WP_Error('itkt_import_type','Bitte eine .xlsx- oder .csv-Datei verwenden.'));if(is_wp_error($parsed))wp_die(esc_html($parsed->get_error_message()));list($headers,$rows)=$parsed;$result=$this->apply_product_import_rows($headers,$rows,!empty($_POST['clear_empty']));if(is_wp_error($result))wp_die(esc_html($result->get_error_message()));list($updated,$skipped)=$result;wp_safe_redirect(admin_url('admin.php?page=itkt-products&sub=import-export&imported='.$updated.'&skipped='.$skipped));exit;
+        if(!current_user_can('edit_products'))wp_die('Unauthorized');check_admin_referer('itkt_import_products');
+        $file=$_FILES['itkt_file']??null;if(!is_array($file)||UPLOAD_ERR_OK!==(int)($file['error']??UPLOAD_ERR_NO_FILE)||empty($file['tmp_name'])||!is_uploaded_file($file['tmp_name']))wp_die('Keine gültige Excel- oder CSV-Datei hochgeladen.');
+        $size=absint($file['size']??0);if(!$size||$size>self::PRODUCT_IMPORT_MAX_UPLOAD_BYTES)wp_die('Die Importdatei ist leer oder größer als 25 MB.');
+        $tmp=(string)$file['tmp_name'];$name=sanitize_file_name(wp_unslash($file['name']??''));$ext=strtolower(pathinfo($name,PATHINFO_EXTENSION));if(!in_array($ext,array('xlsx','csv'),true))wp_die('Bitte eine .xlsx- oder .csv-Datei verwenden.');
+        $parsed=('xlsx'===$ext)?$this->read_xlsx_import_file($tmp):$this->read_csv_import_file($tmp);if(is_wp_error($parsed))wp_die(esc_html($parsed->get_error_message()));list($headers,$rows)=$parsed;$result=$this->apply_product_import_rows($headers,$rows,!empty($_POST['clear_empty']));if(is_wp_error($result))wp_die(esc_html($result->get_error_message()));list($updated,$skipped)=$result;wp_safe_redirect(admin_url('admin.php?page=itkt-products&sub=import-export&imported='.$updated.'&skipped='.$skipped));exit;
     }
 
     public function repair_elementor_layout(){ $source=absint($_GET['source']??0);$translation=absint($_GET['translation']??0);if(!$source||!$translation||!current_user_can('edit_post',$source)||!current_user_can('edit_post',$translation))wp_die('Unauthorized');check_admin_referer('itkt_repair_elementor_layout_'.$source.'_'.$translation);$result=ITKT_Content::instance()->repair_elementor_layout($source,$translation);if(is_wp_error($result))wp_die(esc_html($result->get_error_message()));wp_safe_redirect(add_query_arg('itkt_layout_repaired','1',ITKT_Content::instance()->edit_url($translation)));exit; }
