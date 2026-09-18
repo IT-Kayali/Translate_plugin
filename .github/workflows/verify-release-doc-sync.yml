@@ -1,0 +1,72 @@
+name: Verify release documentation sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'includes/**'
+      - 'public/**'
+      - 'it-kayali-translate.php'
+      - 'uninstall.php'
+
+permissions:
+  contents: read
+
+jobs:
+  docs-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require synchronized release documentation
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${BEFORE_SHA}" ] || [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE_SHA="$(git rev-parse HEAD^)"
+          fi
+
+          CHANGED="$(git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}")"
+          echo "Changed files:"
+          printf '%s\n' "${CHANGED}"
+
+          for required in README.md CHANGELOG.md AGENDA.md readme.txt; do
+            if ! printf '%s\n' "${CHANGED}" | grep -Fxq "${required}"; then
+              echo "::error::Functional plugin source changed, but ${required} was not updated in the same push."
+              exit 1
+            fi
+          done
+
+      - name: Verify documented version matches plugin
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^[[:space:]]*\* Version:[[:space:]]*//p' it-kayali-translate.php | head -n1)"
+          [ -n "${VERSION}" ] || { echo "::error::Plugin version not found."; exit 1; }
+
+          grep -Fq "**Current development version: v${VERSION}**" README.md || {
+            echo "::error::README.md current development version does not match ${VERSION}."
+            exit 1
+          }
+          grep -Fq "Stable tag: ${VERSION}" readme.txt || {
+            echo "::error::readme.txt Stable tag does not match ${VERSION}."
+            exit 1
+          }
+          grep -Fq "Current development version: **${VERSION}**" CHANGELOG.md || {
+            echo "::error::CHANGELOG.md current development version does not match ${VERSION}."
+            exit 1
+          }
+          grep -Fq "**Aktueller Entwicklungsstand: v${VERSION}" AGENDA.md || {
+            echo "::error::AGENDA.md development version does not match ${VERSION}."
+            exit 1
+          }
+
+          echo "Release documentation is synchronized for v${VERSION}."
