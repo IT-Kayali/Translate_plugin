@@ -1,0 +1,80 @@
+name: Apply v0.12.20 product import hardening
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0.12.20.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: zip, simplexml
+
+      - name: Decode and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .repo-update/v0.12.20.part-00 .repo-update/v0.12.20.part-01 | base64 --decode > /tmp/itkt-v0.12.20.patch.gz
+          echo '15de971d7e9535aa46a0fe1b2abd5f4112dc0b09e65c721e61e9f663038eec13  /tmp/itkt-v0.12.20.patch.gz' | sha256sum -c -
+          gzip -dc /tmp/itkt-v0.12.20.patch.gz > /tmp/itkt-v0.12.20.patch
+          echo '7f27610837aa62e2176d20ebbedd3c4ab073db980ae1c6fa1598b7fba80282b3  /tmp/itkt-v0.12.20.patch' | sha256sum -c -
+          git apply --check /tmp/itkt-v0.12.20.patch
+          git apply /tmp/itkt-v0.12.20.patch
+
+      - name: Validate version and import hardening
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -n 'Version: 0.12.20' it-kayali-translate.php
+          grep -n "ITKT_VERSION', '0.12.20'" it-kayali-translate.php
+          grep -n 'Stable tag: 0.12.20' readme.txt
+          grep -n 'PRODUCT_IMPORT_MAX_UPLOAD_BYTES' includes/class-itkt-admin.php
+          grep -n 'LIBXML_NONET' includes/class-itkt-admin.php
+          grep -n 'itkt_import_duplicate_columns' includes/class-itkt-admin.php
+          grep -n "hash_equals(\$current_sku,\$row_sku)" includes/class-itkt-admin.php
+
+      - name: PHP 8.2 syntax validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Linting $file"
+            php -l "$file"
+          done < <(find . -name '*.php' -type f -print0)
+
+      - name: JavaScript syntax validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find public admin -name '*.js' -type f -print0)
+
+      - name: Commit clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .repo-update
+          rm -f .github/workflows/apply-v0.12.20.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git config user.name 'IT-Kayali'
+          git config user.email 'ghaithkayali99@gmail.com'
+          git add -A
+          git commit -m 'fix: v0.12.20 harden product translation imports [skip ci]'
+          git push origin HEAD:main
