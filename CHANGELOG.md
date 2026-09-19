@@ -2,8 +2,21 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.25**.
+Current development version: **0.12.26**.
 
+
+
+## [0.12.26]
+
+### WoodMart Header Builder registration fix
+- Fixed the native **IT-Kayali Sprachen** element not appearing in the WoodMart Header Builder on sites where the WoodMart module was not stored as enabled during ITKT's original setup.
+- Header-element registration now follows the actually loaded WoodMart Header Builder classes instead of the old setup-module flag.
+- Added an AJAX fallback immediately before WoodMart builds the "Add element" list.
+- Added a frontend safety net that refreshes WoodMart's element snapshot before the header renders, covering installations with a different initialization order.
+- No WoodMart theme files are modified.
+
+### Real-site finding
+- v0.12.25 was installed on the production site, but the element was absent from the Header Builder element picker; this directly motivated the registration fix in v0.12.26.
 
 
 ## [0.12.25]
