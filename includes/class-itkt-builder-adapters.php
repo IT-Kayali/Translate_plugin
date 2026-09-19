@@ -78,6 +78,121 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
         add_filter( 'itkt_elementor_translatable_keys', array( $this, 'extra_keys' ), 10, 2 );
     }
 
+    /**
+     * Register a native IT-Kayali language selector in WoodMart's Header Builder.
+     *
+     * WoodMart loads its built-in element classes on init priority 8 and snapshots the
+     * available frontend element map on priority 10. ITKT registers at priority 9 so the
+     * element is available to both the builder AJAX list and frontend rendering without
+     * modifying theme files.
+     */
+    public static function register_header_builder_element() {
+        if ( ! ITKT_Plugin::module_enabled( 'woodmart' ) ) { return; }
+        if ( ! class_exists( '\\XTS\\Modules\\Header_Builder' ) || ! class_exists( '\\XTS\\Modules\\Header_Builder\\Element' ) ) { return; }
+
+        $builder = \XTS\Modules\Header_Builder::get_instance();
+        if ( ! is_object( $builder ) || ! isset( $builder->elements ) || ! is_object( $builder->elements ) || ! isset( $builder->elements->elements_classes ) || ! is_array( $builder->elements->elements_classes ) ) { return; }
+
+        $key = 'Itktlanguages';
+        if ( isset( $builder->elements->elements_classes[ $key ] ) ) { return; }
+
+        $builder->elements->elements_classes[ $key ] = new class extends \XTS\Modules\Header_Builder\Element {
+            public function map() {
+                $this->args = array(
+                    'type'            => 'itktlanguages',
+                    'title'           => esc_html__( 'IT-Kayali Sprachen', 'it-kayali-translate' ),
+                    'text'            => esc_html__( 'Sprachumschalter mit Flaggen', 'it-kayali-translate' ),
+                    'icon'            => 'xts-i-translate',
+                    'editable'        => true,
+                    'container'       => false,
+                    'edit_on_create'  => true,
+                    'drag_target_for' => array(),
+                    'drag_source'     => 'content_element',
+                    'removable'       => true,
+                    'addable'         => true,
+                    'params'          => array(
+                        'show_codes' => array(
+                            'id'          => 'show_codes',
+                            'title'       => esc_html__( 'Sprachkürzel anzeigen', 'it-kayali-translate' ),
+                            'description' => esc_html__( 'Zeigt zusätzlich DE, EN, AR usw. neben der Flagge.', 'it-kayali-translate' ),
+                            'type'        => 'switcher',
+                            'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                            'value'       => false,
+                        ),
+                        'show_names' => array(
+                            'id'          => 'show_names',
+                            'title'       => esc_html__( 'Sprachnamen anzeigen', 'it-kayali-translate' ),
+                            'description' => esc_html__( 'Zeigt zusätzlich Deutsch, English, العربية usw.', 'it-kayali-translate' ),
+                            'type'        => 'switcher',
+                            'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                            'value'       => false,
+                        ),
+                        'style' => array(
+                            'id'      => 'style',
+                            'title'   => esc_html__( 'Darstellung', 'it-kayali-translate' ),
+                            'type'    => 'selector',
+                            'tab'     => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                            'value'   => 'flags',
+                            'options' => array(
+                                'flags' => array(
+                                    'value' => 'flags',
+                                    'label' => esc_html__( 'Flaggen', 'it-kayali-translate' ),
+                                ),
+                                'pills' => array(
+                                    'value' => 'pills',
+                                    'label' => esc_html__( 'Pills', 'it-kayali-translate' ),
+                                ),
+                                'text' => array(
+                                    'value' => 'text',
+                                    'label' => esc_html__( 'Text', 'it-kayali-translate' ),
+                                ),
+                            ),
+                        ),
+                        'css_class' => array(
+                            'id'          => 'css_class',
+                            'title'       => esc_html__( 'Zusätzliche CSS-Klasse', 'it-kayali-translate' ),
+                            'description' => esc_html__( 'Optional für eigenes Styling des Sprachumschalters.', 'it-kayali-translate' ),
+                            'type'        => 'text',
+                            'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                            'value'       => '',
+                        ),
+                    ),
+                );
+            }
+
+            public function render( $el, $children = '' ) {
+                if ( ! class_exists( 'ITKT_Frontend' ) ) { return; }
+
+                $parsed = $this->parse_args( $el );
+                $params = isset( $parsed['params'] ) && is_array( $parsed['params'] ) ? $parsed['params'] : array();
+                $style  = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
+                if ( ! in_array( $style, array( 'flags', 'pills', 'text' ), true ) ) { $style = 'flags'; }
+
+                $html = ITKT_Frontend::instance()->shortcode_switcher(
+                    array(
+                        'labels' => ! empty( $params['show_codes'] ) ? '1' : '0',
+                        'names'  => ! empty( $params['show_names'] ) ? '1' : '0',
+                        'style'  => $style,
+                    )
+                );
+                if ( '' === trim( (string) $html ) ) { return; }
+
+                $classes = array( 'wd-header-itkt-languages' );
+                if ( ! empty( $parsed['id'] ) ) {
+                    $classes[] = 'whb-' . sanitize_html_class( (string) $parsed['id'] );
+                }
+                if ( ! empty( $params['css_class'] ) ) {
+                    foreach ( preg_split( '/\\s+/', trim( (string) $params['css_class'] ) ) as $class_name ) {
+                        $class_name = sanitize_html_class( $class_name );
+                        if ( $class_name ) { $classes[] = $class_name; }
+                    }
+                }
+
+                echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes all generated attributes/content.
+            }
+        };
+    }
+
     public function post_types( $types ) {
         foreach ( self::builder_post_types() as $post_type => $label ) { $types[] = $post_type; }
         return array_values( array_unique( $types ) );
