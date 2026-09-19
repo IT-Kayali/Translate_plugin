@@ -2,8 +2,21 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.24**.
+Current development version: **0.12.25**.
 
+
+
+## [0.12.25]
+
+### Native WoodMart Header Builder language switcher
+- Added a dedicated **IT-Kayali Sprachen** element to WoodMart Header Builder.
+- The integration registers after WoodMart loads its built-in header elements and before WoodMart snapshots the frontend element map, so it works in the builder UI and on the storefront without editing theme files.
+- The element renders ITKT's existing language URL logic directly instead of depending on WoodMart Text/HTML shortcode execution.
+- Header settings support flags only, optional language codes, optional native language names, the existing flags/pills/text styles and an optional custom CSS class.
+- The original `[itkt_language_switcher]` shortcode remains available and unchanged.
+
+### Validation status
+- Requires real-site verification in the active WoodMart header on desktop and mobile after installing v0.12.25.
 
 
 ## [0.12.24]

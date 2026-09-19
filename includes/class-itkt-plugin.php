@@ -24,6 +24,9 @@ class ITKT_Plugin {
 
     public function boot() {
         add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+        // WoodMart loads built-in Header Builder elements on init priority 8 and snapshots the
+        // frontend element map on priority 10. Register ITKT's native language element in between.
+        add_action( 'init', array( 'ITKT_WoodMart_Adapter', 'register_header_builder_element' ), 9 );
         add_action( 'init', array( $this, 'init' ) );
         add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
     }

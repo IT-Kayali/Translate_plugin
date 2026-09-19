@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.24**
+**Current development version: v0.12.25**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,8 +12,23 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.24 is the current production-finalization candidate; the WooCommerce product category/tag archive HTTP 500 fix is confirmed on the real site.
+- v0.12.24 fixed the WooCommerce product category/tag archive HTTP 500 error and is confirmed on the real site.
+- v0.12.25 adds a native **IT-Kayali Sprachen** element to the WoodMart Header Builder so the language flags no longer depend on the Text/HTML shortcode field.
 
+
+
+## v0.12.25 – native WoodMart Header Builder language switcher
+
+- Adds **IT-Kayali Sprachen** directly to WoodMart -> Header builder -> Add element.
+- Renders the same ITKT language-switching URLs and active-language state as the existing shortcode, but does not depend on WoodMart's Text/HTML element executing shortcodes.
+- Supports flag-only display, optional language codes, optional native language names, existing `flags`, `pills` and `text` styles, and an optional CSS class.
+- Works as a normal WoodMart header element, so it can be placed separately in desktop and mobile header layouts.
+- No WoodMart theme or child-theme file is modified.
+- The existing `[itkt_language_switcher]` shortcode remains supported.
+
+### Real-site validation required
+
+After installing v0.12.25, reload the WoodMart Header Builder, add **IT-Kayali Sprachen**, save the header, clear caches, and verify DE/EN/AR switching on desktop and mobile.
 
 
 ## v0.12.24 – WooCommerce category/tag archive 500 fix
