@@ -1,0 +1,48 @@
+name: Build installable plugin ZIP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'includes/**'
+      - 'public/**'
+      - 'it-kayali-translate.php'
+      - 'readme.txt'
+      - 'uninstall.php'
+      - '.github/workflows/build-installable-plugin-zip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build canonical WordPress plugin ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build it-kayali-translate.zip
+          mkdir -p build/it-kayali-translate
+
+          rsync -a ./ build/it-kayali-translate/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'build/' \
+            --exclude '*.zip'
+
+          cd build
+          zip -qr ../it-kayali-translate.zip it-kayali-translate
+
+      - name: Upload installable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: it-kayali-translate-${{ github.sha }}
+          path: it-kayali-translate.zip
+          if-no-files-found: error
+          retention-days: 30
