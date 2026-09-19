@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.24 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.25 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 19.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -19,6 +19,16 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Nicht-Standardsprachen funktionieren im getesteten Account-Ablauf.
 - Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf das Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
+
+
+### Produktions-Fix v0.12.25 – nativer WoodMart-Sprachumschalter
+
+- Neuer eigener Header-Builder-Baustein **IT-Kayali Sprachen**.
+- Umgeht den auf der echten Website nicht funktionierenden Shortcode im WoodMart-Text/HTML-Header-Element.
+- Registrierung erfolgt zwischen WoodMarts Element-Ladevorgang (init 8) und dem Frontend-Snapshot (init 10), ohne Theme-Dateien zu verändern.
+- Einstellungen: nur Flaggen, Sprachkürzel optional, Sprachnamen optional, Darstellung Flaggen/Pills/Text und zusätzliche CSS-Klasse.
+- Verwendet intern weiterhin dieselbe ITKT-Sprach- und URL-Logik; der bestehende Shortcode bleibt erhalten.
+- Realtest offen: Element im Standard-Header hinzufügen, Header speichern, Cache leeren und DE/EN/AR auf Desktop sowie Mobile prüfen.
 
 ### Produktions-Fix v0.12.24 – Produktkategorie/Tag HTTP 500
 
