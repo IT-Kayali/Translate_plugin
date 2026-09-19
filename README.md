@@ -139,6 +139,44 @@ Dynamic `@wordpress/i18n` plural handling now uses `Intl.PluralRules` when avail
 - A public `itkt_after_cache_purge` action remains available for hosting/server-cache integrations without hard-coding vendor internals.
 - Successful Backup/Restore also invalidates runtime/cache state.
 
+## v0.12.13 – Backup / Restore foundation
+
+### Added
+
+- Added the `ITKT_Backup` module and the **Backup / Restore** admin page.
+- Added JSON export for ITKT settings, language configuration, String Translation tables, `_itkt_*` post/term metadata and translated-content snapshots.
+
+### Restore behaviour
+
+- Restore updates existing WordPress objects only and does **not** create duplicate products, pages, posts or taxonomy terms.
+- Missing object IDs are skipped instead of being recreated automatically.
+- Derived runtime/rewrite/search state is invalidated after a successful restore.
+- This version established the same-site rollback foundation that was later hardened further in v0.12.19.
+
+## v0.12.12 – dynamic WooCommerce / AJAX runtime
+
+- Added `ITKT_Dynamic_Runtime` for WooCommerce, WoodMart, AJAX, fragments and WooCommerce Blocks rerenders.
+- Added JavaScript `ngettext` and contextual plural handling for dynamic frontend strings.
+- Expanded **Frontend Texte** discovery to notices, controls, attributes and dynamically inserted frontend content.
+- Improved classification of Mini-Cart content versus generic popup/offcanvas content.
+- This version provided the runtime base that later received broader plural, cache and AJAX hardening in v0.12.14 and v0.12.22.
+
+## v0.12.11 – Frontend Texte catalog
+
+- Added the `ITKT_Frontend_Catalog` module and the **Frontend Texte** backend table.
+- Logged-in administrators can discover supported visible storefront text while browsing the configured default language.
+- Captured strings are grouped by storefront area and can be translated directly per active language.
+- Added AJAX/MutationObserver discovery for WooCommerce fragments, popups and offcanvas content.
+- Captured frontend strings reuse the existing ITKT String Translation runtime instead of modifying WooCommerce, WoodMart or theme source files.
+
+## v0.12.10 – WooCommerce My Account endpoint rescue
+
+- Fixed the non-default-language WooCommerce **My Account** endpoint problem with an independent endpoint-rescue marker.
+- Endpoint state is restored server-side and the temporary marker is removed again in the browser after routing succeeds.
+- Orders, Downloads, Addresses and Account details can stay on their intended endpoint instead of falling back to the My Account dashboard.
+- This fix was confirmed on the real staging site in the tested non-default-language account flow.
+- The v0.12.10 account-rescue logic remains the routing baseline for later WooCommerce language-switch hardening.
+
 ## Frontend Texte
 
 **IT-Kayali Translate → Frontend Texte** automatically discovers supported visible storefront text while an administrator browses the configured default language. It groups strings by Shop, Search, Product, Category/archive, Filters, Mini-Cart, Cart, Checkout, My Account, Wishlist, Popups/Offcanvas, Notices/Errors, Header, Footer, Menu and Other.
