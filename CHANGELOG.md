@@ -17,7 +17,7 @@ Current development version: **0.12.24**.
 ### Validation
 - PHP and JavaScript syntax checks pass.
 - Taxonomy recursion regression test verifies that non-singular requests never call `get_queried_object_id()` from `current_code()`.
-- Real WooCommerce category/tag browser verification remains required before production confirmation.
+- Real-site browser verification confirmed the previously failing WooCommerce product category and product tag archives open again without HTTP 500.
 
 ## [0.12.23]
 
