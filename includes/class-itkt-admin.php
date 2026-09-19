@@ -60,6 +60,7 @@ class ITKT_Admin {
         }
         if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && post_type_exists( 'product' ) ) { add_submenu_page( 'itkt-dashboard', 'Produkte', 'Produkte', 'edit_products', 'itkt-products', array( $this, 'products' ) ); }
         add_submenu_page( 'itkt-dashboard', 'Menüs', 'Menüs', 'edit_theme_options', 'itkt-menus', array( $this, 'menus' ) );
+        add_submenu_page( 'itkt-dashboard', 'Shortcodes', 'Shortcodes', 'edit_theme_options', 'itkt-shortcodes', array( $this, 'shortcodes' ) );
         add_submenu_page( 'itkt-dashboard', 'Plugin & Theme Texte', 'Plugin & Theme Texte', 'manage_options', 'itkt-strings', array( $this, 'strings' ) );
         add_submenu_page( 'itkt-dashboard', 'Systemstatus', 'Systemstatus', 'manage_options', 'itkt-system', array( $this, 'system' ) );
         add_submenu_page( 'itkt-dashboard', 'Einstellungen', 'Einstellungen', 'manage_options', 'itkt-settings', array( $this, 'settings' ) );
@@ -689,6 +690,92 @@ class ITKT_Admin {
         echo '</tr></thead><tbody>';foreach($menus as $source_menu){echo '<tr><td><strong>'.esc_html($source_menu->name).'</strong><small>ID #'.intval($source_menu->term_id).'</small></td>';foreach($langs as $code=>$lang){if($code===$default)continue;$selected=absint($direct[$source_menu->term_id][$code]??0);echo '<td><select name="direct_menu_map['.intval($source_menu->term_id).']['.esc_attr($code).']"><option value="0">— Keine Zuordnung —</option>';foreach($menus as $menu){if($menu->term_id==$source_menu->term_id)continue;echo '<option value="'.intval($menu->term_id).'" '.selected($selected,$menu->term_id,false).'>'.esc_html($menu->name).'</option>';}echo '</select></td>';}echo '</tr>';}
         echo '</tbody></table></div></section><div class="itkt-savebar"><span>WordPress-Menüpositionen und direkte WoodMart-Menüs werden im Frontend automatisch gewechselt.</span><button class="button button-primary itkt-primary">Menüs speichern</button></div></form>';
         echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>Flaggen im Frontend anzeigen</h2><p>Standardmäßig zeigt der Shortcode jetzt große Flaggen ohne Hintergrund:</p><p><code>[itkt_language_switcher]</code></p><p>Mit Sprachcode: <code>[itkt_language_switcher labels="1" style="pills"]</code></p></section>';
+        $this->footer();
+    }
+
+
+    public function shortcodes() {
+        if ( ! current_user_can( 'edit_theme_options' ) ) { return; }
+
+        $languages = ITKT_Languages::instance()->get_active();
+        $active_count = count( $languages );
+        $active_labels = array();
+        foreach ( $languages as $code => $lang ) {
+            $active_labels[] = ( ! empty( $lang['flag'] ) ? $lang['flag'] . ' ' : '' ) . strtoupper( $code );
+        }
+
+        $this->header(
+            'Shortcodes',
+            'Alle öffentlichen IT-Kayali-Shortcodes mit Beispielen, Optionen und Hinweisen zur Verwendung.'
+        );
+
+        echo '<div class="itkt-shortcode-status ' . ( $active_count >= 2 ? 'is-ok' : 'is-warning' ) . '">';
+        echo '<div><span class="dashicons ' . ( $active_count >= 2 ? 'dashicons-yes-alt' : 'dashicons-warning' ) . '"></span><div><strong>' . intval( $active_count ) . ' aktive Sprache' . ( 1 === $active_count ? '' : 'n' ) . '</strong>';
+        if ( $active_labels ) {
+            echo '<small>' . esc_html( implode( ' · ', $active_labels ) ) . '</small>';
+        }
+        echo '</div></div>';
+        if ( $active_count < 2 ) {
+            echo '<p>Der Sprachumschalter gibt im Frontend absichtlich nichts aus, solange weniger als zwei Sprachen aktiv sind. Aktiviere zuerst mindestens eine weitere Sprache unter <a href="' . esc_url( admin_url( 'admin.php?page=itkt-languages' ) ) . '">Sprachen</a>.</p>';
+        } else {
+            echo '<p>Der Sprachumschalter kann im Frontend ausgegeben werden. Änderungen an aktiven Sprachen werden automatisch übernommen.</p>';
+        }
+        echo '</div>';
+
+        $examples = array(
+            array(
+                'title' => 'Nur Flaggen',
+                'code' => '[itkt_language_switcher]',
+                'description' => 'Standarddarstellung. Zeigt die Flaggen aller aktiven Sprachen.',
+            ),
+            array(
+                'title' => 'Flaggen + Sprachkürzel',
+                'code' => '[itkt_language_switcher labels="1"]',
+                'description' => 'Zeigt zusätzlich DE, EN, AR usw.',
+            ),
+            array(
+                'title' => 'Flaggen + Sprachnamen',
+                'code' => '[itkt_language_switcher names="1"]',
+                'description' => 'Zeigt zusätzlich Deutsch, English, العربية usw.',
+            ),
+            array(
+                'title' => 'Flaggen + Kürzel + Namen',
+                'code' => '[itkt_language_switcher labels="1" names="1"]',
+                'description' => 'Vollständige Darstellung mit Flagge, Kürzel und Sprachname.',
+            ),
+            array(
+                'title' => 'Pills',
+                'code' => '[itkt_language_switcher labels="1" style="pills"]',
+                'description' => 'Kompakte Schaltflächen-Darstellung.',
+            ),
+            array(
+                'title' => 'Text-Stil',
+                'code' => '[itkt_language_switcher labels="1" style="text"]',
+                'description' => 'Reduzierte Textdarstellung ohne Pill-Hintergrund.',
+            ),
+        );
+
+        echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>[itkt_language_switcher]</h2><p>Der Sprachumschalter bleibt auf derselben Seite bzw. demselben Produkt, Kategorie-, Tag-, Warenkorb-, Checkout- oder Konto-Kontext und wechselt nur die Sprache.</p>';
+        echo '<div class="itkt-shortcode-grid">';
+        foreach ( $examples as $example ) {
+            echo '<article class="itkt-shortcode-card">';
+            echo '<div><strong>' . esc_html( $example['title'] ) . '</strong><p>' . esc_html( $example['description'] ) . '</p></div>';
+            echo '<div class="itkt-shortcode-copy-row"><code>' . esc_html( $example['code'] ) . '</code><button type="button" class="button itkt-copy-shortcode" data-copy="' . esc_attr( $example['code'] ) . '"><span class="dashicons dashicons-admin-page"></span> Kopieren</button></div>';
+            echo '</article>';
+        }
+        echo '</div></section>';
+
+        echo '<section class="itkt-card"><span class="itkt-kicker">OPTIONEN</span><h2>Parameter</h2><div class="itkt-table-wrap"><table class="itkt-table"><thead><tr><th>Parameter</th><th>Werte</th><th>Beschreibung</th></tr></thead><tbody>';
+        echo '<tr><td><code>labels</code></td><td><code>0</code> / <code>1</code></td><td>Sprachkürzel wie DE, EN oder AR anzeigen.</td></tr>';
+        echo '<tr><td><code>names</code></td><td><code>0</code> / <code>1</code></td><td>Native Sprachnamen anzeigen.</td></tr>';
+        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code></td><td>Darstellung des Umschalters. Standard ist <code>flags</code>.</td></tr>';
+        echo '</tbody></table></div></section>';
+
+        echo '<div class="itkt-grid-2">';
+        echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden.</p></section>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Dort werden Flaggen, Kürzel, Namen und Darstellung direkt eingestellt. Der Shortcode bleibt für andere Bereiche weiterhin verfügbar.</p></section>';
+        echo '</div>';
+
         $this->footer();
     }
 
