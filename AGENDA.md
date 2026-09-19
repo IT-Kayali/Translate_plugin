@@ -26,7 +26,7 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Ursache: rekursive Spracherkennung während WordPress das angefragte `WP_Term` aufbaut (`get_queried_object_id()` → `get_term`-Filter → `current_code()` → erneut `get_queried_object_id()`).
 - Der `_itkt_language`-Postmeta-Fallback läuft jetzt ausschließlich bei echten Singular-Requests (Seiten/Beiträge/Produkte), nicht bei Taxonomien.
 - Übersetzte Kategorien/Tags, Slugs, SEO und Sprachwechsel bleiben unverändert.
-- Realtest offen: mindestens eine Produktkategorie und einen Produkt-Tag in DE sowie anschließend EN/AR öffnen.
+- Realtest bestätigt: die zuvor fehlerhaften Produktkategorie- und Produkt-Tag-Archive öffnen wieder ohne HTTP 500. EN/AR-Sprachwechsel auf Taxonomie-Archiven bleibt Teil der finalen Gesamt-Abnahme.
 
 ### Produktions-Härtung v0.12.23 – doppelte Plugin-Kopien / Aktivierung
 
