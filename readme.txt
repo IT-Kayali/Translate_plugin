@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.25
+Stable tag: 0.12.26
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -50,6 +50,13 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 
 == Changelog ==
 
+
+
+= 0.12.26 =
+* Fixes the IT-Kayali Sprachen element not appearing in WoodMart Header Builder when the WoodMart module was not stored as enabled during initial ITKT setup.
+* Detects the actually loaded WoodMart Header Builder instead of relying on the setup-module flag.
+* Adds a Header Builder AJAX registration fallback and a frontend element-snapshot refresh fallback.
+* Keeps v0.12.25 language-switcher settings and shortcode compatibility unchanged.
 
 = 0.12.25 =
 * Adds a native IT-Kayali Sprachen element to the WoodMart Header Builder.
