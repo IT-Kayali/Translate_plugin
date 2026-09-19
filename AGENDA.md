@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.26 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.27 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 19.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -21,6 +21,16 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
 
 
+
+
+### Bedienung v0.12.27 – Shortcodes im Backend
+
+- Neuer Admin-Menüpunkt **Shortcodes** unter IT-Kayali Translate.
+- Enthält die wichtigsten Varianten von `[itkt_language_switcher]` mit Kopier-Button.
+- Zeigt live die Anzahl und Kürzel der aktiven Sprachen.
+- Bei weniger als zwei aktiven Sprachen wird erklärt, warum der Umschalter im Frontend leer bleibt.
+- Dokumentiert Parameter `labels`, `names` und `style`.
+- Enthält Hinweise für Elementor, WordPress Block Editor und das native WoodMart-Header-Element.
 
 ### Produktions-Fix v0.12.26 – WoodMart-Elementregistrierung
 

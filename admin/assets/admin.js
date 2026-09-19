@@ -174,3 +174,40 @@ document.addEventListener('DOMContentLoaded', function () {
         processJob(existingJob);
     }
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.itkt-copy-shortcode').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const value = button.getAttribute('data-copy') || '';
+            if (!value) return;
+
+            const done = function () {
+                const original = button.innerHTML;
+                button.classList.add('is-copied');
+                button.innerHTML = '<span class="dashicons dashicons-yes"></span> Kopiert';
+                window.setTimeout(function () {
+                    button.classList.remove('is-copied');
+                    button.innerHTML = original;
+                }, 1500);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(value).then(done).catch(function () {});
+                return;
+            }
+
+            const textarea = document.createElement('textarea');
+            textarea.value = value;
+            textarea.setAttribute('readonly', 'readonly');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                if (document.execCommand('copy')) done();
+            } catch (e) {}
+            document.body.removeChild(textarea);
+        });
+    });
+});

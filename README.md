@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.26**
+**Current development version: v0.12.27**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -15,7 +15,23 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.24 fixed the WooCommerce product category/tag archive HTTP 500 error and is confirmed on the real site.
 - v0.12.25 added a native **IT-Kayali Sprachen** element to the WoodMart Header Builder.
 - v0.12.26 fixes its registration so it appears even when WoodMart was enabled after ITKT's first-run setup or the saved WoodMart module flag is missing.
+- v0.12.27 adds a dedicated **Shortcodes** admin reference with copy buttons, active-language status and usage help for Elementor, WordPress and WoodMart.
 
+
+
+## v0.12.27 – Shortcodes admin reference
+
+- Adds **IT-Kayali Translate -> Shortcodes** as a dedicated backend reference page.
+- Lists ready-to-copy variants of `[itkt_language_switcher]`:
+  - flags only
+  - flags + language codes
+  - flags + native language names
+  - flags + codes + names
+  - pills style
+  - text style
+- Shows the currently active languages at the top.
+- If fewer than two languages are active, the page clearly explains why the switcher renders nothing and links to **Sprachen**.
+- Includes parameter documentation and separate instructions for Elementor/WordPress and WoodMart Header Builder.
 
 
 ## v0.12.26 – WoodMart Header Builder registration fix

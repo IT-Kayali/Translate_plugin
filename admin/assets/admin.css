@@ -317,3 +317,29 @@
 .itkt-acceptance-section .itkt-check-row{cursor:pointer;grid-template-columns:24px 1fr}
 .itkt-acceptance-section .itkt-check-row input[type=checkbox]{margin-top:3px}
 .itkt-acceptance-section .itkt-check-row.is-ok{border-color:#b9e5cc;background:#f4fbf7}
+
+
+/* V0.12.27 shortcode reference */
+.itkt-shortcode-status{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin:0 0 22px;padding:18px 20px;border-radius:14px;border:1px solid var(--itkt-border);background:#fff}
+.itkt-shortcode-status>div{display:flex;align-items:center;gap:12px;min-width:220px}
+.itkt-shortcode-status .dashicons{width:28px;height:28px;font-size:28px}
+.itkt-shortcode-status strong{display:block;color:var(--itkt-navy);font-size:14px}
+.itkt-shortcode-status small{display:block;margin-top:4px;color:var(--itkt-muted)}
+.itkt-shortcode-status p{margin:0;max-width:760px;color:var(--itkt-muted);line-height:1.55}
+.itkt-shortcode-status.is-ok{border-color:#cdebdc;background:#f6fcf9}
+.itkt-shortcode-status.is-ok .dashicons{color:var(--itkt-green)}
+.itkt-shortcode-status.is-warning{border-color:#f0d59a;background:#fffaf0}
+.itkt-shortcode-status.is-warning .dashicons{color:var(--itkt-yellow)}
+.itkt-shortcode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.itkt-shortcode-card{display:flex;flex-direction:column;justify-content:space-between;gap:14px;padding:16px;border:1px solid var(--itkt-border);border-radius:12px;background:#f9fbfd}
+.itkt-shortcode-card>div>strong{color:var(--itkt-navy);font-size:13px}
+.itkt-shortcode-card p{margin:5px 0 0;font-size:12px}
+.itkt-shortcode-copy-row{display:flex;align-items:center;gap:9px}
+.itkt-shortcode-copy-row code{display:block;flex:1;overflow:auto;padding:10px 12px;border-radius:8px;background:#eef3f7;color:#174c82;font-size:12px;white-space:nowrap}
+.itkt-copy-shortcode{display:inline-flex!important;align-items:center;gap:5px;min-height:36px!important;border-radius:8px!important}
+.itkt-copy-shortcode .dashicons{width:16px;height:16px;font-size:16px;line-height:16px}
+.itkt-copy-shortcode.is-copied{border-color:#8fd0ae!important;background:#effaf4!important;color:#147548!important}
+@media (max-width:900px){
+  .itkt-shortcode-grid{grid-template-columns:1fr}
+  .itkt-shortcode-status{flex-direction:column}
+}

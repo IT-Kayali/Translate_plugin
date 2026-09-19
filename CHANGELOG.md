@@ -2,8 +2,19 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.26**.
+Current development version: **0.12.27**.
 
+
+
+## [0.12.27]
+
+### Admin shortcode reference
+- Added a dedicated **Shortcodes** page under IT-Kayali Translate in WordPress admin.
+- Documents all supported `[itkt_language_switcher]` variants for flags, language codes, native language names and display styles.
+- Added one-click copy buttons for every example.
+- Added a live active-language status at the top of the page.
+- When fewer than two languages are active, the page now explicitly explains that the language switcher intentionally renders nothing and links directly to the language settings.
+- Added usage guidance for Elementor, WordPress Block Editor and the native WoodMart **IT-Kayali Sprachen** Header Builder element.
 
 
 ## [0.12.26]
