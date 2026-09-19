@@ -24,9 +24,13 @@ class ITKT_Plugin {
 
     public function boot() {
         add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
-        // WoodMart loads built-in Header Builder elements on init priority 8 and snapshots the
-        // frontend element map on priority 10. Register ITKT's native language element in between.
+        // WoodMart normally loads built-in Header Builder elements on init priority 8 and
+        // snapshots the frontend map on priority 10. Register between those stages. The AJAX
+        // hook is a builder-UI fallback for installations with a different load order, while
+        // the wp hook refreshes the frontend snapshot before the header is rendered.
         add_action( 'init', array( 'ITKT_WoodMart_Adapter', 'register_header_builder_element' ), 9 );
+        add_action( 'wp_ajax_woodmart_get_builder_elements', array( 'ITKT_WoodMart_Adapter', 'register_header_builder_element' ), 0 );
+        add_action( 'wp', array( 'ITKT_WoodMart_Adapter', 'ensure_header_builder_frontend_element' ), 0 );
         add_action( 'init', array( $this, 'init' ) );
         add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
     }

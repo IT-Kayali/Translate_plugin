@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.25**
+**Current development version: v0.12.26**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -13,8 +13,22 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
 - v0.12.24 fixed the WooCommerce product category/tag archive HTTP 500 error and is confirmed on the real site.
-- v0.12.25 adds a native **IT-Kayali Sprachen** element to the WoodMart Header Builder so the language flags no longer depend on the Text/HTML shortcode field.
+- v0.12.25 added a native **IT-Kayali Sprachen** element to the WoodMart Header Builder.
+- v0.12.26 fixes its registration so it appears even when WoodMart was enabled after ITKT's first-run setup or the saved WoodMart module flag is missing.
 
+
+
+## v0.12.26 – WoodMart Header Builder registration fix
+
+- The **IT-Kayali Sprachen** element no longer depends on the `woodmart` module checkbox saved during ITKT's original setup.
+- Registration now follows the actually loaded WoodMart Header Builder classes.
+- A dedicated `wp_ajax_woodmart_get_builder_elements` priority-0 fallback injects the element immediately before WoodMart returns the "Add element" list.
+- A frontend `wp` safety net refreshes WoodMart's element snapshot before header rendering, which also covers non-standard WoodMart initialization order.
+- This addresses the production finding where v0.12.25 was installed correctly but the element picker still showed only WoodMart's built-in elements.
+
+### Real-site validation required
+
+Install v0.12.26, reload the Header Builder completely, open **+ Element hinzufügen**, and confirm **IT-Kayali Sprachen** appears. Then place it in the header and verify DE/EN/AR on desktop and mobile.
 
 
 ## v0.12.25 – native WoodMart Header Builder language switcher

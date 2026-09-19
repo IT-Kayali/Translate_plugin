@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.25 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.26 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 19.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -20,6 +20,16 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf das Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
 
+
+
+### Produktions-Fix v0.12.26 – WoodMart-Elementregistrierung
+
+- Realtest von v0.12.25: **IT-Kayali Sprachen** erschien nicht in WoodMarts Auswahl **„Element zu diesem Abschnitt hinzufügen“**.
+- Ursache im ITKT-Code: die Registrierung war zusätzlich an das beim Ersteinrichtungs-Assistenten gespeicherte Modul `woodmart` gekoppelt.
+- v0.12.26 koppelt das Header-Element stattdessen direkt an die tatsächlich geladenen WoodMart-Header-Builder-Klassen.
+- Builder-Fallback: Registrierung direkt vor `woodmart_get_builder_elements` AJAX.
+- Frontend-Fallback: Elementregistrierung und erneuter WoodMart-Element-Snapshot vor dem Header-Rendering.
+- Realtest offen: v0.12.26 installieren, Header Builder vollständig neu laden, Elementliste öffnen und anschließend DE/EN/AR Desktop + Mobile prüfen.
 
 ### Produktions-Fix v0.12.25 – nativer WoodMart-Sprachumschalter
 

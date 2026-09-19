@@ -87,7 +87,9 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
      * modifying theme files.
      */
     public static function register_header_builder_element() {
-        if ( ! ITKT_Plugin::module_enabled( 'woodmart' ) ) { return; }
+        // This integration must follow the actually active WoodMart Header Builder, not the
+        // module selection saved during ITKT's first-run wizard. A site may enable/switch to
+        // WoodMart later, and the language element still needs to become available immediately.
         if ( ! class_exists( '\\XTS\\Modules\\Header_Builder' ) || ! class_exists( '\\XTS\\Modules\\Header_Builder\\Element' ) ) { return; }
 
         $builder = \XTS\Modules\Header_Builder::get_instance();
@@ -191,6 +193,22 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes all generated attributes/content.
             }
         };
+    }
+
+    /**
+     * Late frontend safety net for WoodMart versions/installations with a different init order.
+     * Re-register the element and refresh WoodMart's public frontend element snapshot before
+     * the header is rendered.
+     */
+    public static function ensure_header_builder_frontend_element() {
+        self::register_header_builder_element();
+
+        if ( class_exists( '\\XTS\\Modules\\Header_Builder\\Frontend' ) ) {
+            $frontend = \XTS\Modules\Header_Builder\Frontend::get_instance();
+            if ( is_object( $frontend ) && method_exists( $frontend, 'get_elements' ) ) {
+                $frontend->get_elements();
+            }
+        }
     }
 
     public function post_types( $types ) {
