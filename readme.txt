@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.22
+Stable tag: 0.12.23
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -31,11 +31,13 @@ Current development features include:
 
 == Installation ==
 
-1. Upload the plugin ZIP under Plugins -> Add Plugin -> Upload Plugin.
-2. Activate IT-Kayali Translate.
-3. Complete the setup assistant and activate the required languages/modules.
-4. After routing-related updates, clear page/server caches and resave Settings -> Permalinks if required.
-5. Test default and non-default languages separately.
+1. Upload the installable plugin ZIP under Plugins -> Add Plugin -> Upload Plugin. Its root folder is it-kayali-translate/.
+2. If WordPress detects an existing installation, replace/update that copy instead of installing another plugin directory.
+3. Do not install GitHub Code -> Download ZIP as a second WordPress copy; GitHub names that source directory Translate_plugin-main/.
+4. Activate IT-Kayali Translate.
+5. Complete the setup assistant and activate the required languages/modules.
+6. After routing-related updates, clear page/server caches and resave Settings -> Permalinks if required.
+7. Test default and non-default languages separately.
 
 == Frontend text catalog ==
 
@@ -46,6 +48,13 @@ The collector is admin-only and intentionally ignores common price, quantity and
 Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/drawer content are rescanned automatically.
 
 == Changelog ==
+
+= 0.12.23 =
+* Prevents fatal activation errors when two physical IT-Kayali Translate copies are loaded.
+* Duplicate copies stop before class loading and no longer redefine ITKT constants.
+* Includes are resolved from the current plugin file's own directory, preventing stale cross-folder ITKT_DIR paths.
+* Shows administrators a duplicate-copy notice instead of a fatal require_once error.
+* Documents that GitHub Code -> Download ZIP is a source archive; WordPress updates should use the installable ZIP with root folder it-kayali-translate/.
 
 = 0.12.22 =
 * Coalesced WooCommerce/Blocks runtime refreshes through one shared debounce scheduler.

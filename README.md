@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.22**
+**Current development version: v0.12.23**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,9 +12,29 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.22 is the current production-finalization candidate; it coalesces WooCommerce runtime refreshes and hardens the public read-only runtime endpoint against unnecessary session work.
+- v0.12.23 is the current production-finalization candidate; it prevents duplicate plugin copies from causing constant/path collisions during activation and keeps the canonical installable folder isolated.
 
 
+
+## v0.12.23 – duplicate-installation / activation hardening
+
+- Prevents a second IT-Kayali Translate copy from redefining `ITKT_*` constants and crashing activation.
+- Detects when two physical plugin copies are loaded (for example `it-kayali-translate/` plus GitHub's `Translate_plugin-main/`) and stops the duplicate copy before class loading.
+- Shows administrators a clear duplicate-copy notice with both physical plugin paths instead of producing a fatal `require_once` error.
+- Core includes are resolved from the current plugin file's own physical directory, so a stale `ITKT_DIR` from another copy can no longer redirect includes into the wrong folder.
+- Re-including the same plugin copy in one request is harmless.
+- The official installable ZIP continues to use the canonical root folder `it-kayali-translate/`.
+
+### Installation note
+
+Do **not** use GitHub **Code → Download ZIP** as a second WordPress plugin installation while an older IT-Kayali Translate copy is still installed. GitHub names that source folder `Translate_plugin-main`, which WordPress treats as a separate plugin directory. For WordPress updates use the installable release ZIP whose root folder is `it-kayali-translate/`; WordPress can then replace the existing copy instead of creating a duplicate.
+
+### Validation
+
+- PHP syntax validation passes for all plugin PHP files.
+- JavaScript syntax validation passes for all bundled JavaScript files.
+- Duplicate-copy bootstrap regression checks verify that the collision guard executes before class includes and that includes use the local bootstrap directory.
+- Real-site activation/update verification is still required before marking v0.12.23 production-confirmed.
 
 ## v0.12.21 – safe language-switch query state
 

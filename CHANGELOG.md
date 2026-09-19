@@ -2,9 +2,24 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.22**.
+Current development version: **0.12.23**.
 
 
+
+## [0.12.23]
+
+### Duplicate installation / activation hardening
+- Added an early bootstrap collision guard when a second physical IT-Kayali Translate copy is loaded.
+- Duplicate copies no longer redefine `ITKT_VERSION`, `ITKT_FILE`, `ITKT_DIR`, `ITKT_URL` or `ITKT_BASENAME`.
+- A duplicate copy stops before class loading and shows administrators a clear notice with both plugin paths.
+- Includes now resolve from the current plugin file's own physical directory instead of trusting a potentially stale `ITKT_DIR` from another copy.
+- Re-including the same physical plugin copy in one request is harmless.
+- Documented that GitHub `Code -> Download ZIP` is a source archive (`Translate_plugin-main/`) and should not be installed as a second WordPress copy; production updates use the canonical installable ZIP (`it-kayali-translate/`).
+
+### Validation
+- PHP and JavaScript syntax checks pass.
+- Bootstrap regression checks verify early duplicate detection, guarded constants and local-path includes.
+- Real WordPress replacement/activation remains required before production confirmation.
 
 ## [0.12.22]
 

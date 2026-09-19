@@ -1,7 +1,7 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.22 – Produktionskandidat / finale Abnahme**
-**Letzte Aktualisierung: 18.09.2026**
+**Aktueller Entwicklungsstand: v0.12.23 – Produktionskandidat / finale Abnahme**
+**Letzte Aktualisierung: 19.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
 
@@ -19,6 +19,15 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Nicht-Standardsprachen funktionieren im getesteten Account-Ablauf.
 - Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf das Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
+
+### Produktions-Härtung v0.12.23 – doppelte Plugin-Kopien / Aktivierung
+
+- Erkennt zwei gleichzeitig geladene physische IT-Kayali-Translate-Kopien vor dem Laden der Klassen.
+- Verhindert dadurch doppelte `ITKT_*`-Konstanten und falsche Include-Pfade zwischen `it-kayali-translate/` und z. B. `Translate_plugin-main/`.
+- Zeigt Administratoren stattdessen einen verständlichen Hinweis mit beiden Plugin-Pfaden.
+- Alle Includes werden aus dem eigenen physischen Plugin-Verzeichnis geladen und nicht aus einer möglicherweise alten fremden `ITKT_DIR`-Konstante.
+- Installationsregel dokumentiert: GitHub-Source-ZIP nicht als zweite WordPress-Kopie installieren; für Updates die installierbare ZIP mit Root `it-kayali-translate/` verwenden.
+- Realtest bleibt nötig: bestehende Installation per WordPress-Ersetzen auf v0.12.23 aktualisieren und einmal aktivieren.
 
 ### Produktions-Härtung v0.12.22 – Runtime/AJAX
 
