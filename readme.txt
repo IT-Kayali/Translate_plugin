@@ -54,6 +54,7 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 * Prevents recursive language detection while WordPress builds the queried taxonomy term.
 * Limits the _itkt_language post-meta fallback to singular requests where post metadata is valid.
 * Keeps translated taxonomy names, slugs, SEO and language switching unchanged.
+* Real-site verification confirmed the previously failing product category and product tag archives open again without HTTP 500.
 
 = 0.12.23 =
 * Prevents fatal activation errors when two physical IT-Kayali Translate copies are loaded.
