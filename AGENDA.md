@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.23 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.24 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 19.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -19,6 +19,14 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 - Nicht-Standardsprachen funktionieren im getesteten Account-Ablauf.
 - Orders, Downloads, Adressen und Kontodetails fallen nicht mehr auf das Dashboard zurück.
 - Der My-Account-Rescue-Mechanismus bleibt Bestandteil des aktuellen Codes.
+
+### Produktions-Fix v0.12.24 – Produktkategorie/Tag HTTP 500
+
+- Behebt den HTTP-500-Fehler beim Aufruf von WooCommerce-Produktkategorien und Produkt-Tags.
+- Ursache: rekursive Spracherkennung während WordPress das angefragte `WP_Term` aufbaut (`get_queried_object_id()` → `get_term`-Filter → `current_code()` → erneut `get_queried_object_id()`).
+- Der `_itkt_language`-Postmeta-Fallback läuft jetzt ausschließlich bei echten Singular-Requests (Seiten/Beiträge/Produkte), nicht bei Taxonomien.
+- Übersetzte Kategorien/Tags, Slugs, SEO und Sprachwechsel bleiben unverändert.
+- Realtest offen: mindestens eine Produktkategorie und einen Produkt-Tag in DE sowie anschließend EN/AR öffnen.
 
 ### Produktions-Härtung v0.12.23 – doppelte Plugin-Kopien / Aktivierung
 

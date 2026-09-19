@@ -3,7 +3,7 @@
  * Plugin Name: IT-Kayali Translate
  * Plugin URI: https://it-kayali.de
  * Description: Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and theme adapters.
- * Version: 0.12.23
+ * Version: 0.12.24
  * Author: IT-Kayali
  * Author URI: https://it-kayali.de
  * Text Domain: it-kayali-translate
@@ -37,7 +37,7 @@ if ( $itkt_existing_file && $itkt_existing_file !== $itkt_bootstrap_file ) {
 // A second include of the same plugin in one request must be harmless.
 if ( class_exists( 'ITKT_Plugin', false ) ) { return; }
 
-if ( ! defined( 'ITKT_VERSION' ) ) { define( 'ITKT_VERSION', '0.12.23' ); }
+if ( ! defined( 'ITKT_VERSION' ) ) { define( 'ITKT_VERSION', '0.12.24' ); }
 if ( ! defined( 'ITKT_FILE' ) ) { define( 'ITKT_FILE', __FILE__ ); }
 if ( ! defined( 'ITKT_DIR' ) ) { define( 'ITKT_DIR', plugin_dir_path( __FILE__ ) ); }
 if ( ! defined( 'ITKT_URL' ) ) { define( 'ITKT_URL', plugin_dir_url( __FILE__ ) ); }

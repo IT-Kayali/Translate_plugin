@@ -102,7 +102,11 @@ class ITKT_Languages {
             }
         }
 
-        if ( ! $code && ! is_admin() && function_exists( 'get_queried_object_id' ) ) {
+        // Only singular posts/pages/products own the _itkt_language post meta. On taxonomy
+// archives get_queried_object_id() may build the queried WP_Term via get_term(). Because
+// ITKT also filters get_term() and that filter calls current_code(), doing this lookup on
+// a category/tag archive can recurse until PHP exhausts memory and returns HTTP 500.
+        if ( ! $code && ! is_admin() && function_exists( 'is_singular' ) && is_singular() && function_exists( 'get_queried_object_id' ) ) {
             $queried_id = absint( get_queried_object_id() );
             if ( $queried_id ) { $code = sanitize_key( (string) get_post_meta( $queried_id, '_itkt_language', true ) ); }
         }

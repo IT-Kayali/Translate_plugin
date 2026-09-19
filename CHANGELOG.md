@@ -2,9 +2,22 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.23**.
+Current development version: **0.12.24**.
 
 
+
+## [0.12.24]
+
+### WooCommerce taxonomy archive fatal fix
+- Fixed HTTP 500 errors on WooCommerce product category and product tag archives.
+- `ITKT_Languages::current_code()` no longer asks WordPress for a queried object ID on taxonomy archives.
+- The post-meta language fallback is now limited to singular requests, which is the only place `_itkt_language` post metadata is valid.
+- This prevents recursion between taxonomy queried-object construction, the ITKT `get_term` filter and `current_code()`.
+
+### Validation
+- PHP and JavaScript syntax checks pass.
+- Taxonomy recursion regression test verifies that non-singular requests never call `get_queried_object_id()` from `current_code()`.
+- Real WooCommerce category/tag browser verification remains required before production confirmation.
 
 ## [0.12.23]
 

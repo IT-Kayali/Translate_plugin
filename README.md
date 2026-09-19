@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.23**
+**Current development version: v0.12.24**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -12,9 +12,24 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.23 is the current production-finalization candidate; it prevents duplicate plugin copies from causing constant/path collisions during activation and keeps the canonical installable folder isolated.
+- v0.12.24 is the current production-finalization candidate; it fixes the WooCommerce product category/tag archive HTTP 500 caused by recursive language detection while WordPress is building the queried term.
 
 
+
+## v0.12.24 – WooCommerce category/tag archive 500 fix
+
+- Fixes HTTP 500 errors when opening WooCommerce product category and product tag archives such as `/product-category/baklava/` and `/product-tag/.../`.
+- The root cause was recursive language detection: `current_code()` called `get_queried_object_id()` on taxonomy requests while WordPress was still building the queried `WP_Term`; ITKT's `get_term` translation filter then called `current_code()` again.
+- The `_itkt_language` post-meta fallback now runs only on real singular requests (pages/posts/products), where that metadata actually belongs.
+- Taxonomy archives now stay on the normal term-language path and no longer enter the queried-object recursion.
+- This change is intentionally narrow and does not alter translated category/tag names, slugs, SEO, filters or language-switch URLs.
+
+### Validation
+
+- PHP syntax validation passes for all plugin PHP files.
+- JavaScript syntax validation passes for all bundled JavaScript files.
+- A taxonomy recursion regression harness verifies that `current_code()` does not call `get_queried_object_id()` when `is_singular()` is false.
+- Real-site category/tag verification is still required before v0.12.24 is marked production-confirmed.
 
 ## v0.12.23 – duplicate-installation / activation hardening
 
