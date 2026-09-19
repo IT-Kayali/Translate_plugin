@@ -12,7 +12,7 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.11 added the admin-only **Frontend Texte** catalog with direct translation fields.
 - v0.12.12 added dynamic WooCommerce/WoodMart/AJAX/Blocks runtime translation and JavaScript plural support.
 - v0.12.13 added JSON **Backup / Restore** without creating duplicate products, pages, posts or terms.
-- v0.12.24 is the current production-finalization candidate; it fixes the WooCommerce product category/tag archive HTTP 500 caused by recursive language detection while WordPress is building the queried term.
+- v0.12.24 is the current production-finalization candidate; the WooCommerce product category/tag archive HTTP 500 fix is confirmed on the real site.
 
 
 
@@ -29,7 +29,7 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - PHP syntax validation passes for all plugin PHP files.
 - JavaScript syntax validation passes for all bundled JavaScript files.
 - A taxonomy recursion regression harness verifies that `current_code()` does not call `get_queried_object_id()` when `is_singular()` is false.
-- Real-site category/tag verification is still required before v0.12.24 is marked production-confirmed.
+- Real-site verification confirmed that the previously failing WooCommerce product category and product tag archive requests open again without HTTP 500.
 
 ## v0.12.23 – duplicate-installation / activation hardening
 
