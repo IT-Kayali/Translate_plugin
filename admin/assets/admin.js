@@ -211,3 +211,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    var tabs = document.querySelectorAll('.itkt-switcher-device-tabs [data-itkt-device-tab]');
+    var panels = document.querySelectorAll('.itkt-switcher-device-panel[data-itkt-device-panel]');
+    if (!tabs.length || !panels.length) return;
+
+    function activate(device) {
+        tabs.forEach(function (tab) {
+            tab.classList.toggle('is-active', tab.getAttribute('data-itkt-device-tab') === device);
+        });
+        panels.forEach(function (panel) {
+            panel.classList.toggle('is-active', panel.getAttribute('data-itkt-device-panel') === device);
+        });
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            activate(tab.getAttribute('data-itkt-device-tab'));
+        });
+    });
+});
