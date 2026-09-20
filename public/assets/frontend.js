@@ -20,6 +20,8 @@
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
     if (menu) {
       menu.style.removeProperty('--itkt-menu-shift-x');
+      menu.style.removeProperty('left');
+      menu.style.removeProperty('right');
       menu.setAttribute('aria-hidden', 'true');
     }
   }
@@ -67,18 +69,40 @@
     shell.classList.add('itkt-menu-anchor-' + anchor);
 
     menuRect = menu.getBoundingClientRect();
-    var shift = 0;
 
-    if (anchor === 'left') {
-      shift = edge - menuRect.left;
-    } else if (anchor === 'right') {
-      shift = (viewportWidth - edge) - menuRect.right;
+    if (viewportWidth <= 1024) {
+      // On tablet/mobile use a direct absolute X coordinate relative to the nav box.
+      // This avoids WoodMart transforms/transitions changing the result of a measured shift.
+      var navRect = nav.getBoundingClientRect();
+      var menuWidth = menu.offsetWidth || menuRect.width || 132;
+      var absoluteLeft;
+
+      if (anchor === 'left') {
+        absoluteLeft = edge - navRect.left;
+      } else if (anchor === 'right') {
+        absoluteLeft = (viewportWidth - edge - menuWidth) - navRect.left;
+      } else {
+        absoluteLeft = (triggerRect.left + triggerRect.width / 2 - menuWidth / 2) - navRect.left;
+        var minLeft = edge - navRect.left;
+        var maxLeft = (viewportWidth - edge - menuWidth) - navRect.left;
+        absoluteLeft = Math.max(minLeft, Math.min(maxLeft, absoluteLeft));
+      }
+
+      menu.style.setProperty('left', absoluteLeft + 'px', 'important');
+      menu.style.setProperty('right', 'auto', 'important');
+      menu.style.setProperty('--itkt-menu-shift-x', '0px');
     } else {
-      if (menuRect.left < edge) shift += edge - menuRect.left;
-      if (menuRect.right > viewportWidth - edge) shift -= menuRect.right - (viewportWidth - edge);
+      var shift = 0;
+      if (anchor === 'left') {
+        shift = edge - menuRect.left;
+      } else if (anchor === 'right') {
+        shift = (viewportWidth - edge) - menuRect.right;
+      } else {
+        if (menuRect.left < edge) shift += edge - menuRect.left;
+        if (menuRect.right > viewportWidth - edge) shift -= menuRect.right - (viewportWidth - edge);
+      }
+      menu.style.setProperty('--itkt-menu-shift-x', shift + 'px');
     }
-
-    menu.style.setProperty('--itkt-menu-shift-x', shift + 'px');
   }
 
   function openLanguageSwitcher(shell) {
