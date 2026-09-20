@@ -71,23 +71,37 @@
     menuRect = menu.getBoundingClientRect();
 
     if (viewportWidth <= 1024) {
-      // On tablet/mobile use a direct absolute X coordinate relative to the nav box.
-      // This avoids WoodMart transforms/transitions changing the result of a measured shift.
-      var navRect = nav.getBoundingClientRect();
+      // Use the menu's REAL CSS offset parent as the coordinate origin. The previous version
+      // subtracted the nav rectangle, but in WoodMart the absolute dropdown can be positioned
+      // against a different ancestor. That made its X position change when another active
+      // language altered header/nav dimensions (most visibly with English).
+      var offsetParent = menu.offsetParent || nav;
+      var parentRect = offsetParent.getBoundingClientRect();
       var menuWidth = menu.offsetWidth || menuRect.width || 132;
-      var absoluteLeft;
+      var targetViewportLeft;
+
+      // Prefer the configured responsive alignment so DE/AR/EN always choose the same edge.
+      var device = viewportWidth <= 767 ? 'mobile' : 'tablet';
+      if (shell.classList.contains('itkt-' + device + '-align-left')) {
+        anchor = 'left';
+      } else if (shell.classList.contains('itkt-' + device + '-align-right')) {
+        anchor = 'right';
+      } else if (shell.classList.contains('itkt-' + device + '-align-center')) {
+        anchor = 'center';
+      }
+      shell.classList.remove('itkt-menu-anchor-left', 'itkt-menu-anchor-center', 'itkt-menu-anchor-right');
+      shell.classList.add('itkt-menu-anchor-' + anchor);
 
       if (anchor === 'left') {
-        absoluteLeft = edge - navRect.left;
+        targetViewportLeft = edge;
       } else if (anchor === 'right') {
-        absoluteLeft = (viewportWidth - edge - menuWidth) - navRect.left;
+        targetViewportLeft = viewportWidth - edge - menuWidth;
       } else {
-        absoluteLeft = (triggerRect.left + triggerRect.width / 2 - menuWidth / 2) - navRect.left;
-        var minLeft = edge - navRect.left;
-        var maxLeft = (viewportWidth - edge - menuWidth) - navRect.left;
-        absoluteLeft = Math.max(minLeft, Math.min(maxLeft, absoluteLeft));
+        targetViewportLeft = (viewportWidth - menuWidth) / 2;
+        targetViewportLeft = Math.max(edge, Math.min(viewportWidth - edge - menuWidth, targetViewportLeft));
       }
 
+      var absoluteLeft = targetViewportLeft - parentRect.left;
       menu.style.setProperty('left', absoluteLeft + 'px', 'important');
       menu.style.setProperty('right', 'auto', 'important');
       menu.style.setProperty('--itkt-menu-shift-x', '0px');

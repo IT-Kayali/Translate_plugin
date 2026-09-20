@@ -2,9 +2,17 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.38**.
+Current development version: **0.12.39**.
 
 
+
+## [0.12.39]
+
+### Stable dropdown position when English is active
+- Fixed the tablet/mobile language menu shifting horizontally only when English was the active language.
+- The menu now calculates its X coordinate from its actual CSS offset parent instead of assuming the language nav is the positioning parent.
+- Responsive left/right/center alignment is reused directly, so DE, AR and EN open the menu at the same viewport position.
+- UI positioning only; language URLs, routing and header inheritance remain unchanged.
 
 ## [0.12.38]
 
