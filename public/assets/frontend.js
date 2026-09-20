@@ -12,6 +12,77 @@
     document.cookie = ITKTFrontend.cookieName + '=' + encodeURIComponent(code) + '; Path=' + path + persistent + '; SameSite=Lax' + secure;
   }
 
+  function closeLanguageSwitcher(shell) {
+    if (!shell) return;
+    shell.classList.remove('is-open', 'itkt-opens-up', 'itkt-opens-down');
+    var trigger = shell.querySelector('.itkt-switcher-trigger');
+    var menu = shell.querySelector('.itkt-switcher-menu');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    if (menu) {
+      menu.style.removeProperty('--itkt-menu-shift-x');
+      menu.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function closeOtherLanguageSwitchers(except) {
+    document.querySelectorAll('.itkt-switcher-shell.is-open').forEach(function(shell){
+      if (shell !== except) closeLanguageSwitcher(shell);
+    });
+  }
+
+  function positionLanguageSwitcher(shell) {
+    if (!shell) return;
+    var nav = shell.querySelector('.itkt-language-switcher');
+    var trigger = shell.querySelector('.itkt-switcher-trigger');
+    var menu = shell.querySelector('.itkt-switcher-menu');
+    if (!nav || !trigger || !menu) return;
+
+    shell.classList.remove('itkt-opens-up', 'itkt-opens-down');
+    menu.style.setProperty('--itkt-menu-shift-x', '0px');
+
+    var wanted = String(nav.getAttribute('data-itkt-dropdown-direction') || 'auto').toLowerCase();
+    var triggerRect = trigger.getBoundingClientRect();
+    var menuRect = menu.getBoundingClientRect();
+    var gap = parseFloat(window.getComputedStyle(shell).getPropertyValue('--itkt-menu-gap-current')) || 8;
+    var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    var spaceAbove = triggerRect.top;
+    var spaceBelow = viewportHeight - triggerRect.bottom;
+    var direction = wanted;
+
+    if (direction !== 'up' && direction !== 'down') {
+      direction = (spaceBelow < menuRect.height + gap && spaceAbove > spaceBelow) ? 'up' : 'down';
+    }
+    shell.classList.add(direction === 'up' ? 'itkt-opens-up' : 'itkt-opens-down');
+
+    // Keep the dropdown inside the visible viewport even when the trigger is close to an edge.
+    // The base CSS centers the menu under the trigger; this variable only nudges it when needed.
+    menuRect = menu.getBoundingClientRect();
+    var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    var edge = 10;
+    var shift = 0;
+    if (menuRect.left < edge) shift += edge - menuRect.left;
+    if (menuRect.right > viewportWidth - edge) shift -= menuRect.right - (viewportWidth - edge);
+    menu.style.setProperty('--itkt-menu-shift-x', shift + 'px');
+  }
+
+  function openLanguageSwitcher(shell) {
+    if (!shell) return;
+    closeOtherLanguageSwitchers(shell);
+    shell.classList.add('is-open');
+    var trigger = shell.querySelector('.itkt-switcher-trigger');
+    var menu = shell.querySelector('.itkt-switcher-menu');
+    if (trigger) trigger.setAttribute('aria-expanded', 'true');
+    if (menu) menu.setAttribute('aria-hidden', 'false');
+    positionLanguageSwitcher(shell);
+  }
+
+  function toggleLanguageSwitcher(trigger) {
+    var shell = trigger && trigger.closest ? trigger.closest('.itkt-switcher-shell') : null;
+    if (!shell) return;
+    if (shell.classList.contains('is-open')) closeLanguageSwitcher(shell);
+    else openLanguageSwitcher(shell);
+  }
+
   function shouldSkipUrl(url, anchor) {
     if (!url || !anchor) return true;
     if (anchor.classList.contains('itkt-lang-link')) return true;
@@ -1012,6 +1083,17 @@
   }
 
   document.addEventListener('click', function (event) {
+    var trigger = event.target.closest && event.target.closest('.itkt-switcher-trigger');
+    if (trigger) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleLanguageSwitcher(trigger);
+      return;
+    }
+
+    var shell = event.target.closest && event.target.closest('.itkt-switcher-shell');
+    if (!shell) closeOtherLanguageSwitchers(null);
+
     var link = event.target.closest && event.target.closest('a[href]');
     if (!link) return;
     if (link.matches('.itkt-lang-link[data-itkt-lang]')) {
@@ -1029,4 +1111,23 @@
     }
     rewriteAnchor(link);
   }, true);
+
+  document.addEventListener('keydown', function(event){
+    if (event.key !== 'Escape') return;
+    var open = document.querySelector('.itkt-switcher-shell.is-open');
+    if (!open) return;
+    var trigger = open.querySelector('.itkt-switcher-trigger');
+    closeLanguageSwitcher(open);
+    if (trigger && typeof trigger.focus === 'function') trigger.focus();
+  });
+
+  var switcherRepositionTimer = 0;
+  function repositionOpenSwitchers() {
+    window.clearTimeout(switcherRepositionTimer);
+    switcherRepositionTimer = window.setTimeout(function(){
+      document.querySelectorAll('.itkt-switcher-shell.is-open').forEach(positionLanguageSwitcher);
+    }, 30);
+  }
+  window.addEventListener('resize', repositionOpenSwitchers, {passive:true});
+  window.addEventListener('scroll', repositionOpenSwitchers, {passive:true});
 })();

@@ -1714,19 +1714,180 @@ class ITKT_Frontend {
         return array_unique( $classes );
     }
 
+    public function switcher_defaults() {
+        return array(
+            'style'              => 'flags',
+            'show_codes'         => false,
+            'show_names'         => false,
+            'mobile_dropdown'    => true,
+            'floating_fixed'     => false,
+            'floating_vertical'  => 'bottom',
+            'dropdown_direction' => 'auto',
+            'devices'            => array(
+                'desktop' => array( 'align'=>'left', 'gap'=>12, 'padding_x'=>10, 'padding_y'=>7, 'offset_x'=>24, 'offset_y'=>24, 'menu_gap'=>10, 'flag_size'=>28, 'margin_top'=>0, 'margin_right'=>0, 'margin_bottom'=>0, 'margin_left'=>0 ),
+                'tablet'  => array( 'align'=>'left', 'gap'=>10, 'padding_x'=>10, 'padding_y'=>7, 'offset_x'=>18, 'offset_y'=>18, 'menu_gap'=>9,  'flag_size'=>26, 'margin_top'=>0, 'margin_right'=>0, 'margin_bottom'=>0, 'margin_left'=>0 ),
+                'mobile'  => array( 'align'=>'left', 'gap'=>8,  'padding_x'=>10, 'padding_y'=>8, 'offset_x'=>14, 'offset_y'=>14, 'menu_gap'=>8,  'flag_size'=>25, 'margin_top'=>0, 'margin_right'=>0, 'margin_bottom'=>0, 'margin_left'=>0 ),
+            ),
+        );
+    }
+
+    public function switcher_settings() {
+        $settings = get_option( 'itkt_settings', array() );
+        $saved = isset( $settings['switcher'] ) && is_array( $settings['switcher'] ) ? $settings['switcher'] : array();
+        return $this->sanitize_switcher_config( array_replace_recursive( $this->switcher_defaults(), $saved ) );
+    }
+
+    public function sanitize_switcher_config( $config ) {
+        $defaults = $this->switcher_defaults();
+        $config = is_array( $config ) ? array_replace_recursive( $defaults, $config ) : $defaults;
+
+        $style = sanitize_key( (string) ( $config['style'] ?? 'flags' ) );
+        $config['style'] = in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ? $style : 'flags';
+        $config['show_codes'] = ! empty( $config['show_codes'] );
+        $config['show_names'] = ! empty( $config['show_names'] );
+        $config['mobile_dropdown'] = ! empty( $config['mobile_dropdown'] );
+        $config['floating_fixed'] = ! empty( $config['floating_fixed'] );
+        $vertical = sanitize_key( (string) ( $config['floating_vertical'] ?? 'bottom' ) );
+        $config['floating_vertical'] = in_array( $vertical, array( 'top', 'bottom' ), true ) ? $vertical : 'bottom';
+        $direction = sanitize_key( (string) ( $config['dropdown_direction'] ?? 'auto' ) );
+        $config['dropdown_direction'] = in_array( $direction, array( 'auto', 'up', 'down' ), true ) ? $direction : 'auto';
+
+        foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
+            $row = isset( $config['devices'][ $device ] ) && is_array( $config['devices'][ $device ] ) ? $config['devices'][ $device ] : array();
+            $base = $defaults['devices'][ $device ];
+            $align = sanitize_key( (string) ( $row['align'] ?? $base['align'] ) );
+            $row['align'] = in_array( $align, array( 'left', 'center', 'right' ), true ) ? $align : $base['align'];
+            $ranges = array(
+                'gap'       => array( 0, 100 ),
+                'padding_x' => array( 0, 80 ),
+                'padding_y' => array( 0, 80 ),
+                'offset_x'  => array( 0, 300 ),
+                'offset_y'  => array( 0, 300 ),
+                'menu_gap'  => array( 0, 80 ),
+                'flag_size' => array( 14, 64 ),
+                'margin_top'    => array( -300, 500 ),
+                'margin_right'  => array( -300, 500 ),
+                'margin_bottom' => array( -300, 500 ),
+                'margin_left'   => array( -300, 500 ),
+            );
+            foreach ( $ranges as $key => $range ) {
+                $value = isset( $row[ $key ] ) && '' !== trim( (string) $row[ $key ] ) ? (float) str_replace( ',', '.', (string) $row[ $key ] ) : (float) $base[ $key ];
+                $row[ $key ] = max( $range[0], min( $range[1], $value ) );
+            }
+            $config['devices'][ $device ] = $row;
+        }
+        return $config;
+    }
+
+    private function switcher_css_number( $value ) {
+        $value = (float) $value;
+        if ( abs( $value - round( $value ) ) < 0.001 ) { return (string) (int) round( $value ); }
+        return rtrim( rtrim( number_format( $value, 2, '.', '' ), '0' ), '.' );
+    }
+
+    private function switcher_label_html( $code, $lang, $show_codes, $show_names, $menu = false ) {
+        $label = '<span class="itkt-flag" aria-hidden="true">' . esc_html( $lang['flag'] ) . '</span>';
+        if ( $menu ) {
+            // Dropdown rows always show the native name so a flag is never the only language cue.
+            $label .= '<span class="itkt-menu-name">' . esc_html( $lang['native_name'] ) . '</span>';
+            if ( $show_codes ) { $label .= '<span class="itkt-code">' . esc_html( strtoupper( $code ) ) . '</span>'; }
+            return $label;
+        }
+        if ( $show_codes ) { $label .= '<span class="itkt-code">' . esc_html( strtoupper( $code ) ) . '</span>'; }
+        if ( $show_names ) { $label .= '<span class="itkt-name">' . esc_html( $lang['native_name'] ) . '</span>'; }
+        return $label;
+    }
+
+    private function switcher_style_vars( $config ) {
+        $vars = array();
+        foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
+            $row = $config['devices'][ $device ];
+            $align_map = array( 'left'=>'flex-start', 'center'=>'center', 'right'=>'flex-end' );
+            $vars[] = '--itkt-align-' . $device . ':' . $align_map[ $row['align'] ];
+            foreach ( array( 'gap', 'padding_x', 'padding_y', 'offset_x', 'offset_y', 'menu_gap', 'flag_size', 'margin_top', 'margin_right', 'margin_bottom', 'margin_left' ) as $key ) {
+                $css_key = str_replace( '_', '-', $key );
+                $vars[] = '--itkt-' . $css_key . '-' . $device . ':' . $this->switcher_css_number( $row[ $key ] ) . 'px';
+            }
+        }
+        return implode( ';', $vars );
+    }
+
     public function shortcode_switcher( $atts = array() ) {
-        $atts = shortcode_atts( array( 'labels' => '0', 'style' => 'flags', 'names' => '0' ), $atts, 'itkt_language_switcher' );
+        $atts = shortcode_atts(
+            array(
+                'labels'        => '',
+                'style'         => '',
+                'names'         => '',
+                'config_source' => 'global',
+                'config'        => null,
+            ),
+            $atts,
+            'itkt_language_switcher'
+        );
+
         $languages = ITKT_Languages::instance()->get_active();
         if ( count( $languages ) < 2 ) { return ''; }
+
+        $config = $this->switcher_settings();
+        if ( 'local' === $atts['config_source'] && is_array( $atts['config'] ) ) {
+            $config = $this->sanitize_switcher_config( array_replace_recursive( $config, $atts['config'] ) );
+        }
+
+        $style = sanitize_key( (string) $atts['style'] );
+        if ( $style ) {
+            $config['style'] = in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ? $style : $config['style'];
+        }
+        if ( '' !== (string) $atts['labels'] ) { $config['show_codes'] = '1' === (string) $atts['labels']; }
+        if ( '' !== (string) $atts['names'] ) { $config['show_names'] = '1' === (string) $atts['names']; }
+
         $current = ITKT_Languages::instance()->current_code();
-        $html = '<nav class="itkt-language-switcher itkt-style-' . esc_attr( sanitize_key( $atts['style'] ) ) . '" aria-label="Language switcher">';
+        if ( empty( $languages[ $current ] ) ) { $current = ITKT_Languages::instance()->get_default_code(); }
+        if ( empty( $languages[ $current ] ) ) { $current = array_key_first( $languages ); }
+        $active_lang = $languages[ $current ];
+
+        $shell_classes = array(
+            'itkt-switcher-shell',
+            'itkt-responsive-switcher',
+            'itkt-' . $config['style'] . '-shell',
+            'itkt-desktop-align-' . $config['devices']['desktop']['align'],
+            'itkt-tablet-align-' . $config['devices']['tablet']['align'],
+            'itkt-mobile-align-' . $config['devices']['mobile']['align'],
+        );
+        if ( 'floating' === $config['style'] ) { $shell_classes[] = 'itkt-dropdown-all'; }
+        if ( $config['mobile_dropdown'] ) { $shell_classes[] = 'itkt-mobile-dropdown'; }
+        if ( $config['floating_fixed'] ) {
+            $shell_classes[] = 'itkt-floating-fixed';
+            $shell_classes[] = 'itkt-floating-vertical-' . $config['floating_vertical'];
+        }
+
+        static $switcher_instance = 0;
+        $switcher_instance++;
+        $menu_id = 'itkt-language-menu-' . $switcher_instance;
+
+        $nav_classes = array( 'itkt-language-switcher', 'itkt-style-' . $config['style'] );
+        $html = '<div class="' . esc_attr( implode( ' ', array_unique( $shell_classes ) ) ) . '" style="' . esc_attr( $this->switcher_style_vars( $config ) ) . '">';
+        $html .= '<nav class="' . esc_attr( implode( ' ', $nav_classes ) ) . '" aria-label="' . esc_attr__( 'Language switcher', 'it-kayali-translate' ) . '" data-itkt-dropdown-direction="' . esc_attr( $config['dropdown_direction'] ) . '">';
+
+        $html .= '<button class="itkt-switcher-trigger" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="' . esc_attr( $menu_id ) . '" aria-label="' . esc_attr__( 'Change language', 'it-kayali-translate' ) . '">';
+        $html .= '<span class="itkt-trigger-label">' . $this->switcher_label_html( $current, $active_lang, $config['show_codes'], $config['show_names'], false ) . '</span>';
+        $html .= '<span class="itkt-switcher-chevron" aria-hidden="true"></span></button>';
+
+        $html .= '<div id="' . esc_attr( $menu_id ) . '" class="itkt-switcher-menu" role="menu" aria-hidden="true">';
         foreach ( $languages as $code => $lang ) {
-            $label = '<span class="itkt-flag" aria-hidden="true">' . esc_html( $lang['flag'] ) . '</span>';
-            if ( '1' === (string) $atts['labels'] ) { $label .= '<span class="itkt-code">' . esc_html( strtoupper( $code ) ) . '</span>'; }
-            if ( '1' === (string) $atts['names'] ) { $label .= '<span class="itkt-name">' . esc_html( $lang['native_name'] ) . '</span>'; }
+            if ( $code === $current ) { continue; }
+            $html .= '<a class="itkt-lang-link itkt-menu-link" role="menuitem" href="' . esc_url( $this->language_url( $code ) ) . '" data-itkt-lang="' . esc_attr( $code ) . '" hreflang="' . esc_attr( $code ) . '" lang="' . esc_attr( $code ) . '">';
+            $html .= $this->switcher_label_html( $code, $lang, $config['show_codes'], true, true );
+            $html .= '</a>';
+        }
+        $html .= '</div>';
+
+        $html .= '<div class="itkt-switcher-inline" aria-label="' . esc_attr__( 'Available languages', 'it-kayali-translate' ) . '">';
+        foreach ( $languages as $code => $lang ) {
+            $label = $this->switcher_label_html( $code, $lang, $config['show_codes'], $config['show_names'], false );
             $html .= '<a class="itkt-lang-link ' . ( $code === $current ? 'is-active' : '' ) . '" href="' . esc_url( $this->language_url( $code ) ) . '" data-itkt-lang="' . esc_attr( $code ) . '" hreflang="' . esc_attr( $code ) . '" lang="' . esc_attr( $code ) . '"' . ( $code === $current ? ' aria-current="page"' : '' ) . '>' . $label . '</a>';
         }
-        return $html . '</nav>';
+        $html .= '</div></nav></div>';
+        return $html;
     }
 
     /** Build a language URL for the current request. */

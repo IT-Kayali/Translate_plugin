@@ -124,6 +124,14 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
 
             public function map() {
                 $params = array(
+                    'use_global_settings' => array(
+                        'id'          => 'use_global_settings',
+                        'title'       => esc_html__( 'Globale Sprachumschalter-Einstellungen verwenden', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Übernimmt Design, Dropdown-Verhalten und responsive Abstände aus IT-Kayali Translate → Sprachumschalter. So gelten dieselben Regeln auch für Shortcodes im Footer oder Elementor.', 'it-kayali-translate' ),
+                        'type'        => 'switcher',
+                        'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'       => true,
+                    ),
                     'show_codes' => array(
                         'id'          => 'show_codes',
                         'title'       => esc_html__( 'Sprachkürzel anzeigen', 'it-kayali-translate' ),
@@ -170,6 +178,26 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                         'options' => $this->selector_options( array(
                             'top'    => 'Oben',
                             'bottom' => 'Unten',
+                        ) ),
+                    ),
+                    'mobile_dropdown' => array(
+                        'id'          => 'mobile_dropdown',
+                        'title'       => esc_html__( 'Auf Mobile als Dropdown', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Auf Smartphones wird nur die aktive Sprache angezeigt; die anderen Sprachen öffnen sich per Klick.', 'it-kayali-translate' ),
+                        'type'        => 'switcher',
+                        'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'       => true,
+                    ),
+                    'dropdown_direction' => array(
+                        'id'      => 'dropdown_direction',
+                        'title'   => esc_html__( 'Dropdown-Öffnungsrichtung', 'it-kayali-translate' ),
+                        'type'    => 'selector',
+                        'tab'     => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'   => 'auto',
+                        'options' => $this->selector_options( array(
+                            'auto' => 'Automatisch',
+                            'up'   => 'Nach oben',
+                            'down' => 'Nach unten',
                         ) ),
                     ),
                     'css_class' => array(
@@ -241,11 +269,43 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
 
                     $params[ 'floating_offset_' . $device ] = array(
                         'id'          => 'floating_offset_' . $device,
-                        'title'       => esc_html__( 'Floating-Abstand zum Bildschirmrand (px)', 'it-kayali-translate' ),
-                        'description' => esc_html__( 'Wird nur verwendet, wenn „Floating am Bildschirm fixieren“ aktiv ist.', 'it-kayali-translate' ),
+                        'title'       => esc_html__( 'Floating-Abstand (Legacy, px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Kompatibilitätswert aus v0.12.28. Neue Installationen verwenden X/Y getrennt.', 'it-kayali-translate' ),
                         'type'        => 'text',
                         'tab'         => $tab,
                         'value'       => $settings['offset'],
+                    );
+                    $params[ 'floating_offset_x_' . $device ] = array(
+                        'id'          => 'floating_offset_x_' . $device,
+                        'title'       => esc_html__( 'Floating-Abstand horizontal (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Abstand zur linken/rechten Bildschirmkante.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['offset'],
+                    );
+                    $params[ 'floating_offset_y_' . $device ] = array(
+                        'id'          => 'floating_offset_y_' . $device,
+                        'title'       => esc_html__( 'Floating-Abstand vertikal (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Abstand zur oberen/unteren Bildschirmkante.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['offset'],
+                    );
+                    $params[ 'menu_gap_' . $device ] = array(
+                        'id'          => 'menu_gap_' . $device,
+                        'title'       => esc_html__( 'Abstand Trigger → Dropdown (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Abstand zwischen aktiver Sprache und aufgeklapptem Menü.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => 'desktop' === $device ? '10' : ( 'tablet' === $device ? '9' : '8' ),
+                    );
+                    $params[ 'flag_size_' . $device ] = array(
+                        'id'          => 'flag_size_' . $device,
+                        'title'       => esc_html__( 'Flaggengröße (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Größe der sichtbaren Flagge im Trigger und in der Liste.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => 'desktop' === $device ? '28' : ( 'tablet' === $device ? '26' : '25' ),
                     );
                 }
 
@@ -271,48 +331,53 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 $parsed = $this->parse_args( $el );
                 $params = isset( $parsed['params'] ) && is_array( $parsed['params'] ) ? $parsed['params'] : array();
 
-                $style = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
-                if ( ! in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ) { $style = 'flags'; }
+                // Preserve the exact local appearance of elements created before v0.12.29.
+                // Newly added elements default to the global configuration; older saved elements
+                // can opt in explicitly without silently changing their production header design.
+                $use_global = array_key_exists( 'use_global_settings', $params ) && ! empty( $params['use_global_settings'] );
 
-                $html = ITKT_Frontend::instance()->shortcode_switcher(
-                    array(
-                        'labels' => ! empty( $params['show_codes'] ) ? '1' : '0',
-                        'names'  => ! empty( $params['show_names'] ) ? '1' : '0',
-                        'style'  => $style,
-                    )
-                );
-                if ( '' === trim( (string) $html ) ) { return; }
+                $atts = array();
+                if ( ! $use_global ) {
+                    $style = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
+                    if ( ! in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ) { $style = 'flags'; }
 
-                $classes = array( 'wd-header-itkt-languages', 'itkt-responsive-switcher' );
-                $css_vars = array();
-                $align_map = array( 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' );
+                    $local = array(
+                        'style'              => $style,
+                        'show_codes'         => ! empty( $params['show_codes'] ),
+                        'show_names'         => ! empty( $params['show_names'] ),
+                        'mobile_dropdown'    => ! array_key_exists( 'mobile_dropdown', $params ) || ! empty( $params['mobile_dropdown'] ),
+                        'floating_fixed'     => ! empty( $params['floating_fixed'] ),
+                        'floating_vertical'  => isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom',
+                        'dropdown_direction' => isset( $params['dropdown_direction'] ) ? sanitize_key( (string) $params['dropdown_direction'] ) : 'auto',
+                        'devices'            => array(),
+                    );
 
-                foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
-                    $align = isset( $params[ 'align_' . $device ] ) ? sanitize_key( (string) $params[ 'align_' . $device ] ) : 'left';
-                    if ( ! isset( $align_map[ $align ] ) ) { $align = 'left'; }
-                    $classes[] = 'itkt-' . $device . '-align-' . $align;
-                    $css_vars[] = '--itkt-align-' . $device . ':' . $align_map[ $align ];
-                    $css_vars[] = '--itkt-gap-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'gap_' . $device, 12, 0, 100 ) ) . 'px';
-                    $css_vars[] = '--itkt-padding-x-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'padding_x_' . $device, 10, 0, 80 ) ) . 'px';
-                    $css_vars[] = '--itkt-padding-y-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'padding_y_' . $device, 6, 0, 80 ) ) . 'px';
-
-                    foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
-                        $css_vars[] = '--itkt-margin-' . $side . '-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'margin_' . $side . '_' . $device, 0, -300, 500 ) ) . 'px';
+                    foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
+                        $legacy_offset = isset( $params[ 'floating_offset_' . $device ] ) ? $params[ 'floating_offset_' . $device ] : ( 'desktop' === $device ? 24 : ( 'tablet' === $device ? 18 : 14 ) );
+                        $local['devices'][ $device ] = array(
+                            'align'         => isset( $params[ 'align_' . $device ] ) ? sanitize_key( (string) $params[ 'align_' . $device ] ) : 'left',
+                            'gap'           => $params[ 'gap_' . $device ] ?? ( 'desktop' === $device ? 12 : ( 'tablet' === $device ? 10 : 8 ) ),
+                            'padding_x'     => $params[ 'padding_x_' . $device ] ?? ( 'desktop' === $device ? 10 : ( 'tablet' === $device ? 9 : 8 ) ),
+                            'padding_y'     => $params[ 'padding_y_' . $device ] ?? ( 'desktop' === $device ? 6 : 5 ),
+                            'offset_x'      => $params[ 'floating_offset_x_' . $device ] ?? $legacy_offset,
+                            'offset_y'      => $params[ 'floating_offset_y_' . $device ] ?? $legacy_offset,
+                            'menu_gap'      => $params[ 'menu_gap_' . $device ] ?? ( 'desktop' === $device ? 10 : ( 'tablet' === $device ? 9 : 8 ) ),
+                            'flag_size'     => $params[ 'flag_size_' . $device ] ?? ( 'desktop' === $device ? 28 : ( 'tablet' === $device ? 26 : 25 ) ),
+                            'margin_top'    => $params[ 'margin_top_' . $device ] ?? 0,
+                            'margin_right'  => $params[ 'margin_right_' . $device ] ?? 0,
+                            'margin_bottom' => $params[ 'margin_bottom_' . $device ] ?? 0,
+                            'margin_left'   => $params[ 'margin_left_' . $device ] ?? 0,
+                        );
                     }
 
-                    $default_offset = 'desktop' === $device ? 24 : ( 'tablet' === $device ? 18 : 14 );
-                    $css_vars[] = '--itkt-floating-offset-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'floating_offset_' . $device, $default_offset, 0, 300 ) ) . 'px';
+                    $atts = array( 'config_source'=>'local', 'config'=>$local );
                 }
 
-                if ( ! empty( $params['floating_fixed'] ) ) {
-                    $classes[] = 'itkt-floating-fixed';
-                    $vertical = isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom';
-                    $classes[] = 'itkt-floating-vertical-' . ( 'top' === $vertical ? 'top' : 'bottom' );
-                }
+                $html = ITKT_Frontend::instance()->shortcode_switcher( $atts );
+                if ( '' === trim( (string) $html ) ) { return; }
 
-                if ( ! empty( $parsed['id'] ) ) {
-                    $classes[] = 'whb-' . sanitize_html_class( (string) $parsed['id'] );
-                }
+                $classes = array( 'wd-header-itkt-languages' );
+                if ( ! empty( $parsed['id'] ) ) { $classes[] = 'whb-' . sanitize_html_class( (string) $parsed['id'] ); }
                 if ( ! empty( $params['css_class'] ) ) {
                     foreach ( preg_split( '/\\s+/', trim( (string) $params['css_class'] ) ) as $class_name ) {
                         $class_name = sanitize_html_class( $class_name );
@@ -320,7 +385,8 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                     }
                 }
 
-                echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '" style="' . esc_attr( implode( ';', $css_vars ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes all generated attributes/content.
+                echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes generated attributes/content.
+
             }
         };
     }

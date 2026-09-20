@@ -1,7 +1,7 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.28 – Produktionskandidat / finale Abnahme**
-**Letzte Aktualisierung: 19.09.2026**
+**Aktueller Entwicklungsstand: v0.12.29 – Produktionskandidat / finale Abnahme**
+**Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
 
@@ -23,6 +23,20 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Bedienung v0.12.29 – moderner Dropdown-Sprachumschalter
+
+- Realtest v0.12.28 zeigte: alle Flaggen gleichzeitig im Floating-Container wirken auf Desktop unnötig breit und auf Mobile vertikal/überlappend.
+- Neue Hauptregel für **Floating**: nur die aktive Sprache bleibt sichtbar; die übrigen aktiven Sprachen sind eingeklappt.
+- Klick auf die aktive Sprache öffnet ein modernes Dropdown mit den anderen Sprachen.
+- Öffnungsrichtung standardmäßig **automatisch**: unten bei genügend Platz, sonst oben; manuell erzwingbar.
+- Dropdown wird horizontal innerhalb des Viewports gehalten.
+- Mobile kann unabhängig vom Desktop-Stil immer als Dropdown dargestellt werden.
+- Neuer Backend-Bereich **Sprachumschalter** als zentrale Regel für Shortcode, Elementor/Footer und neue WoodMart-Elemente.
+- Responsive globale Werte: Ausrichtung, Sprachabstand, Innenabstände, X/Y-Randabstände für Floating, Abstand Trigger→Dropdown, Flaggengröße und Außenabstände.
+- WoodMart kann globale Werte übernehmen oder lokal überschreiben.
+- Realtest offen: Desktop unten links/rechts, Desktop oben, Tablet und Mobile; zusätzlich Shortcode im Footer und WoodMart-Header-Element mit globaler Konfiguration prüfen.
 
 ### Bedienung v0.12.28 – Floating Button und responsive Abstände
 

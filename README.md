@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.28**
+**Current development version: v0.12.29**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -17,7 +17,29 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.26 fixes its registration so it appears even when WoodMart was enabled after ITKT's first-run setup or the saved WoodMart module flag is missing.
 - v0.12.27 adds a dedicated **Shortcodes** admin reference with copy buttons, active-language status and usage help for Elementor, WordPress and WoodMart.
 - v0.12.28 adds a **Floating Button** language-switcher style plus separate Desktop/Tablet/Mobile alignment and spacing controls inside the native WoodMart Header Builder element.
+- v0.12.29 turns the Floating Button into a compact **active-language dropdown**, adds automatic up/down opening, and introduces a central **Sprachumschalter** settings page shared by Shortcodes, Elementor/Footer and WoodMart.
 
+
+
+## v0.12.29 – modern dropdown and global switcher rules
+
+- Floating mode now shows **only the active language** as the visible trigger.
+- Clicking the trigger opens a compact dropdown containing only the other active languages.
+- The dropdown automatically chooses **up** or **down** based on available viewport space, with manual direction overrides available.
+- Horizontal overflow is corrected automatically when the trigger is close to a screen edge.
+- On mobile, the global **Mobile als Dropdown** rule can collapse regular flag/pill/text switchers into the same compact dropdown.
+- New backend page: **IT-Kayali Translate -> Sprachumschalter**.
+- Global settings apply to `[itkt_language_switcher]` wherever it is used, including Elementor and footer shortcode placements.
+- Per device (Desktop / Tablet / Mobile) the global configuration supports:
+  - left / center / right alignment
+  - gap between languages
+  - horizontal / vertical trigger padding
+  - separate horizontal / vertical floating edge offsets
+  - trigger-to-dropdown spacing
+  - flag size
+  - top / right / bottom / left outer margins
+- WoodMart's **IT-Kayali Sprachen** element has a new **Globale Sprachumschalter-Einstellungen verwenden** option. New elements use the central rules by default; older saved elements remain local until explicitly switched.
+- Dropdown interaction supports click-outside close, Escape close and appropriate ARIA state.
 
 
 ## v0.12.28 – responsive Floating Button and device controls

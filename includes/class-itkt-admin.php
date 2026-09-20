@@ -19,6 +19,7 @@ class ITKT_Admin {
         add_action( 'admin_post_itkt_add_language', array( $this, 'add_language' ) );
         add_action( 'admin_post_itkt_save_language_settings', array( $this, 'save_language_settings' ) );
         add_action( 'admin_post_itkt_save_settings', array( $this, 'save_settings' ) );
+        add_action( 'admin_post_itkt_save_switcher_settings', array( $this, 'save_switcher_settings' ) );
         add_action( 'admin_post_itkt_create_translation', array( $this, 'create_translation' ) );
         add_action( 'admin_post_itkt_link_translation', array( $this, 'link_translation' ) );
         add_action( 'admin_post_itkt_export_products', array( $this, 'export_products' ) );
@@ -60,6 +61,7 @@ class ITKT_Admin {
         }
         if ( ITKT_Plugin::module_enabled( 'woocommerce' ) && post_type_exists( 'product' ) ) { add_submenu_page( 'itkt-dashboard', 'Produkte', 'Produkte', 'edit_products', 'itkt-products', array( $this, 'products' ) ); }
         add_submenu_page( 'itkt-dashboard', 'Menüs', 'Menüs', 'edit_theme_options', 'itkt-menus', array( $this, 'menus' ) );
+        add_submenu_page( 'itkt-dashboard', 'Sprachumschalter', 'Sprachumschalter', 'edit_theme_options', 'itkt-switcher', array( $this, 'switcher' ) );
         add_submenu_page( 'itkt-dashboard', 'Shortcodes', 'Shortcodes', 'edit_theme_options', 'itkt-shortcodes', array( $this, 'shortcodes' ) );
         add_submenu_page( 'itkt-dashboard', 'Plugin & Theme Texte', 'Plugin & Theme Texte', 'manage_options', 'itkt-strings', array( $this, 'strings' ) );
         add_submenu_page( 'itkt-dashboard', 'Systemstatus', 'Systemstatus', 'manage_options', 'itkt-system', array( $this, 'system' ) );
@@ -694,6 +696,124 @@ class ITKT_Admin {
     }
 
 
+    public function switcher() {
+        if ( ! current_user_can( 'edit_theme_options' ) ) { return; }
+
+        $config = ITKT_Frontend::instance()->switcher_settings();
+        $this->header(
+            'Sprachumschalter',
+            'Globale Darstellung für Shortcodes, Elementor, Footer und neue WoodMart-Header-Elemente. WoodMart kann diese Werte bei Bedarf pro Element überschreiben.'
+        );
+
+        if ( ! empty( $_GET['switcher_saved'] ) ) {
+            echo '<div class="notice notice-success inline"><p><strong>Gespeichert.</strong> Die globalen Sprachumschalter-Einstellungen wurden aktualisiert.</p></div>';
+        }
+        ?>
+        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="itkt-switcher-settings-form">
+            <?php wp_nonce_field( 'itkt_save_switcher_settings' ); ?>
+            <input type="hidden" name="action" value="itkt_save_switcher_settings">
+
+            <section class="itkt-card">
+                <div class="itkt-card-head"><div><span class="itkt-kicker">GLOBAL</span><h2>Darstellung & Verhalten</h2></div><span class="itkt-pill blue">gilt auch für Shortcodes</span></div>
+                <p>Der Shortcode <code>[itkt_language_switcher]</code> verwendet diese Werte automatisch. Ein explizites Shortcode-Attribut wie <code>style="floating"</code> überschreibt nur die Darstellung, nicht die responsiven Abstände.</p>
+                <div class="itkt-field-grid">
+                    <label class="itkt-field"><span>Darstellung</span>
+                        <select name="switcher[style]">
+                            <option value="flags" <?php selected( $config['style'], 'flags' ); ?>>Flaggen nebeneinander</option>
+                            <option value="pills" <?php selected( $config['style'], 'pills' ); ?>>Pills</option>
+                            <option value="text" <?php selected( $config['style'], 'text' ); ?>>Text</option>
+                            <option value="floating" <?php selected( $config['style'], 'floating' ); ?>>Floating Dropdown</option>
+                        </select>
+                    </label>
+                    <label class="itkt-field"><span>Dropdown-Öffnungsrichtung</span>
+                        <select name="switcher[dropdown_direction]">
+                            <option value="auto" <?php selected( $config['dropdown_direction'], 'auto' ); ?>>Automatisch je nach freiem Platz</option>
+                            <option value="up" <?php selected( $config['dropdown_direction'], 'up' ); ?>>Immer nach oben</option>
+                            <option value="down" <?php selected( $config['dropdown_direction'], 'down' ); ?>>Immer nach unten</option>
+                        </select>
+                    </label>
+                    <label class="itkt-field"><span>Floating-Position vertikal</span>
+                        <select name="switcher[floating_vertical]">
+                            <option value="bottom" <?php selected( $config['floating_vertical'], 'bottom' ); ?>>Unten</option>
+                            <option value="top" <?php selected( $config['floating_vertical'], 'top' ); ?>>Oben</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="itkt-switcher-option-grid">
+                    <label class="itkt-switch-row"><input type="checkbox" name="switcher[show_codes]" value="1" <?php checked( ! empty( $config['show_codes'] ) ); ?>><span class="itkt-switch"></span><span><strong>Sprachkürzel anzeigen</strong><small>DE, EN, AR usw.</small></span></label>
+                    <label class="itkt-switch-row"><input type="checkbox" name="switcher[show_names]" value="1" <?php checked( ! empty( $config['show_names'] ) ); ?>><span class="itkt-switch"></span><span><strong>Sprachname am Trigger</strong><small>Deutsch, English, العربية usw.</small></span></label>
+                    <label class="itkt-switch-row"><input type="checkbox" name="switcher[mobile_dropdown]" value="1" <?php checked( ! empty( $config['mobile_dropdown'] ) ); ?>><span class="itkt-switch"></span><span><strong>Mobile immer als Dropdown</strong><small>Auf dem Handy ist nur die aktive Sprache sichtbar.</small></span></label>
+                    <label class="itkt-switch-row"><input type="checkbox" name="switcher[floating_fixed]" value="1" <?php checked( ! empty( $config['floating_fixed'] ) ); ?>><span class="itkt-switch"></span><span><strong>Am Bildschirm fixieren</strong><small>Bleibt beim Scrollen sichtbar.</small></span></label>
+                </div>
+            </section>
+
+            <section class="itkt-card">
+                <div class="itkt-card-head"><div><span class="itkt-kicker">RESPONSIVE</span><h2>Abstände je Gerät</h2></div><span class="itkt-pill orange">px</span></div>
+                <p>Desktop, Tablet und Mobile werden getrennt gespeichert. Für einen Floating Button sind besonders <strong>Horizontaler Randabstand</strong>, <strong>Vertikaler Randabstand</strong> und <strong>Trigger → Dropdown</strong> wichtig.</p>
+                <div class="itkt-tabs itkt-switcher-device-tabs" role="tablist">
+                    <button type="button" class="is-active" data-itkt-device-tab="desktop">Desktop</button>
+                    <button type="button" data-itkt-device-tab="tablet">Tablet</button>
+                    <button type="button" data-itkt-device-tab="mobile">Mobile</button>
+                </div>
+                <?php foreach ( array( 'desktop'=>'Desktop', 'tablet'=>'Tablet', 'mobile'=>'Mobile' ) as $device => $label ) :
+                    $row = $config['devices'][ $device ]; ?>
+                    <div class="itkt-switcher-device-panel <?php echo 'desktop' === $device ? 'is-active' : ''; ?>" data-itkt-device-panel="<?php echo esc_attr( $device ); ?>">
+                        <h3><?php echo esc_html( $label ); ?></h3>
+                        <div class="itkt-field-grid">
+                            <label class="itkt-field"><span>Ausrichtung</span><select name="switcher[devices][<?php echo esc_attr($device); ?>][align]"><option value="left" <?php selected($row['align'],'left');?>>Links</option><option value="center" <?php selected($row['align'],'center');?>>Mitte</option><option value="right" <?php selected($row['align'],'right');?>>Rechts</option></select></label>
+                            <label class="itkt-field"><span>Abstand zwischen Sprachen</span><input type="number" min="0" max="100" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][gap]" value="<?php echo esc_attr($row['gap']); ?>"></label>
+                            <label class="itkt-field"><span>Innenabstand horizontal</span><input type="number" min="0" max="80" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][padding_x]" value="<?php echo esc_attr($row['padding_x']); ?>"></label>
+                            <label class="itkt-field"><span>Innenabstand vertikal</span><input type="number" min="0" max="80" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][padding_y]" value="<?php echo esc_attr($row['padding_y']); ?>"></label>
+                            <label class="itkt-field"><span>Floating-Randabstand horizontal</span><input type="number" min="0" max="300" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][offset_x]" value="<?php echo esc_attr($row['offset_x']); ?>"></label>
+                            <label class="itkt-field"><span>Floating-Randabstand vertikal</span><input type="number" min="0" max="300" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][offset_y]" value="<?php echo esc_attr($row['offset_y']); ?>"></label>
+                            <label class="itkt-field"><span>Trigger → Dropdown</span><input type="number" min="0" max="80" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][menu_gap]" value="<?php echo esc_attr($row['menu_gap']); ?>"></label>
+                            <label class="itkt-field"><span>Flaggengröße</span><input type="number" min="14" max="64" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][flag_size]" value="<?php echo esc_attr($row['flag_size']); ?>"></label>
+                            <label class="itkt-field"><span>Außenabstand oben</span><input type="number" min="-300" max="500" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][margin_top]" value="<?php echo esc_attr($row['margin_top']); ?>"></label>
+                            <label class="itkt-field"><span>Außenabstand rechts</span><input type="number" min="-300" max="500" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][margin_right]" value="<?php echo esc_attr($row['margin_right']); ?>"></label>
+                            <label class="itkt-field"><span>Außenabstand unten</span><input type="number" min="-300" max="500" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][margin_bottom]" value="<?php echo esc_attr($row['margin_bottom']); ?>"></label>
+                            <label class="itkt-field"><span>Außenabstand links</span><input type="number" min="-300" max="500" step="1" name="switcher[devices][<?php echo esc_attr($device); ?>][margin_left]" value="<?php echo esc_attr($row['margin_left']); ?>"></label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </section>
+
+            <section class="itkt-card">
+                <span class="itkt-kicker">VERWENDUNG</span><h2>Eine Regel für alle Einbauorte</h2>
+                <div class="itkt-grid-2">
+                    <div><strong>Shortcode / Footer / Elementor</strong><p><code>[itkt_language_switcher]</code> übernimmt diese Einstellungen automatisch.</p></div>
+                    <div><strong>WoodMart Header Builder</strong><p>Beim Element <strong>IT-Kayali Sprachen</strong> „Globale Sprachumschalter-Einstellungen verwenden“ aktivieren. Dann gilt exakt dieselbe Darstellung.</p></div>
+                </div>
+            </section>
+
+            <div class="itkt-savebar"><span>Änderungen wirken auf alle global angebundenen Sprachumschalter.</span><button class="button button-primary itkt-primary" type="submit">Sprachumschalter speichern</button></div>
+        </form>
+        <?php
+        $this->footer();
+    }
+
+    public function save_switcher_settings() {
+        if ( ! current_user_can( 'edit_theme_options' ) ) { wp_die( 'Unauthorized' ); }
+        check_admin_referer( 'itkt_save_switcher_settings' );
+
+        $raw = isset( $_POST['switcher'] ) && is_array( $_POST['switcher'] ) ? wp_unslash( $_POST['switcher'] ) : array();
+        $defaults = ITKT_Frontend::instance()->switcher_defaults();
+        $config = array_replace_recursive( $defaults, $raw );
+
+        $config['show_codes'] = ! empty( $raw['show_codes'] );
+        $config['show_names'] = ! empty( $raw['show_names'] );
+        $config['mobile_dropdown'] = ! empty( $raw['mobile_dropdown'] );
+        $config['floating_fixed'] = ! empty( $raw['floating_fixed'] );
+        $config = ITKT_Frontend::instance()->sanitize_switcher_config( $config );
+
+        $settings = get_option( 'itkt_settings', array() );
+        $settings['switcher'] = $config;
+        update_option( 'itkt_settings', $settings );
+
+        wp_safe_redirect( admin_url( 'admin.php?page=itkt-switcher&switcher_saved=1' ) );
+        exit;
+    }
+
+
     public function shortcodes() {
         if ( ! current_user_can( 'edit_theme_options' ) ) { return; }
 
@@ -756,11 +876,11 @@ class ITKT_Admin {
             array(
                 'title' => 'Floating Button',
                 'code' => '[itkt_language_switcher style="floating"]',
-                'description' => 'Moderner, schwebender Button-Stil mit abgerundetem Hintergrund und Schatten.',
+                'description' => 'Nur die aktive Sprache ist sichtbar; Klick öffnet die anderen Sprachen als modernes Dropdown.',
             ),
         );
 
-        echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>[itkt_language_switcher]</h2><p>Der Sprachumschalter bleibt auf derselben Seite bzw. demselben Produkt, Kategorie-, Tag-, Warenkorb-, Checkout- oder Konto-Kontext und wechselt nur die Sprache.</p>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>[itkt_language_switcher]</h2><p>Der Sprachumschalter bleibt auf derselben Seite bzw. demselben Produkt, Kategorie-, Tag-, Warenkorb-, Checkout- oder Konto-Kontext und wechselt nur die Sprache. Ohne Attribute übernimmt der Shortcode die globalen Werte unter <strong>Sprachumschalter</strong>.</p>';
         echo '<div class="itkt-shortcode-grid">';
         foreach ( $examples as $example ) {
             echo '<article class="itkt-shortcode-card">';
@@ -773,11 +893,11 @@ class ITKT_Admin {
         echo '<section class="itkt-card"><span class="itkt-kicker">OPTIONEN</span><h2>Parameter</h2><div class="itkt-table-wrap"><table class="itkt-table"><thead><tr><th>Parameter</th><th>Werte</th><th>Beschreibung</th></tr></thead><tbody>';
         echo '<tr><td><code>labels</code></td><td><code>0</code> / <code>1</code></td><td>Sprachkürzel wie DE, EN oder AR anzeigen.</td></tr>';
         echo '<tr><td><code>names</code></td><td><code>0</code> / <code>1</code></td><td>Native Sprachnamen anzeigen.</td></tr>';
-        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code></td><td>Darstellung des Umschalters. Standard ist <code>flags</code>.</td></tr>';
+        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code> / <code>floating</code></td><td>Darstellung des Umschalters. <code>floating</code> zeigt nur die aktive Sprache und öffnet die anderen als modernes Dropdown.</td></tr>';
         echo '</tbody></table></div></section>';
 
         echo '<div class="itkt-grid-2">';
-        echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden.</p></section>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden. Globale Position, Mobile-Dropdown und Abstände stellst du unter <a href="' . esc_url( admin_url( 'admin.php?page=itkt-switcher' ) ) . '"><strong>Sprachumschalter</strong></a> ein.</p></section>';
         echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Zusätzlich zu Flaggen, Kürzeln, Namen und Darstellung können dort <strong>Desktop, Tablet und Mobile getrennt</strong> eingestellt werden: Ausrichtung, Abstand zwischen den Sprachen, Innenabstand, Außenabstände und Floating-Abstand zum Bildschirmrand. Optional kann der Umschalter als echtes Floating-Element beim Scrollen am Bildschirm fixiert werden.</p></section>';
         echo '</div>';
 
