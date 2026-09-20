@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.27**
+**Current development version: v0.12.28**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -16,7 +16,23 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.25 added a native **IT-Kayali Sprachen** element to the WoodMart Header Builder.
 - v0.12.26 fixes its registration so it appears even when WoodMart was enabled after ITKT's first-run setup or the saved WoodMart module flag is missing.
 - v0.12.27 adds a dedicated **Shortcodes** admin reference with copy buttons, active-language status and usage help for Elementor, WordPress and WoodMart.
+- v0.12.28 adds a **Floating Button** language-switcher style plus separate Desktop/Tablet/Mobile alignment and spacing controls inside the native WoodMart Header Builder element.
 
+
+
+## v0.12.28 – responsive Floating Button and device controls
+
+- Adds **Floating Button** as a fourth language-switcher display style next to flags, pills and text.
+- The native WoodMart **IT-Kayali Sprachen** element now has separate **Desktop**, **Tablet** and **Mobile** tabs.
+- Per device, administrators can set:
+  - alignment: left, center or right
+  - gap between languages
+  - horizontal and vertical inner padding
+  - outer spacing for top, right, bottom and left
+  - screen-edge distance for fixed floating mode
+- Optional **Floating am Bildschirm fixieren** keeps the switcher visible while scrolling.
+- Fixed floating mode can be positioned at the top or bottom and still uses the selected left/center/right alignment independently per device.
+- Responsive values are rendered through scoped CSS custom properties on the WoodMart element, so no custom theme CSS is required.
 
 
 ## v0.12.27 – Shortcodes admin reference
