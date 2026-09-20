@@ -705,7 +705,7 @@ class ITKT_Admin {
             'Globale Darstellung für Shortcodes, Elementor, Footer und neue WoodMart-Header-Elemente. WoodMart kann diese Werte bei Bedarf pro Element überschreiben.'
         );
 
-        if ( ! empty( $_GET['saved'] ) ) {
+        if ( ! empty( $_GET['switcher_saved'] ) ) {
             echo '<div class="notice notice-success inline"><p><strong>Gespeichert.</strong> Die globalen Sprachumschalter-Einstellungen wurden aktualisiert.</p></div>';
         }
         ?>
@@ -809,7 +809,7 @@ class ITKT_Admin {
         $settings['switcher'] = $config;
         update_option( 'itkt_settings', $settings );
 
-        wp_safe_redirect( admin_url( 'admin.php?page=itkt-switcher&saved=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=itkt-switcher&switcher_saved=1' ) );
         exit;
     }
 
@@ -893,11 +893,11 @@ class ITKT_Admin {
         echo '<section class="itkt-card"><span class="itkt-kicker">OPTIONEN</span><h2>Parameter</h2><div class="itkt-table-wrap"><table class="itkt-table"><thead><tr><th>Parameter</th><th>Werte</th><th>Beschreibung</th></tr></thead><tbody>';
         echo '<tr><td><code>labels</code></td><td><code>0</code> / <code>1</code></td><td>Sprachkürzel wie DE, EN oder AR anzeigen.</td></tr>';
         echo '<tr><td><code>names</code></td><td><code>0</code> / <code>1</code></td><td>Native Sprachnamen anzeigen.</td></tr>';
-        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code></td><td>Darstellung des Umschalters. Standard ist <code>flags</code>.</td></tr>';
+        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code> / <code>floating</code></td><td>Darstellung des Umschalters. <code>floating</code> zeigt nur die aktive Sprache und öffnet die anderen als modernes Dropdown.</td></tr>';
         echo '</tbody></table></div></section>';
 
         echo '<div class="itkt-grid-2">';
-        echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden.</p></section>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden. Globale Position, Mobile-Dropdown und Abstände stellst du unter <a href="' . esc_url( admin_url( 'admin.php?page=itkt-switcher' ) ) . '"><strong>Sprachumschalter</strong></a> ein.</p></section>';
         echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Zusätzlich zu Flaggen, Kürzeln, Namen und Darstellung können dort <strong>Desktop, Tablet und Mobile getrennt</strong> eingestellt werden: Ausrichtung, Abstand zwischen den Sprachen, Innenabstand, Außenabstände und Floating-Abstand zum Bildschirmrand. Optional kann der Umschalter als echtes Floating-Element beim Scrollen am Bildschirm fixiert werden.</p></section>';
         echo '</div>';
 
