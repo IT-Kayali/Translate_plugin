@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.31**
+**Current development version: v0.12.32**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -20,7 +20,20 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.29 turns the Floating Button into a compact **active-language dropdown**, adds automatic up/down opening, and introduces a central **Sprachumschalter** settings page shared by Shortcodes, Elementor/Footer and WoodMart.
 - v0.12.30 separates **Dropdown** from **Floating Button** so a normal header dropdown and an independent fixed floating switcher can coexist; global inheritance now affects only spacing/sizing in WoodMart.
 - v0.12.31 automatically migrates known duplicate GitHub-archive installs (`Translate_plugin-main` / `Translate_plugin`) to the canonical `it-kayali-translate` installation, removing the need for manual File Manager cleanup.
+- v0.12.32 scopes Floating-specific controls strictly to **Floating Button** and restores normal Flaggen/Pills/Text behavior on tablet/mobile.
 
+
+
+## v0.12.32 – Floating settings only affect Floating Button
+
+- In WoodMart Header Builder, Floating controls are conditionally displayed using WoodMart's native `requires` mechanism.
+- When **Darstellung** is Flaggen, Pills, Text or Dropdown:
+  - viewport fixing is ignored
+  - Floating top/bottom position is ignored
+  - Mobile-as-dropdown Floating behavior is ignored
+  - saved legacy Floating values cannot move the element out of the header
+- When **Darstellung = Floating Button**, all Floating controls remain available.
+- This fixes the real-site case where an element selected as **Flaggen** was still rendered fixed at the bottom on mobile/tablet because old Floating values remained saved.
 
 
 ## v0.12.31 – automatic duplicate-install migration
