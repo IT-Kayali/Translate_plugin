@@ -2,8 +2,20 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.32**.
+Current development version: **0.12.33**.
 
+
+
+## [0.12.33]
+
+### Dropdown edge anchoring
+- Fixed the language dropdown being partially clipped/off-screen when the switcher is positioned at the far left or far right of a mobile/tablet header.
+- Dropdown horizontal anchoring now follows the active responsive alignment:
+  - left-aligned switcher -> menu starts at the trigger's left edge and opens inward to the right
+  - right-aligned switcher -> menu ends at the trigger's right edge and opens inward to the left
+  - centered switcher -> menu remains centered
+- If a chosen anchor would still overflow because of a narrow viewport or long language names, the runtime automatically switches to the safer opposite edge or applies a final pixel correction.
+- The same logic works with automatic up/down opening.
 
 
 ## [0.12.32]
