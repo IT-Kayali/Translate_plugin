@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.27 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.28 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 19.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -22,6 +22,16 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Bedienung v0.12.28 – Floating Button und responsive Abstände
+
+- Neue Darstellung **Floating Button** für den Sprachumschalter.
+- Im nativen WoodMart-Element gibt es eigene Tabs für **Desktop**, **Tablet** und **Mobile**.
+- Pro Gerät: Ausrichtung links/mitte/rechts, Sprachabstand, Innenabstand horizontal/vertikal und Außenabstände oben/rechts/unten/links.
+- Optional kann der Umschalter beim Scrollen am Bildschirm fixiert werden.
+- Für den fixierten Floating-Modus sind obere/untere Position und ein eigener Abstand zum Bildschirmrand pro Gerät einstellbar.
+- Realtest offen: Desktop, Tablet und Mobile auf der aktuellen Entwicklungsseite prüfen; insbesondere Header, Sticky Header und Floating-Modus.
 
 ### Bedienung v0.12.27 – Shortcodes im Backend
 
