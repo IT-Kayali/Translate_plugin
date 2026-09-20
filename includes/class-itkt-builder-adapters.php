@@ -165,10 +165,16 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                     'floating_fixed' => array(
                         'id'          => 'floating_fixed',
                         'title'       => esc_html__( 'Floating am Bildschirm fixieren', 'it-kayali-translate' ),
-                        'description' => esc_html__( 'Optional: Der Sprachumschalter bleibt beim Scrollen sichtbar. Empfohlen zusammen mit der Darstellung Floating Button.', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Der Sprachumschalter bleibt beim Scrollen sichtbar.', 'it-kayali-translate' ),
                         'type'        => 'switcher',
                         'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
                         'value'       => false,
+                        'requires'    => array(
+                            'style' => array(
+                                'comparison' => 'equal',
+                                'value'      => 'floating',
+                            ),
+                        ),
                     ),
                     'floating_vertical' => array(
                         'id'      => 'floating_vertical',
@@ -180,14 +186,30 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                             'top'    => 'Oben',
                             'bottom' => 'Unten',
                         ) ),
+                        'requires' => array(
+                            'style' => array(
+                                'comparison' => 'equal',
+                                'value'      => 'floating',
+                            ),
+                            'floating_fixed' => array(
+                                'comparison' => 'equal',
+                                'value'      => true,
+                            ),
+                        ),
                     ),
                     'mobile_dropdown' => array(
                         'id'          => 'mobile_dropdown',
                         'title'       => esc_html__( 'Auf Mobile als Dropdown', 'it-kayali-translate' ),
-                        'description' => esc_html__( 'Auf Smartphones wird nur die aktive Sprache angezeigt; die anderen Sprachen öffnen sich per Klick.', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Nur für Floating Button: Auf Smartphones wird nur die aktive Sprache angezeigt; die anderen Sprachen öffnen sich per Klick.', 'it-kayali-translate' ),
                         'type'        => 'switcher',
                         'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
                         'value'       => true,
+                        'requires'    => array(
+                            'style' => array(
+                                'comparison' => 'equal',
+                                'value'      => 'floating',
+                            ),
+                        ),
                     ),
                     'dropdown_direction' => array(
                         'id'      => 'dropdown_direction',
@@ -200,6 +222,12 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                             'up'   => 'Nach oben',
                             'down' => 'Nach unten',
                         ) ),
+                        'requires' => array(
+                            'style' => array(
+                                'comparison' => 'equal',
+                                'value'      => 'floating',
+                            ),
+                        ),
                     ),
                     'css_class' => array(
                         'id'          => 'css_class',
@@ -341,14 +369,17 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 // Element-specific behavior is always respected. Global inheritance only supplies
                 // responsive spacing/sizing so one header dropdown and a second fixed floating
                 // switcher can coexist on the same page without fighting over one global style.
+                $is_floating = 'floating' === $style;
+
                 $local = array(
                     'style'              => $style,
                     'show_codes'         => ! empty( $params['show_codes'] ),
                     'show_names'         => ! empty( $params['show_names'] ),
-                    'mobile_dropdown'    => ! array_key_exists( 'mobile_dropdown', $params ) || ! empty( $params['mobile_dropdown'] ),
-                    'floating_fixed'     => ! empty( $params['floating_fixed'] ),
-                    'floating_vertical'  => isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom',
-                    'dropdown_direction' => isset( $params['dropdown_direction'] ) ? sanitize_key( (string) $params['dropdown_direction'] ) : 'auto',
+                    // Floating-only controls must never alter normal flags/pills/text/dropdown.
+                    'mobile_dropdown'    => $is_floating && ( ! array_key_exists( 'mobile_dropdown', $params ) || ! empty( $params['mobile_dropdown'] ) ),
+                    'floating_fixed'     => $is_floating && ! empty( $params['floating_fixed'] ),
+                    'floating_vertical'  => $is_floating && isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom',
+                    'dropdown_direction' => $is_floating && isset( $params['dropdown_direction'] ) ? sanitize_key( (string) $params['dropdown_direction'] ) : 'auto',
                     'devices'            => array(),
                 );
 
