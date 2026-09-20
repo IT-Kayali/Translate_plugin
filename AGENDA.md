@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.33 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.34 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -27,6 +27,15 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Produktions-Fix v0.12.34 – globaler WoodMart-Header + kompaktes Mobile-Menü
+
+- EN/AR **Edit current header** darf nicht mehr auf sprachpräfixierte Admin-/admin-ajax-Pfade führen.
+- Standardregel: derselbe WoodMart-Header gilt für alle Sprachen; nur eine explizit gespeicherte andere Header-Zuweisung erzeugt eine Ausnahme.
+- Admin-Bar/Header-Editor-Links bleiben sprachneutral.
+- Mobile/Tablet Sprachdropdown wird kompakter dargestellt.
+- Realtest offen: DE/EN/AR jeweils Header bearbeiten, Headeränderung global prüfen, anschließend bewusst einen anderen Header auf einer Übersetzung wählen und Ausnahme testen.
 
 
 ### Produktions-Fix v0.12.33 – Dropdown an Bildschirmkante ausrichten
