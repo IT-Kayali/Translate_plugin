@@ -331,10 +331,10 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 $parsed = $this->parse_args( $el );
                 $params = isset( $parsed['params'] ) && is_array( $parsed['params'] ) ? $parsed['params'] : array();
 
-                // Existing v0.12.26–0.12.28 elements did not have this switch. Treat missing as
-                // "use global" so one central backend configuration immediately fixes shortcode,
-                // footer, Elementor and WoodMart instances together.
-                $use_global = ! array_key_exists( 'use_global_settings', $params ) || ! empty( $params['use_global_settings'] );
+                // Preserve the exact local appearance of elements created before v0.12.29.
+                // Newly added elements default to the global configuration; older saved elements
+                // can opt in explicitly without silently changing their production header design.
+                $use_global = array_key_exists( 'use_global_settings', $params ) && ! empty( $params['use_global_settings'] );
 
                 $atts = array();
                 if ( ! $use_global ) {
