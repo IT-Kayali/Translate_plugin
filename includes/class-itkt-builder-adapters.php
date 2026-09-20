@@ -305,7 +305,6 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '" style="' . esc_attr( implode( ';', $css_vars ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes all generated attributes/content.
             }
         };
-        };
     }
 
     /**
