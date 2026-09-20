@@ -183,9 +183,9 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 );
 
                 $devices = array(
-                    'desktop' => array( 'tab' => 'Desktop', 'gap' => '12', 'offset' => '24' ),
-                    'tablet'  => array( 'tab' => 'Tablet',  'gap' => '10', 'offset' => '18' ),
-                    'mobile'  => array( 'tab' => 'Mobile',  'gap' => '8',  'offset' => '14' ),
+                    'desktop' => array( 'tab' => 'Desktop', 'gap' => '12', 'pad_x' => '10', 'pad_y' => '6', 'offset' => '24' ),
+                    'tablet'  => array( 'tab' => 'Tablet',  'gap' => '10', 'pad_x' => '9',  'pad_y' => '5', 'offset' => '18' ),
+                    'mobile'  => array( 'tab' => 'Mobile',  'gap' => '8',  'pad_x' => '8',  'pad_y' => '5', 'offset' => '14' ),
                 );
 
                 foreach ( $devices as $device => $settings ) {
@@ -210,6 +210,22 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                         'type'        => 'text',
                         'tab'         => $tab,
                         'value'       => $settings['gap'],
+                    );
+                    $params[ 'padding_x_' . $device ] = array(
+                        'id'          => 'padding_x_' . $device,
+                        'title'       => esc_html__( 'Innenabstand horizontal (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Innenabstand links/rechts für Pills und Floating Button.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['pad_x'],
+                    );
+                    $params[ 'padding_y_' . $device ] = array(
+                        'id'          => 'padding_y_' . $device,
+                        'title'       => esc_html__( 'Innenabstand vertikal (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Innenabstand oben/unten für Pills und Floating Button.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['pad_y'],
                     );
 
                     foreach ( array( 'top' => 'Oben', 'right' => 'Rechts', 'bottom' => 'Unten', 'left' => 'Links' ) as $side => $label ) {
@@ -277,6 +293,8 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                     $classes[] = 'itkt-' . $device . '-align-' . $align;
                     $css_vars[] = '--itkt-align-' . $device . ':' . $align_map[ $align ];
                     $css_vars[] = '--itkt-gap-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'gap_' . $device, 12, 0, 100 ) ) . 'px';
+                    $css_vars[] = '--itkt-padding-x-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'padding_x_' . $device, 10, 0, 80 ) ) . 'px';
+                    $css_vars[] = '--itkt-padding-y-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'padding_y_' . $device, 6, 0, 80 ) ) . 'px';
 
                     foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
                         $css_vars[] = '--itkt-margin-' . $side . '-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'margin_' . $side . '_' . $device, 0, -300, 500 ) ) . 'px';
