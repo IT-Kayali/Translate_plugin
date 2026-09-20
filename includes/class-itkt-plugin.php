@@ -31,6 +31,17 @@ class ITKT_Plugin {
         add_action( 'init', array( 'ITKT_WoodMart_Adapter', 'register_header_builder_element' ), 9 );
         add_action( 'wp_ajax_woodmart_get_builder_elements', array( 'ITKT_WoodMart_Adapter', 'register_header_builder_element' ), 0 );
         add_action( 'wp', array( 'ITKT_WoodMart_Adapter', 'ensure_header_builder_frontend_element' ), 0 );
+
+        // WoodMart header compatibility: keep Header Builder administration language-neutral,
+        // make translated pages inherit the source page's header unless a different header was
+        // explicitly selected for that translation, and never rewrite admin-bar editor links.
+        add_action( 'admin_bar_menu', array( 'ITKT_WoodMart_Adapter', 'normalize_header_editor_admin_bar' ), 200 );
+        add_action( 'template_redirect', array( 'ITKT_WoodMart_Adapter', 'repair_prefixed_header_editor_url' ), -50 );
+        add_filter( 'get_post_metadata', array( 'ITKT_WoodMart_Adapter', 'inherit_source_header_assignment' ), 20, 5 );
+        add_action( 'added_post_meta', array( 'ITKT_WoodMart_Adapter', 'track_explicit_header_override' ), 20, 4 );
+        add_action( 'updated_post_meta', array( 'ITKT_WoodMart_Adapter', 'track_explicit_header_override' ), 20, 4 );
+        add_action( 'deleted_post_meta', array( 'ITKT_WoodMart_Adapter', 'clear_header_override_on_delete' ), 20, 4 );
+
         add_action( 'init', array( $this, 'init' ) );
         add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
     }

@@ -2,8 +2,18 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.33**.
+Current development version: **0.12.34**.
 
+
+
+## [0.12.34]
+
+### WoodMart header consistency and compact mobile menu
+- Fixed **Edit current header** on EN/AR routes opening language-prefixed admin/editor URLs such as `/en/wp-admin/admin-ajax.php/`.
+- WordPress/WoodMart admin-bar links and Header Builder preview links are no longer language-prefixed.
+- Translated pages inherit the source page's WoodMart header assignment by default; only an explicitly saved different header creates a language-specific exception.
+- Added recovery for stale language-prefixed Header Builder URLs.
+- Reduced tablet/mobile language-dropdown width, row height, padding, flag size and text size.
 
 
 ## [0.12.33]

@@ -79,6 +79,146 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
     }
 
     /**
+     * WoodMart creates "Edit current header" from the current frontend request. On a translated
+     * storefront URL that link must always point to the language-neutral source page; admin/editor
+     * routes must never receive /en/, /ar/, ... prefixes.
+     */
+    public static function normalize_header_editor_admin_bar( $admin_bar ) {
+        if ( is_admin() || ! is_object( $admin_bar ) || ! method_exists( $admin_bar, 'get_node' ) ) { return; }
+        if ( ! current_user_can( 'edit_theme_options' ) || ! function_exists( 'whb_get_header' ) ) { return; }
+
+        $node = $admin_bar->get_node( 'xts_header_builder_edit' );
+        $header = whb_get_header();
+        if ( ! $node || ! is_object( $header ) || ! method_exists( $header, 'get_id' ) ) { return; }
+
+        $default = ITKT_Languages::instance()->get_default_code();
+        $base = ITKT_Frontend::instance()->language_url( $default );
+
+        // A stale/broken request such as /en/wp-admin/admin-ajax.php must not be recycled into
+        // another Header Builder link. Fall back to the canonical storefront home in that case.
+        $path = strtolower( (string) wp_parse_url( $base, PHP_URL_PATH ) );
+        if ( false !== strpos( $path, '/wp-admin/' ) || false !== strpos( $path, 'admin-ajax.php' ) || false !== strpos( $path, '/wp-login.php' ) ) {
+            $base = trailingslashit( untrailingslashit( (string) get_option( 'home' ) ) );
+        }
+
+        $base = remove_query_arg( array( 'whb-header-frontend', 'itkt_lang', 'lang' ), $base );
+        $href = add_query_arg( 'whb-header-frontend', sanitize_key( (string) $header->get_id() ), $base );
+
+        $args = get_object_vars( $node );
+        $args['id'] = 'xts_header_builder_edit';
+        $args['href'] = $href;
+        $admin_bar->add_node( $args );
+    }
+
+    /**
+     * Rescue stale/broken URLs created by older versions, e.g.
+     * /en/wp-admin/admin-ajax.php/?whb-header-frontend=default_header.
+     * The current page context is already lost there, so the safe recovery target is the canonical
+     * storefront homepage with the requested Header Builder preview ID.
+     */
+    public static function repair_prefixed_header_editor_url() {
+        if ( is_admin() || headers_sent() || empty( $_GET['whb-header-frontend'] ) ) { return; } // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+        $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+        $path = strtolower( (string) wp_parse_url( $uri, PHP_URL_PATH ) );
+        if ( false === strpos( $path, '/wp-admin/' ) && false === strpos( $path, 'admin-ajax.php' ) ) { return; }
+
+        $header_id = sanitize_key( wp_unslash( (string) $_GET['whb-header-frontend'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( ! $header_id ) { return; }
+
+        $home = trailingslashit( untrailingslashit( (string) get_option( 'home' ) ) );
+        wp_safe_redirect( add_query_arg( 'whb-header-frontend', $header_id, $home ), 302 );
+        exit;
+    }
+
+    /**
+     * A translated page inherits the source page's WoodMart header assignment until an explicit
+     * different header is saved on that translation. This keeps one header/configuration shared
+     * by DE/EN/AR by default while still allowing an intentional per-language override.
+     */
+    public static function inherit_source_header_assignment( $value, $object_id, $meta_key, $single, $meta_type ) {
+        if ( 'post' !== $meta_type || '_woodmart_whb_header' !== $meta_key ) { return $value; }
+
+        static $guard = false;
+        if ( $guard ) { return $value; }
+
+        $post_id = absint( $object_id );
+        if ( ! $post_id ) { return $value; }
+
+        $guard = true;
+        $lang = sanitize_key( (string) get_post_meta( $post_id, '_itkt_language', true ) );
+        $default = ITKT_Languages::instance()->get_default_code();
+
+        if ( ! $lang || $lang === $default || get_post_meta( $post_id, '_itkt_woodmart_header_override', true ) ) {
+            $guard = false;
+            return $value;
+        }
+
+        $group = (string) get_post_meta( $post_id, '_itkt_group', true );
+        if ( ! $group ) {
+            $guard = false;
+            return $value;
+        }
+
+        $siblings = get_posts( array(
+            'post_type'        => get_post_type( $post_id ),
+            'post_status'      => array( 'publish', 'draft', 'private', 'pending', 'future' ),
+            'numberposts'      => -1,
+            'fields'           => 'ids',
+            'meta_key'         => '_itkt_group',
+            'meta_value'       => $group,
+            'suppress_filters' => true,
+        ) );
+
+        $source_id = 0;
+        foreach ( (array) $siblings as $sibling_id ) {
+            if ( sanitize_key( (string) get_post_meta( $sibling_id, '_itkt_language', true ) ) === $default ) {
+                $source_id = absint( $sibling_id );
+                break;
+            }
+        }
+
+        if ( ! $source_id ) {
+            $guard = false;
+            return $value;
+        }
+
+        $source_value = get_post_meta( $source_id, '_woodmart_whb_header', $single );
+        $guard = false;
+
+        // Return even an empty source value so an old copied translation meta value cannot keep
+        // selecting a stale header after the source page was returned to the global default.
+        return $single ? $source_value : (array) $source_value;
+    }
+
+    /**
+     * Mark a translated page only when the administrator actually saves a different WoodMart
+     * header assignment there. Translation creation copies meta before _itkt_language is set, so
+     * normal duplicated pages remain in inherited/global mode.
+     */
+    public static function track_explicit_header_override( $meta_id, $object_id, $meta_key, $meta_value ) {
+        if ( '_woodmart_whb_header' !== $meta_key ) { return; }
+
+        $post_id = absint( $object_id );
+        $lang = sanitize_key( (string) get_post_meta( $post_id, '_itkt_language', true ) );
+        $default = ITKT_Languages::instance()->get_default_code();
+        if ( ! $lang || $lang === $default ) { return; }
+
+        // "none"/empty means no special translated-page header: return to inherited source/global.
+        if ( '' === trim( (string) $meta_value ) || 'none' === sanitize_key( (string) $meta_value ) ) {
+            delete_post_meta( $post_id, '_itkt_woodmart_header_override' );
+            return;
+        }
+
+        update_post_meta( $post_id, '_itkt_woodmart_header_override', 1 );
+    }
+
+    public static function clear_header_override_on_delete( $meta_ids, $object_id, $meta_key, $meta_value ) {
+        if ( '_woodmart_whb_header' !== $meta_key ) { return; }
+        delete_post_meta( absint( $object_id ), '_itkt_woodmart_header_override' );
+    }
+
+    /**
      * Register a native IT-Kayali language selector in WoodMart's Header Builder.
      *
      * WoodMart loads its built-in element classes on init priority 8 and snapshots the
