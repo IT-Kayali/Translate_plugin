@@ -2,8 +2,24 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.28**.
+Current development version: **0.12.29**.
 
+
+
+## [0.12.29]
+
+### Modern active-language dropdown and global switcher settings
+- Redesigned the **Floating Button** so only the currently active language is visible while the other languages stay collapsed in a modern dropdown.
+- Dropdown rows always include the native language name, while the trigger can still be configured to show flag, code and/or language name.
+- Added automatic opening direction: the dropdown opens downward when space is available and upward when the trigger is near the bottom of the viewport; manual up/down overrides remain available.
+- Added viewport-edge correction so the dropdown stays inside the visible screen instead of overflowing horizontally.
+- Added keyboard/accessibility behavior: `aria-expanded`, `aria-controls`, menu semantics, Escape-to-close and click-outside closing.
+- Added **IT-Kayali Translate -> Sprachumschalter** as a central backend configuration page.
+- Global settings now control shortcode, Elementor/footer placements and new WoodMart language elements from one place.
+- Global responsive settings include Desktop/Tablet/Mobile alignment, language gap, trigger padding, horizontal/vertical floating offsets, dropdown gap, flag size and outer margins.
+- Mobile can be forced into the same active-language dropdown even when the desktop style is regular flags/pills/text.
+- The WoodMart element can either inherit all global switcher settings or explicitly use local per-element settings.
+- Existing WoodMart elements created before v0.12.29 keep their local configuration until the new global-setting toggle is enabled, avoiding an unexpected production design change.
 
 
 ## [0.12.28]
