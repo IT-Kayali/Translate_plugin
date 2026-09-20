@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.37 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.38 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
