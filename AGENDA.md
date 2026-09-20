@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.35 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.37 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -27,6 +27,15 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### UI-Fix v0.12.37 – Dropdown automatisch 10 px vom Bildschirmrand
+
+- Linke Position: Dropdown exakt 10 px vom linken Bildschirmrand.
+- Rechte Position: Dropdown exakt 10 px vom rechten Bildschirmrand.
+- Mittige Position: zentriert, mit mindestens 10 px Sicherheitsabstand.
+- Position wird aus der tatsächlichen Trigger-Position berechnet und passt sich beim Verschieben/Resize automatisch an.
+- Keine Änderung an Routing, Header-Vererbung oder Sprachlogik.
 
 
 ### UI-Fix v0.12.35 – Sprachmenü auf Handy/Tablet kompakter
