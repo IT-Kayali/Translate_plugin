@@ -108,6 +108,10 @@
   function shouldSkipUrl(url, anchor) {
     if (!url || !anchor) return true;
     if (anchor.classList.contains('itkt-lang-link')) return true;
+    // WordPress/WoodMart admin-bar links are administrative/editor routes, never storefront
+    // navigation. Prefixing them with /en/, /ar/, ... can turn Header Builder into a 404/0 page.
+    if (anchor.closest && anchor.closest('#wpadminbar')) return true;
+    if (url.searchParams && url.searchParams.has('whb-header-frontend')) return true;
     var raw = anchor.getAttribute('href') || '';
     if (!raw || raw.charAt(0) === '#' || /^(mailto:|tel:|sms:|javascript:)/i.test(raw)) return true;
     if (url.origin !== window.location.origin) return true;
