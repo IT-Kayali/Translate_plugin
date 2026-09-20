@@ -551,48 +551,55 @@ body.itkt-content-layout-rtl footer .itkt-language-switcher{direction:ltr!import
 }
 
 
-/* V0.12.34: compact mobile/tablet language dropdown. */
+/* V0.12.35: tighter mobile/tablet language dropdown only. */
 @media (max-width:1024px){
+  .itkt-switcher-shell{
+    --itkt-menu-gap-current:6px;
+  }
   .itkt-switcher-shell .itkt-switcher-menu{
-    min-width:154px;
-    max-width:min(190px,calc(100vw - 16px));
-    padding:4px;
-    gap:2px;
-    border-radius:13px;
+    min-width:132px;
+    max-width:min(150px,calc(100vw - 14px));
+    padding:3px;
+    gap:1px;
+    border-radius:11px;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-menu-link{
-    min-height:38px;
-    padding:6px 8px!important;
-    gap:8px!important;
-    border-radius:9px!important;
+    min-height:35px;
+    padding:4px 6px!important;
+    gap:6px!important;
+    border-radius:8px!important;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-menu-name{
-    font-size:12px;
-    line-height:1.15;
+    font-size:11.5px;
+    line-height:1.1;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-code{
-    font-size:9px;
+    font-size:8.5px;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-flag{
-    font-size:22px!important;
+    font-size:19px!important;
   }
 }
 @media (max-width:767px){
+  .itkt-switcher-shell{
+    --itkt-menu-gap-current:5px;
+  }
   .itkt-switcher-shell .itkt-switcher-menu{
-    min-width:146px;
-    max-width:min(176px,calc(100vw - 14px));
-    padding:4px;
-    border-radius:12px;
+    min-width:118px;
+    max-width:min(132px,calc(100vw - 12px));
+    padding:3px;
+    border-radius:10px;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-menu-link{
-    min-height:36px;
-    padding:5px 7px!important;
-    gap:7px!important;
+    min-height:33px;
+    padding:4px 5px!important;
+    gap:5px!important;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-menu-name{
-    font-size:12px;
+    font-size:11px;
+    line-height:1.08;
   }
   .itkt-switcher-shell .itkt-switcher-menu .itkt-flag{
-    font-size:21px!important;
+    font-size:18px!important;
   }
 }

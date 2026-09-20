@@ -2,8 +2,18 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.34**.
+Current development version: **0.12.35**.
 
+
+
+## [0.12.35]
+
+### Compact mobile/tablet language menu
+- Reduced only the language dropdown menu dimensions on tablet/mobile.
+- Mobile menu width reduced to roughly 118–132px, with smaller flags, tighter padding and shorter rows.
+- Tablet menu width reduced to roughly 132–150px.
+- Reduced the gap between the active-language trigger and the dropdown.
+- No routing, header inheritance, language switching or WoodMart Header Builder logic changed in this release.
 
 
 ## [0.12.34]

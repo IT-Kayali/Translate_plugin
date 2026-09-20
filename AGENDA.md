@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.34 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.35 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -27,6 +27,14 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### UI-Fix v0.12.35 – Sprachmenü auf Handy/Tablet kompakter
+
+- Nur das Dropdown-Menü wurde verkleinert.
+- Mobile: schmalerer Container, kleinere Flaggen, kürzere Zeilen, weniger Innenabstand und geringerer Abstand zum Trigger.
+- Tablet: ebenfalls kompakter, aber etwas größer als Mobile.
+- Keine Änderung an Routing, Header-Vererbung oder Sprachlogik.
 
 
 ### Produktions-Fix v0.12.34 – globaler WoodMart-Header + kompaktes Mobile-Menü
