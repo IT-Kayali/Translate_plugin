@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.38**
+**Current development version: v0.12.39**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
