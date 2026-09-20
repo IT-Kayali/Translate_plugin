@@ -2,8 +2,21 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.27**.
+Current development version: **0.12.28**.
 
+
+
+## [0.12.28]
+
+### Responsive language switcher layout and Floating Button
+- Added a new **Floating Button** visual style for `[itkt_language_switcher]` and the native WoodMart **IT-Kayali Sprachen** element.
+- WoodMart Header Builder now exposes separate **Desktop**, **Tablet** and **Mobile** tabs.
+- Each device can define its own left/center/right alignment.
+- Each device can define the language gap, horizontal/vertical inner padding and outer top/right/bottom/left spacing in pixels.
+- Optional fixed floating mode keeps the language switcher visible while scrolling.
+- Fixed floating mode supports top or bottom placement and a separate responsive screen-edge offset for desktop, tablet and mobile.
+- Numeric spacing values are clamped to safe ranges before being written as CSS custom properties.
+- The Shortcodes admin reference now documents the Floating Button style and points users to the native WoodMart element for responsive layout controls.
 
 
 ## [0.12.27]
