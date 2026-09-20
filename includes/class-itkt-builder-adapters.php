@@ -111,6 +111,27 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
     }
 
     /**
+     * Rescue stale/broken URLs created by older versions, e.g.
+     * /en/wp-admin/admin-ajax.php/?whb-header-frontend=default_header.
+     * The current page context is already lost there, so the safe recovery target is the canonical
+     * storefront homepage with the requested Header Builder preview ID.
+     */
+    public static function repair_prefixed_header_editor_url() {
+        if ( is_admin() || headers_sent() || empty( $_GET['whb-header-frontend'] ) ) { return; } // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+        $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+        $path = strtolower( (string) wp_parse_url( $uri, PHP_URL_PATH ) );
+        if ( false === strpos( $path, '/wp-admin/' ) && false === strpos( $path, 'admin-ajax.php' ) ) { return; }
+
+        $header_id = sanitize_key( wp_unslash( (string) $_GET['whb-header-frontend'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( ! $header_id ) { return; }
+
+        $home = trailingslashit( untrailingslashit( (string) get_option( 'home' ) ) );
+        wp_safe_redirect( add_query_arg( 'whb-header-frontend', $header_id, $home ), 302 );
+        exit;
+    }
+
+    /**
      * A translated page inherits the source page's WoodMart header assignment until an explicit
      * different header is saved on that translation. This keeps one header/configuration shared
      * by DE/EN/AR by default while still allowing an intentional per-language override.
