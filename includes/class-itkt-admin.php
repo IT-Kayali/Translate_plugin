@@ -779,10 +779,10 @@ class ITKT_Admin {
             </section>
 
             <section class="itkt-card">
-                <span class="itkt-kicker">VERWENDUNG</span><h2>Eine Regel für alle Einbauorte</h2>
+                <span class="itkt-kicker">VERWENDUNG</span><h2>Globale Maße, getrennte Darstellung</h2>
                 <div class="itkt-grid-2">
                     <div><strong>Shortcode / Footer / Elementor</strong><p><code>[itkt_language_switcher]</code> übernimmt diese Einstellungen automatisch.</p></div>
-                    <div><strong>WoodMart Header Builder</strong><p>Beim Element <strong>IT-Kayali Sprachen</strong> „Globale Sprachumschalter-Einstellungen verwenden“ aktivieren. Dann gilt exakt dieselbe Darstellung.</p></div>
+                    <div><strong>WoodMart Header Builder</strong><p>Beim Element <strong>IT-Kayali Sprachen</strong> kannst du die globalen Abstände/Größen übernehmen. <strong>Flaggen, Dropdown oder Floating Button wählst du trotzdem pro Element separat.</strong></p></div>
                 </div>
             </section>
 
