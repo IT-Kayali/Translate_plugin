@@ -2,8 +2,21 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.31**.
+Current development version: **0.12.32**.
 
+
+
+## [0.12.32]
+
+### Floating controls isolated from normal language-switcher modes
+- WoodMart Floating-only controls now appear only when **Darstellung = Floating Button**.
+- **Floating am Bildschirm fixieren** is hidden for Flaggen, Pills, Text and Dropdown.
+- **Floating-Position vertikal** is shown only for Floating Button and only when viewport fixing is enabled.
+- **Auf Mobile als Dropdown** is now a Floating Button-only control.
+- **Dropdown-Öffnungsrichtung** in the WoodMart element is now treated as a Floating Button-only control.
+- Normal Flaggen / Pills / Text modes ignore any previously saved Floating values, including old `floating_fixed=1` and `mobile_dropdown=1`.
+- Global switcher settings can no longer force a normal flags/pills/text shortcode or WoodMart element into fixed/mobile-dropdown behavior.
+- This restores the pre-floating behavior for normal language flags on tablet and mobile while keeping Floating Button fully configurable.
 
 
 ## [0.12.31]
