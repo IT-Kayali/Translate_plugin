@@ -515,3 +515,37 @@ body.itkt-content-layout-rtl footer .itkt-language-switcher{direction:ltr!import
     padding:var(--itkt-padding-y-mobile,8px) var(--itkt-padding-x-mobile,10px);
   }
 }
+
+
+/* V0.12.33: anchor dropdown to the active responsive corner so it opens inward. */
+.itkt-switcher-shell.itkt-menu-anchor-left .itkt-switcher-menu{
+  left:0!important;
+  right:auto!important;
+  transform:translateX(var(--itkt-menu-shift-x,0px)) translateY(-4px)!important;
+}
+.itkt-switcher-shell.itkt-menu-anchor-right .itkt-switcher-menu{
+  left:auto!important;
+  right:0!important;
+  transform:translateX(var(--itkt-menu-shift-x,0px)) translateY(-4px)!important;
+}
+.itkt-switcher-shell.itkt-menu-anchor-center .itkt-switcher-menu{
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(calc(-50% + var(--itkt-menu-shift-x,0px))) translateY(-4px)!important;
+}
+
+.itkt-switcher-shell.itkt-opens-up.itkt-menu-anchor-left .itkt-switcher-menu,
+.itkt-switcher-shell.itkt-opens-up.itkt-menu-anchor-right .itkt-switcher-menu{
+  transform:translateX(var(--itkt-menu-shift-x,0px)) translateY(4px)!important;
+}
+.itkt-switcher-shell.itkt-opens-up.itkt-menu-anchor-center .itkt-switcher-menu{
+  transform:translateX(calc(-50% + var(--itkt-menu-shift-x,0px))) translateY(4px)!important;
+}
+
+.itkt-switcher-shell.is-open.itkt-menu-anchor-left .itkt-switcher-menu,
+.itkt-switcher-shell.is-open.itkt-menu-anchor-right .itkt-switcher-menu{
+  transform:translateX(var(--itkt-menu-shift-x,0px)) translateY(0)!important;
+}
+.itkt-switcher-shell.is-open.itkt-menu-anchor-center .itkt-switcher-menu{
+  transform:translateX(calc(-50% + var(--itkt-menu-shift-x,0px))) translateY(0)!important;
+}

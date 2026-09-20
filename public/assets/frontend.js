@@ -14,7 +14,7 @@
 
   function closeLanguageSwitcher(shell) {
     if (!shell) return;
-    shell.classList.remove('is-open', 'itkt-opens-up', 'itkt-opens-down');
+    shell.classList.remove('is-open', 'itkt-opens-up', 'itkt-opens-down', 'itkt-menu-anchor-left', 'itkt-menu-anchor-center', 'itkt-menu-anchor-right');
     var trigger = shell.querySelector('.itkt-switcher-trigger');
     var menu = shell.querySelector('.itkt-switcher-menu');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
@@ -37,7 +37,7 @@
     var menu = shell.querySelector('.itkt-switcher-menu');
     if (!nav || !trigger || !menu) return;
 
-    shell.classList.remove('itkt-opens-up', 'itkt-opens-down');
+    shell.classList.remove('itkt-opens-up', 'itkt-opens-down', 'itkt-menu-anchor-left', 'itkt-menu-anchor-center', 'itkt-menu-anchor-right');
     menu.style.setProperty('--itkt-menu-shift-x', '0px');
 
     var wanted = String(nav.getAttribute('data-itkt-dropdown-direction') || 'auto').toLowerCase();
@@ -45,6 +45,8 @@
     var menuRect = menu.getBoundingClientRect();
     var gap = parseFloat(window.getComputedStyle(shell).getPropertyValue('--itkt-menu-gap-current')) || 8;
     var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    var edge = 10;
     var spaceAbove = triggerRect.top;
     var spaceBelow = viewportHeight - triggerRect.bottom;
     var direction = wanted;
@@ -54,11 +56,31 @@
     }
     shell.classList.add(direction === 'up' ? 'itkt-opens-up' : 'itkt-opens-down');
 
-    // Keep the dropdown inside the visible viewport even when the trigger is close to an edge.
-    // The base CSS centers the menu under the trigger; this variable only nudges it when needed.
+    // Anchor the menu to the same responsive corner as the trigger. A left-positioned switcher
+    // opens inward to the right, a right-positioned switcher opens inward to the left, and a
+    // centered switcher stays centered. This avoids clipping at the viewport/header edges.
+    var device = viewportWidth <= 767 ? 'mobile' : (viewportWidth <= 1024 ? 'tablet' : 'desktop');
+    var anchor = 'center';
+    if (shell.classList.contains('itkt-' + device + '-align-left')) anchor = 'left';
+    if (shell.classList.contains('itkt-' + device + '-align-right')) anchor = 'right';
+    if (shell.classList.contains('itkt-' + device + '-align-center')) anchor = 'center';
+
+    var menuWidth = menuRect.width || menu.offsetWidth || 178;
+    if (anchor === 'left' && triggerRect.left + menuWidth > viewportWidth - edge && triggerRect.right - menuWidth >= edge) {
+      anchor = 'right';
+    } else if (anchor === 'right' && triggerRect.right - menuWidth < edge && triggerRect.left + menuWidth <= viewportWidth - edge) {
+      anchor = 'left';
+    } else if (anchor === 'center') {
+      var centeredLeft = triggerRect.left + (triggerRect.width / 2) - (menuWidth / 2);
+      var centeredRight = centeredLeft + menuWidth;
+      if (centeredLeft < edge) anchor = 'left';
+      else if (centeredRight > viewportWidth - edge) anchor = 'right';
+    }
+    shell.classList.add('itkt-menu-anchor-' + anchor);
+
+    // Final safety correction after the corner anchor has been applied. This is normally zero,
+    // but protects very narrow viewports and unusually wide translated language names.
     menuRect = menu.getBoundingClientRect();
-    var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-    var edge = 10;
     var shift = 0;
     if (menuRect.left < edge) shift += edge - menuRect.left;
     if (menuRect.right > viewportWidth - edge) shift -= menuRect.right - (viewportWidth - edge);
