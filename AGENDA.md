@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.30 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.31 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -25,6 +25,19 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Produktions-Fix v0.12.31 – doppelte Plugin-Installation automatisch bereinigen
+
+- Realtest zeigte gleichzeitig aktive Kopien unter `Translate_plugin-main` und `it-kayali-translate`.
+- Dadurch konnte die alte Kopie zuerst geladen werden und die neue WoodMart-/Dropdown-Logik blockieren.
+- v0.12.31 macht die Bereinigung für bekannte alte GitHub-Ordner automatisch:
+  - Canonical `it-kayali-translate` aktiv setzen
+  - Legacy-Aktivierung entfernen
+  - alten Ordner nach Request-Ende löschen
+  - bei fehlgeschlagenem Löschen automatisch erneut versuchen
+- Unbekannte Ordner werden aus Sicherheitsgründen weiterhin nicht automatisch gelöscht.
+- Realtest offen: v0.12.31 über die offizielle ZIP installieren, Adminseite neu laden und prüfen, dass nur noch die canonical Plugin-Kopie aktiv ist und im WoodMart-Element **Dropdown** sichtbar bleibt.
 
 ### Bedienung v0.12.30 – Header-Dropdown und Floating getrennt
 
