@@ -126,8 +126,8 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 $params = array(
                     'use_global_settings' => array(
                         'id'          => 'use_global_settings',
-                        'title'       => esc_html__( 'Globale Sprachumschalter-Einstellungen verwenden', 'it-kayali-translate' ),
-                        'description' => esc_html__( 'Übernimmt Design, Dropdown-Verhalten und responsive Abstände aus IT-Kayali Translate → Sprachumschalter. So gelten dieselben Regeln auch für Shortcodes im Footer oder Elementor.', 'it-kayali-translate' ),
+                        'title'       => esc_html__( 'Globale Abstände/Größen verwenden', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Übernimmt nur responsive Größen und Abstände aus IT-Kayali Translate → Sprachumschalter. Darstellung, Dropdown/Floating-Verhalten und Beschriftung bleiben pro Header-Element getrennt einstellbar.', 'it-kayali-translate' ),
                         'type'        => 'switcher',
                         'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
                         'value'       => true,
@@ -158,6 +158,7 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                             'flags'    => 'Flaggen',
                             'pills'    => 'Pills',
                             'text'     => 'Text',
+                            'dropdown' => 'Dropdown',
                             'floating' => 'Floating Button',
                         ) ),
                     ),
@@ -331,47 +332,50 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 $parsed = $this->parse_args( $el );
                 $params = isset( $parsed['params'] ) && is_array( $parsed['params'] ) ? $parsed['params'] : array();
 
-                // Preserve the exact local appearance of elements created before v0.12.29.
-                // Newly added elements default to the global configuration; older saved elements
-                // can opt in explicitly without silently changing their production header design.
                 $use_global = array_key_exists( 'use_global_settings', $params ) && ! empty( $params['use_global_settings'] );
+                $global = ITKT_Frontend::instance()->switcher_settings();
 
-                $atts = array();
-                if ( ! $use_global ) {
-                    $style = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
-                    if ( ! in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ) { $style = 'flags'; }
+                $style = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
+                if ( ! in_array( $style, array( 'flags', 'pills', 'text', 'dropdown', 'floating' ), true ) ) { $style = 'flags'; }
 
-                    $local = array(
-                        'style'              => $style,
-                        'show_codes'         => ! empty( $params['show_codes'] ),
-                        'show_names'         => ! empty( $params['show_names'] ),
-                        'mobile_dropdown'    => ! array_key_exists( 'mobile_dropdown', $params ) || ! empty( $params['mobile_dropdown'] ),
-                        'floating_fixed'     => ! empty( $params['floating_fixed'] ),
-                        'floating_vertical'  => isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom',
-                        'dropdown_direction' => isset( $params['dropdown_direction'] ) ? sanitize_key( (string) $params['dropdown_direction'] ) : 'auto',
-                        'devices'            => array(),
-                    );
+                // Element-specific behavior is always respected. Global inheritance only supplies
+                // responsive spacing/sizing so one header dropdown and a second fixed floating
+                // switcher can coexist on the same page without fighting over one global style.
+                $local = array(
+                    'style'              => $style,
+                    'show_codes'         => ! empty( $params['show_codes'] ),
+                    'show_names'         => ! empty( $params['show_names'] ),
+                    'mobile_dropdown'    => ! array_key_exists( 'mobile_dropdown', $params ) || ! empty( $params['mobile_dropdown'] ),
+                    'floating_fixed'     => ! empty( $params['floating_fixed'] ),
+                    'floating_vertical'  => isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom',
+                    'dropdown_direction' => isset( $params['dropdown_direction'] ) ? sanitize_key( (string) $params['dropdown_direction'] ) : 'auto',
+                    'devices'            => array(),
+                );
 
-                    foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
-                        $legacy_offset = isset( $params[ 'floating_offset_' . $device ] ) ? $params[ 'floating_offset_' . $device ] : ( 'desktop' === $device ? 24 : ( 'tablet' === $device ? 18 : 14 ) );
-                        $local['devices'][ $device ] = array(
-                            'align'         => isset( $params[ 'align_' . $device ] ) ? sanitize_key( (string) $params[ 'align_' . $device ] ) : 'left',
-                            'gap'           => $params[ 'gap_' . $device ] ?? ( 'desktop' === $device ? 12 : ( 'tablet' === $device ? 10 : 8 ) ),
-                            'padding_x'     => $params[ 'padding_x_' . $device ] ?? ( 'desktop' === $device ? 10 : ( 'tablet' === $device ? 9 : 8 ) ),
-                            'padding_y'     => $params[ 'padding_y_' . $device ] ?? ( 'desktop' === $device ? 6 : 5 ),
-                            'offset_x'      => $params[ 'floating_offset_x_' . $device ] ?? $legacy_offset,
-                            'offset_y'      => $params[ 'floating_offset_y_' . $device ] ?? $legacy_offset,
-                            'menu_gap'      => $params[ 'menu_gap_' . $device ] ?? ( 'desktop' === $device ? 10 : ( 'tablet' === $device ? 9 : 8 ) ),
-                            'flag_size'     => $params[ 'flag_size_' . $device ] ?? ( 'desktop' === $device ? 28 : ( 'tablet' === $device ? 26 : 25 ) ),
-                            'margin_top'    => $params[ 'margin_top_' . $device ] ?? 0,
-                            'margin_right'  => $params[ 'margin_right_' . $device ] ?? 0,
-                            'margin_bottom' => $params[ 'margin_bottom_' . $device ] ?? 0,
-                            'margin_left'   => $params[ 'margin_left_' . $device ] ?? 0,
-                        );
+                foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
+                    if ( $use_global && isset( $global['devices'][ $device ] ) ) {
+                        $local['devices'][ $device ] = $global['devices'][ $device ];
+                        continue;
                     }
 
-                    $atts = array( 'config_source'=>'local', 'config'=>$local );
+                    $legacy_offset = isset( $params[ 'floating_offset_' . $device ] ) ? $params[ 'floating_offset_' . $device ] : ( 'desktop' === $device ? 24 : ( 'tablet' === $device ? 18 : 14 ) );
+                    $local['devices'][ $device ] = array(
+                        'align'         => isset( $params[ 'align_' . $device ] ) ? sanitize_key( (string) $params[ 'align_' . $device ] ) : 'left',
+                        'gap'           => $params[ 'gap_' . $device ] ?? ( 'desktop' === $device ? 12 : ( 'tablet' === $device ? 10 : 8 ) ),
+                        'padding_x'     => $params[ 'padding_x_' . $device ] ?? ( 'desktop' === $device ? 10 : ( 'tablet' === $device ? 9 : 8 ) ),
+                        'padding_y'     => $params[ 'padding_y_' . $device ] ?? ( 'desktop' === $device ? 6 : 5 ),
+                        'offset_x'      => $params[ 'floating_offset_x_' . $device ] ?? $legacy_offset,
+                        'offset_y'      => $params[ 'floating_offset_y_' . $device ] ?? $legacy_offset,
+                        'menu_gap'      => $params[ 'menu_gap_' . $device ] ?? ( 'desktop' === $device ? 10 : ( 'tablet' === $device ? 9 : 8 ) ),
+                        'flag_size'     => $params[ 'flag_size_' . $device ] ?? ( 'desktop' === $device ? 28 : ( 'tablet' === $device ? 26 : 25 ) ),
+                        'margin_top'    => $params[ 'margin_top_' . $device ] ?? 0,
+                        'margin_right'  => $params[ 'margin_right_' . $device ] ?? 0,
+                        'margin_bottom' => $params[ 'margin_bottom_' . $device ] ?? 0,
+                        'margin_left'   => $params[ 'margin_left_' . $device ] ?? 0,
+                    );
                 }
+
+                $atts = array( 'config_source'=>'local', 'config'=>$local );
 
                 $html = ITKT_Frontend::instance()->shortcode_switcher( $atts );
                 if ( '' === trim( (string) $html ) ) { return; }
