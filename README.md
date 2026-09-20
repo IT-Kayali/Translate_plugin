@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.33**
+**Current development version: v0.12.34**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -23,6 +23,15 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.32 scopes Floating-specific controls strictly to **Floating Button** and restores normal Flaggen/Pills/Text behavior on tablet/mobile.
 - v0.12.33 anchors dropdown menus to the matching left/center/right trigger edge so they stay visible at mobile/tablet screen edges.
 
+
+
+## v0.12.34 – shared WoodMart header across languages
+
+- WoodMart **Edit current header** now always uses a language-neutral canonical storefront URL and keeps the same Header Builder ID.
+- Admin-bar links are excluded from ITKT storefront URL rewriting.
+- Translated pages inherit the source page's WoodMart header assignment unless a different header is explicitly saved on that translation.
+- Stale broken URLs like `/en/wp-admin/admin-ajax.php/?whb-header-frontend=...` are repaired automatically.
+- Tablet/mobile language dropdown is more compact and stays closer to the active-language trigger.
 
 
 ## v0.12.33 – dropdown follows the correct screen edge
