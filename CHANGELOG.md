@@ -2,8 +2,19 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.35**.
+Current development version: **0.12.37**.
 
+
+
+## [0.12.37]
+
+### Automatic 10px viewport-edge positioning for the language dropdown
+- The dropdown now uses the trigger's actual screen position instead of relying on a saved header alignment.
+- If the trigger sits on the left side, the dropdown is positioned exactly 10px from the left viewport edge.
+- If the trigger sits on the right side, the dropdown is positioned exactly 10px from the right viewport edge.
+- If the trigger is centered, the dropdown stays centered and is clamped to a minimum 10px viewport margin.
+- This updates automatically when the header element is moved, resized or the viewport changes.
+- No routing, header inheritance or language-switching behavior changed.
 
 
 ## [0.12.35]
