@@ -1724,9 +1724,9 @@ class ITKT_Frontend {
             'floating_vertical'  => 'bottom',
             'dropdown_direction' => 'auto',
             'devices'            => array(
-                'desktop' => array( 'align'=>'left', 'gap'=>12, 'padding_x'=>10, 'padding_y'=>7, 'offset_x'=>24, 'offset_y'=>24, 'menu_gap'=>10, 'flag_size'=>28 ),
-                'tablet'  => array( 'align'=>'left', 'gap'=>10, 'padding_x'=>10, 'padding_y'=>7, 'offset_x'=>18, 'offset_y'=>18, 'menu_gap'=>9,  'flag_size'=>26 ),
-                'mobile'  => array( 'align'=>'left', 'gap'=>8,  'padding_x'=>10, 'padding_y'=>8, 'offset_x'=>14, 'offset_y'=>14, 'menu_gap'=>8,  'flag_size'=>25 ),
+                'desktop' => array( 'align'=>'left', 'gap'=>12, 'padding_x'=>10, 'padding_y'=>7, 'offset_x'=>24, 'offset_y'=>24, 'menu_gap'=>10, 'flag_size'=>28, 'margin_top'=>0, 'margin_right'=>0, 'margin_bottom'=>0, 'margin_left'=>0 ),
+                'tablet'  => array( 'align'=>'left', 'gap'=>10, 'padding_x'=>10, 'padding_y'=>7, 'offset_x'=>18, 'offset_y'=>18, 'menu_gap'=>9,  'flag_size'=>26, 'margin_top'=>0, 'margin_right'=>0, 'margin_bottom'=>0, 'margin_left'=>0 ),
+                'mobile'  => array( 'align'=>'left', 'gap'=>8,  'padding_x'=>10, 'padding_y'=>8, 'offset_x'=>14, 'offset_y'=>14, 'menu_gap'=>8,  'flag_size'=>25, 'margin_top'=>0, 'margin_right'=>0, 'margin_bottom'=>0, 'margin_left'=>0 ),
             ),
         );
     }
@@ -1765,6 +1765,10 @@ class ITKT_Frontend {
                 'offset_y'  => array( 0, 300 ),
                 'menu_gap'  => array( 0, 80 ),
                 'flag_size' => array( 14, 64 ),
+                'margin_top'    => array( -300, 500 ),
+                'margin_right'  => array( -300, 500 ),
+                'margin_bottom' => array( -300, 500 ),
+                'margin_left'   => array( -300, 500 ),
             );
             foreach ( $ranges as $key => $range ) {
                 $value = isset( $row[ $key ] ) && '' !== trim( (string) $row[ $key ] ) ? (float) str_replace( ',', '.', (string) $row[ $key ] ) : (float) $base[ $key ];
@@ -1794,7 +1798,7 @@ class ITKT_Frontend {
             $row = $config['devices'][ $device ];
             $align_map = array( 'left'=>'flex-start', 'center'=>'center', 'right'=>'flex-end' );
             $vars[] = '--itkt-align-' . $device . ':' . $align_map[ $row['align'] ];
-            foreach ( array( 'gap', 'padding_x', 'padding_y', 'offset_x', 'offset_y', 'menu_gap', 'flag_size' ) as $key ) {
+            foreach ( array( 'gap', 'padding_x', 'padding_y', 'offset_x', 'offset_y', 'menu_gap', 'flag_size', 'margin_top', 'margin_right', 'margin_bottom', 'margin_left' ) as $key ) {
                 $css_key = str_replace( '_', '-', $key );
                 $vars[] = '--itkt-' . $css_key . '-' . $device . ':' . $this->switcher_css_number( $row[ $key ] ) . 'px';
             }
