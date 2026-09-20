@@ -876,11 +876,11 @@ class ITKT_Admin {
             array(
                 'title' => 'Floating Button',
                 'code' => '[itkt_language_switcher style="floating"]',
-                'description' => 'Moderner, schwebender Button-Stil mit abgerundetem Hintergrund und Schatten.',
+                'description' => 'Nur die aktive Sprache ist sichtbar; Klick öffnet die anderen Sprachen als modernes Dropdown.',
             ),
         );
 
-        echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>[itkt_language_switcher]</h2><p>Der Sprachumschalter bleibt auf derselben Seite bzw. demselben Produkt, Kategorie-, Tag-, Warenkorb-, Checkout- oder Konto-Kontext und wechselt nur die Sprache.</p>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>[itkt_language_switcher]</h2><p>Der Sprachumschalter bleibt auf derselben Seite bzw. demselben Produkt, Kategorie-, Tag-, Warenkorb-, Checkout- oder Konto-Kontext und wechselt nur die Sprache. Ohne Attribute übernimmt der Shortcode die globalen Werte unter <strong>Sprachumschalter</strong>.</p>';
         echo '<div class="itkt-shortcode-grid">';
         foreach ( $examples as $example ) {
             echo '<article class="itkt-shortcode-card">';
