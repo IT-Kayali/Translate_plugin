@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.31
+Stable tag: 0.12.32
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -56,6 +56,13 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 
 
 
+
+
+= 0.12.32 =
+* Restricts Floating controls to the Floating Button display mode.
+* Restores normal Flaggen/Pills/Text behavior on tablet and mobile.
+* Prevents saved or global Floating settings from fixing normal header language elements to the viewport.
+* Uses WoodMart conditional field requirements so Floating options are hidden when they do not apply.
 
 = 0.12.31 =
 * Automatically migrates known duplicate GitHub archive installs to the official it-kayali-translate plugin folder.

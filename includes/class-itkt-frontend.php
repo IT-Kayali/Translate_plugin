@@ -1852,6 +1852,17 @@ class ITKT_Frontend {
             if ( in_array( $direction, array( 'auto', 'up', 'down' ), true ) ) { $config['dropdown_direction'] = $direction; }
         }
 
+        // Floating-specific behavior must never leak into normal inline modes. This also makes
+        // global switcher settings safe for shortcode/header instances using flags, pills or text.
+        if ( 'floating' !== $config['style'] ) {
+            $config['mobile_dropdown'] = false;
+            $config['floating_fixed'] = false;
+            $config['floating_vertical'] = 'bottom';
+            if ( 'dropdown' !== $config['style'] ) {
+                $config['dropdown_direction'] = 'auto';
+            }
+        }
+
         $current = ITKT_Languages::instance()->current_code();
         if ( empty( $languages[ $current ] ) ) { $current = ITKT_Languages::instance()->get_default_code(); }
         if ( empty( $languages[ $current ] ) ) { $current = array_key_first( $languages ); }
