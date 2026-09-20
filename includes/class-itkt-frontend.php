@@ -1787,8 +1787,14 @@ class ITKT_Frontend {
 
     private function switcher_label_html( $code, $lang, $show_codes, $show_names, $menu = false ) {
         $label = '<span class="itkt-flag" aria-hidden="true">' . esc_html( $lang['flag'] ) . '</span>';
+        if ( $menu ) {
+            // Dropdown rows always show the native name so a flag is never the only language cue.
+            $label .= '<span class="itkt-menu-name">' . esc_html( $lang['native_name'] ) . '</span>';
+            if ( $show_codes ) { $label .= '<span class="itkt-code">' . esc_html( strtoupper( $code ) ) . '</span>'; }
+            return $label;
+        }
         if ( $show_codes ) { $label .= '<span class="itkt-code">' . esc_html( strtoupper( $code ) ) . '</span>'; }
-        if ( $show_names || $menu ) { $label .= '<span class="' . ( $menu ? 'itkt-menu-name' : 'itkt-name' ) . '">' . esc_html( $lang['native_name'] ) . '</span>'; }
+        if ( $show_names ) { $label .= '<span class="itkt-name">' . esc_html( $lang['native_name'] ) . '</span>'; }
         return $label;
     }
 
@@ -1854,15 +1860,19 @@ class ITKT_Frontend {
             $shell_classes[] = 'itkt-floating-vertical-' . $config['floating_vertical'];
         }
 
+        static $switcher_instance = 0;
+        $switcher_instance++;
+        $menu_id = 'itkt-language-menu-' . $switcher_instance;
+
         $nav_classes = array( 'itkt-language-switcher', 'itkt-style-' . $config['style'] );
         $html = '<div class="' . esc_attr( implode( ' ', array_unique( $shell_classes ) ) ) . '" style="' . esc_attr( $this->switcher_style_vars( $config ) ) . '">';
         $html .= '<nav class="' . esc_attr( implode( ' ', $nav_classes ) ) . '" aria-label="' . esc_attr__( 'Language switcher', 'it-kayali-translate' ) . '" data-itkt-dropdown-direction="' . esc_attr( $config['dropdown_direction'] ) . '">';
 
-        $html .= '<button class="itkt-switcher-trigger" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="' . esc_attr__( 'Change language', 'it-kayali-translate' ) . '">';
+        $html .= '<button class="itkt-switcher-trigger" type="button" aria-expanded="false" aria-haspopup="menu" aria-controls="' . esc_attr( $menu_id ) . '" aria-label="' . esc_attr__( 'Change language', 'it-kayali-translate' ) . '">';
         $html .= '<span class="itkt-trigger-label">' . $this->switcher_label_html( $current, $active_lang, $config['show_codes'], $config['show_names'], false ) . '</span>';
         $html .= '<span class="itkt-switcher-chevron" aria-hidden="true"></span></button>';
 
-        $html .= '<div class="itkt-switcher-menu" role="menu">';
+        $html .= '<div id="' . esc_attr( $menu_id ) . '" class="itkt-switcher-menu" role="menu" aria-hidden="true">';
         foreach ( $languages as $code => $lang ) {
             if ( $code === $current ) { continue; }
             $html .= '<a class="itkt-lang-link itkt-menu-link" role="menuitem" href="' . esc_url( $this->language_url( $code ) ) . '" data-itkt-lang="' . esc_attr( $code ) . '" hreflang="' . esc_attr( $code ) . '" lang="' . esc_attr( $code ) . '">';
