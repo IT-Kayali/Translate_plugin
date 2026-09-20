@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.33
+Stable tag: 0.12.34
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -57,6 +57,13 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 
 
 
+
+
+= 0.12.34 =
+* Keeps WoodMart header assignments shared across languages unless another header is explicitly selected for a translated page.
+* Prevents language prefixes on WordPress/WoodMart admin-bar and Header Builder editor links.
+* Repairs stale language-prefixed Header Builder URLs.
+* Makes the tablet/mobile language dropdown more compact.
 
 
 = 0.12.33 =
