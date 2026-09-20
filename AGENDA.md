@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.31 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.32 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -26,6 +26,17 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Produktions-Fix v0.12.32 – Floating-Einstellungen nur für Floating Button
+
+- Realtest: WoodMart-Element war auf **Flaggen** gestellt, wurde auf Tablet/Mobile aber weiterhin unten fixiert bzw. als Dropdown dargestellt, weil alte Floating-Werte gespeichert waren.
+- Fix:
+  - Floating-Felder werden nur bei **Floating Button** angezeigt.
+  - Flaggen/Pills/Text ignorieren gespeicherte Floating-Werte vollständig.
+  - Mobile-Dropdown wird für normale Inline-Modi nicht mehr erzwungen.
+  - globale Floating-Werte können normale Shortcodes/Header-Elemente nicht mehr verschieben.
+- Realtest offen: Flaggen auf Desktop/Tablet/Mobile normal im Header; anschließend Floating Button separat testen.
 
 ### Produktions-Fix v0.12.31 – doppelte Plugin-Installation automatisch bereinigen
 
