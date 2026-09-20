@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.32**
+**Current development version: v0.12.33**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -21,7 +21,18 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.30 separates **Dropdown** from **Floating Button** so a normal header dropdown and an independent fixed floating switcher can coexist; global inheritance now affects only spacing/sizing in WoodMart.
 - v0.12.31 automatically migrates known duplicate GitHub-archive installs (`Translate_plugin-main` / `Translate_plugin`) to the canonical `it-kayali-translate` installation, removing the need for manual File Manager cleanup.
 - v0.12.32 scopes Floating-specific controls strictly to **Floating Button** and restores normal Flaggen/Pills/Text behavior on tablet/mobile.
+- v0.12.33 anchors dropdown menus to the matching left/center/right trigger edge so they stay visible at mobile/tablet screen edges.
 
+
+
+## v0.12.33 – dropdown follows the correct screen edge
+
+- Left-positioned language switchers open their dropdown inward from the trigger's left edge.
+- Right-positioned language switchers open inward from the trigger's right edge.
+- Center-positioned switchers keep a centered dropdown.
+- Responsive alignment is resolved separately for Desktop, Tablet and Mobile.
+- The runtime checks actual viewport space and can flip the horizontal anchor when the requested side would overflow.
+- A final viewport clamp protects against very long language names and unusually narrow devices.
 
 
 ## v0.12.32 – Floating settings only affect Floating Button
