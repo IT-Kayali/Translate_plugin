@@ -56,34 +56,28 @@
     }
     shell.classList.add(direction === 'up' ? 'itkt-opens-up' : 'itkt-opens-down');
 
-    // Anchor the menu to the same responsive corner as the trigger. A left-positioned switcher
-    // opens inward to the right, a right-positioned switcher opens inward to the left, and a
-    // centered switcher stays centered. This avoids clipping at the viewport/header edges.
-    var device = viewportWidth <= 767 ? 'mobile' : (viewportWidth <= 1024 ? 'tablet' : 'desktop');
-    var anchor = 'center';
-    if (shell.classList.contains('itkt-' + device + '-align-left')) anchor = 'left';
-    if (shell.classList.contains('itkt-' + device + '-align-right')) anchor = 'right';
-    if (shell.classList.contains('itkt-' + device + '-align-center')) anchor = 'center';
-
-    var menuWidth = menuRect.width || menu.offsetWidth || 178;
-    if (anchor === 'left' && triggerRect.left + menuWidth > viewportWidth - edge && triggerRect.right - menuWidth >= edge) {
-      anchor = 'right';
-    } else if (anchor === 'right' && triggerRect.right - menuWidth < edge && triggerRect.left + menuWidth <= viewportWidth - edge) {
-      anchor = 'left';
-    } else if (anchor === 'center') {
-      var centeredLeft = triggerRect.left + (triggerRect.width / 2) - (menuWidth / 2);
-      var centeredRight = centeredLeft + menuWidth;
-      if (centeredLeft < edge) anchor = 'left';
-      else if (centeredRight > viewportWidth - edge) anchor = 'right';
-    }
+    // Determine the horizontal side from the trigger's real screen position, not from a saved
+    // header setting. This keeps the dropdown correct even after the element is moved in WoodMart.
+    // Left-side trigger -> menu exactly 10px from the left viewport edge.
+    // Right-side trigger -> menu exactly 10px from the right viewport edge.
+    // Center trigger -> keep centered, with a 10px safety clamp.
+    var triggerCenter = triggerRect.left + (triggerRect.width / 2);
+    var ratio = viewportWidth > 0 ? triggerCenter / viewportWidth : 0.5;
+    var anchor = ratio < 0.45 ? 'left' : (ratio > 0.55 ? 'right' : 'center');
     shell.classList.add('itkt-menu-anchor-' + anchor);
 
-    // Final safety correction after the corner anchor has been applied. This is normally zero,
-    // but protects very narrow viewports and unusually wide translated language names.
     menuRect = menu.getBoundingClientRect();
     var shift = 0;
-    if (menuRect.left < edge) shift += edge - menuRect.left;
-    if (menuRect.right > viewportWidth - edge) shift -= menuRect.right - (viewportWidth - edge);
+
+    if (anchor === 'left') {
+      shift = edge - menuRect.left;
+    } else if (anchor === 'right') {
+      shift = (viewportWidth - edge) - menuRect.right;
+    } else {
+      if (menuRect.left < edge) shift += edge - menuRect.left;
+      if (menuRect.right > viewportWidth - edge) shift -= menuRect.right - (viewportWidth - edge);
+    }
+
     menu.style.setProperty('--itkt-menu-shift-x', shift + 'px');
   }
 
