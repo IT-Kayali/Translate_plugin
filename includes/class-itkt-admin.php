@@ -715,14 +715,15 @@ class ITKT_Admin {
 
             <section class="itkt-card">
                 <div class="itkt-card-head"><div><span class="itkt-kicker">GLOBAL</span><h2>Darstellung & Verhalten</h2></div><span class="itkt-pill blue">gilt auch für Shortcodes</span></div>
-                <p>Der Shortcode <code>[itkt_language_switcher]</code> verwendet diese Werte automatisch. Ein explizites Shortcode-Attribut wie <code>style="floating"</code> überschreibt nur die Darstellung, nicht die responsiven Abstände.</p>
+                <p>Der Shortcode <code>[itkt_language_switcher]</code> verwendet diese Werte automatisch. Mit <code>style="dropdown"</code> erhältst du einen normalen Dropdown-Umschalter im Layout; mit <code>style="floating" fixed="1"</code> einen separat fixierten Floating-Umschalter. Responsive Abstände bleiben zentral steuerbar.</p>
                 <div class="itkt-field-grid">
                     <label class="itkt-field"><span>Darstellung</span>
                         <select name="switcher[style]">
                             <option value="flags" <?php selected( $config['style'], 'flags' ); ?>>Flaggen nebeneinander</option>
                             <option value="pills" <?php selected( $config['style'], 'pills' ); ?>>Pills</option>
                             <option value="text" <?php selected( $config['style'], 'text' ); ?>>Text</option>
-                            <option value="floating" <?php selected( $config['style'], 'floating' ); ?>>Floating Dropdown</option>
+                            <option value="dropdown" <?php selected( $config['style'], 'dropdown' ); ?>>Dropdown</option>
+                            <option value="floating" <?php selected( $config['style'], 'floating' ); ?>>Floating Button</option>
                         </select>
                     </label>
                     <label class="itkt-field"><span>Dropdown-Öffnungsrichtung</span>
@@ -874,9 +875,14 @@ class ITKT_Admin {
                 'description' => 'Reduzierte Textdarstellung ohne Pill-Hintergrund.',
             ),
             array(
+                'title' => 'Dropdown',
+                'code' => '[itkt_language_switcher style="dropdown"]',
+                'description' => 'Für Header/Topbar: nur die aktive Sprache ist sichtbar; die anderen öffnen sich als Dropdown, ohne am Bildschirm fixiert zu sein.',
+            ),
+            array(
                 'title' => 'Floating Button',
-                'code' => '[itkt_language_switcher style="floating"]',
-                'description' => 'Nur die aktive Sprache ist sichtbar; Klick öffnet die anderen Sprachen als modernes Dropdown.',
+                'code' => '[itkt_language_switcher style="floating" fixed="1" position="bottom"]',
+                'description' => 'Separater Floating-Umschalter, der beim Scrollen am Bildschirm bleibt.',
             ),
         );
 
@@ -893,12 +899,15 @@ class ITKT_Admin {
         echo '<section class="itkt-card"><span class="itkt-kicker">OPTIONEN</span><h2>Parameter</h2><div class="itkt-table-wrap"><table class="itkt-table"><thead><tr><th>Parameter</th><th>Werte</th><th>Beschreibung</th></tr></thead><tbody>';
         echo '<tr><td><code>labels</code></td><td><code>0</code> / <code>1</code></td><td>Sprachkürzel wie DE, EN oder AR anzeigen.</td></tr>';
         echo '<tr><td><code>names</code></td><td><code>0</code> / <code>1</code></td><td>Native Sprachnamen anzeigen.</td></tr>';
-        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code> / <code>floating</code></td><td>Darstellung des Umschalters. <code>floating</code> zeigt nur die aktive Sprache und öffnet die anderen als modernes Dropdown.</td></tr>';
+        echo '<tr><td><code>style</code></td><td><code>flags</code> / <code>pills</code> / <code>text</code> / <code>dropdown</code> / <code>floating</code></td><td><code>dropdown</code> ist für Header/Topbar gedacht. <code>floating</code> nutzt dieselbe Dropdown-Logik als Floating-Variante.</td></tr>';
+        echo '<tr><td><code>fixed</code></td><td><code>0</code> / <code>1</code></td><td>Fixiert den Umschalter am Bildschirm. Typisch: <code>style="floating" fixed="1"</code>.</td></tr>';
+        echo '<tr><td><code>position</code></td><td><code>top</code> / <code>bottom</code></td><td>Vertikale Floating-Position bei fixiertem Umschalter.</td></tr>';
+        echo '<tr><td><code>direction</code></td><td><code>auto</code> / <code>up</code> / <code>down</code></td><td>Öffnungsrichtung des Dropdowns.</td></tr>';
         echo '</tbody></table></div></section>';
 
         echo '<div class="itkt-grid-2">';
         echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden. Globale Position, Mobile-Dropdown und Abstände stellst du unter <a href="' . esc_url( admin_url( 'admin.php?page=itkt-switcher' ) ) . '"><strong>Sprachumschalter</strong></a> ein.</p></section>';
-        echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Zusätzlich zu Flaggen, Kürzeln, Namen und Darstellung können dort <strong>Desktop, Tablet und Mobile getrennt</strong> eingestellt werden: Ausrichtung, Abstand zwischen den Sprachen, Innenabstand, Außenabstände und Floating-Abstand zum Bildschirmrand. Optional kann der Umschalter als echtes Floating-Element beim Scrollen am Bildschirm fixiert werden.</p></section>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Für den normalen Header wählst du <strong>Dropdown</strong>. Für einen zusätzlichen schwebenden Umschalter wählst du bei einer zweiten Instanz <strong>Floating Button</strong> und aktivierst „Floating am Bildschirm fixieren“. Globale Abstände/Größen können übernommen werden, die Darstellung bleibt aber pro Element getrennt.</p></section>';
         echo '</div>';
 
         $this->footer();
