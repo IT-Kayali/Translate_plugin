@@ -2,8 +2,23 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.30**.
+Current development version: **0.12.31**.
 
+
+
+## [0.12.31]
+
+### Automatic duplicate-install migration
+- Replaces the manual duplicate-folder cleanup flow with an automatic migration for the known legacy GitHub archive folders `Translate_plugin-main` and `Translate_plugin`.
+- When the official `it-kayali-translate` copy and a known legacy copy are both active, the plugin now automatically:
+  - promotes the official canonical plugin basename in WordPress' active-plugin list
+  - removes the legacy basename from per-site activation
+  - updates multisite network activation when relevant
+  - retires the legacy plugin directory after the current request finishes
+- Cleanup is restricted to the two explicitly known legacy folder names; unknown duplicate folders are never deleted automatically.
+- If the legacy directory cannot be removed on the first attempt, the canonical plugin retries cleanup on later requests.
+- Translation data and settings are preserved because uninstall/data deletion is not performed and plugin data is stored in WordPress.
+- Adds an admin success/warning notice after automatic migration so administrators can see whether cleanup completed.
 
 
 ## [0.12.30]

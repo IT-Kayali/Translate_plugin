@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.30**
+**Current development version: v0.12.31**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -19,7 +19,23 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.28 adds a **Floating Button** language-switcher style plus separate Desktop/Tablet/Mobile alignment and spacing controls inside the native WoodMart Header Builder element.
 - v0.12.29 turns the Floating Button into a compact **active-language dropdown**, adds automatic up/down opening, and introduces a central **Sprachumschalter** settings page shared by Shortcodes, Elementor/Footer and WoodMart.
 - v0.12.30 separates **Dropdown** from **Floating Button** so a normal header dropdown and an independent fixed floating switcher can coexist; global inheritance now affects only spacing/sizing in WoodMart.
+- v0.12.31 automatically migrates known duplicate GitHub-archive installs (`Translate_plugin-main` / `Translate_plugin`) to the canonical `it-kayali-translate` installation, removing the need for manual File Manager cleanup.
 
+
+
+## v0.12.31 – automatic duplicate-install migration
+
+- Official plugin folder remains `it-kayali-translate`.
+- If WordPress has both the official folder and a known old GitHub archive folder active, ITKT performs the migration automatically on the next request.
+- The active plugin list is rewritten so only the canonical plugin basename remains.
+- Known legacy folders handled automatically:
+  - `Translate_plugin-main`
+  - `Translate_plugin`
+- On multisite, network-active plugin metadata is migrated as well.
+- The legacy directory is removed only after the request completes, so the currently executing PHP files are not disturbed.
+- If filesystem removal fails, cleanup is retried automatically on later requests.
+- Unknown duplicate directory names remain protected by the conservative duplicate warning and are not deleted automatically.
+- No translation content, product translations, language settings or plugin configuration is removed by this migration.
 
 
 ## v0.12.30 – separate header dropdown and floating switcher
