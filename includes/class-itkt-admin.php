@@ -753,6 +753,11 @@ class ITKT_Admin {
                 'code' => '[itkt_language_switcher labels="1" style="text"]',
                 'description' => 'Reduzierte Textdarstellung ohne Pill-Hintergrund.',
             ),
+            array(
+                'title' => 'Floating Button',
+                'code' => '[itkt_language_switcher style="floating"]',
+                'description' => 'Moderner, schwebender Button-Stil mit abgerundetem Hintergrund und Schatten.',
+            ),
         );
 
         echo '<section class="itkt-card"><span class="itkt-kicker">SPRACHUMSCHALTER</span><h2>[itkt_language_switcher]</h2><p>Der Sprachumschalter bleibt auf derselben Seite bzw. demselben Produkt, Kategorie-, Tag-, Warenkorb-, Checkout- oder Konto-Kontext und wechselt nur die Sprache.</p>';
@@ -773,7 +778,7 @@ class ITKT_Admin {
 
         echo '<div class="itkt-grid-2">';
         echo '<section class="itkt-card"><span class="itkt-kicker">ELEMENTOR / WORDPRESS</span><h2>Einfügen</h2><p>In Elementor das Widget <strong>Shortcode</strong> verwenden und den gewünschten Code einfügen. Im WordPress Block Editor kann der Block <strong>Shortcode</strong> verwendet werden.</p></section>';
-        echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Dort werden Flaggen, Kürzel, Namen und Darstellung direkt eingestellt. Der Shortcode bleibt für andere Bereiche weiterhin verfügbar.</p></section>';
+        echo '<section class="itkt-card"><span class="itkt-kicker">WOODMART</span><h2>Header Builder</h2><p>Im WoodMart Header Builder ist das native Element <strong>IT-Kayali Sprachen</strong> die bevorzugte Methode. Zusätzlich zu Flaggen, Kürzeln, Namen und Darstellung können dort <strong>Desktop, Tablet und Mobile getrennt</strong> eingestellt werden: Ausrichtung, Abstand zwischen den Sprachen, Innenabstand, Außenabstände und Floating-Abstand zum Bildschirmrand. Optional kann der Umschalter als echtes Floating-Element beim Scrollen am Bildschirm fixiert werden.</p></section>';
         echo '</div>';
 
         $this->footer();

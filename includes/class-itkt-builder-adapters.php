@@ -99,7 +99,156 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
         if ( isset( $builder->elements->elements_classes[ $key ] ) ) { return; }
 
         $builder->elements->elements_classes[ $key ] = new class extends \XTS\Modules\Header_Builder\Element {
+            private function selector_options( $values ) {
+                $options = array();
+                foreach ( $values as $value => $label ) {
+                    $options[ $value ] = array(
+                        'value' => $value,
+                        'label' => esc_html__( $label, 'it-kayali-translate' ),
+                    );
+                }
+                return $options;
+            }
+
+            private function responsive_number( $params, $key, $default, $min = -300, $max = 500 ) {
+                if ( ! isset( $params[ $key ] ) || '' === trim( (string) $params[ $key ] ) ) { return (float) $default; }
+                $value = (float) str_replace( ',', '.', (string) $params[ $key ] );
+                return max( (float) $min, min( (float) $max, $value ) );
+            }
+
+            private function css_number( $value ) {
+                $value = (float) $value;
+                if ( abs( $value - round( $value ) ) < 0.001 ) { return (string) (int) round( $value ); }
+                return rtrim( rtrim( number_format( $value, 2, '.', '' ), '0' ), '.' );
+            }
+
             public function map() {
+                $params = array(
+                    'show_codes' => array(
+                        'id'          => 'show_codes',
+                        'title'       => esc_html__( 'Sprachkürzel anzeigen', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Zeigt zusätzlich DE, EN, AR usw. neben der Flagge.', 'it-kayali-translate' ),
+                        'type'        => 'switcher',
+                        'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'       => false,
+                    ),
+                    'show_names' => array(
+                        'id'          => 'show_names',
+                        'title'       => esc_html__( 'Sprachnamen anzeigen', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Zeigt zusätzlich Deutsch, English, العربية usw.', 'it-kayali-translate' ),
+                        'type'        => 'switcher',
+                        'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'       => false,
+                    ),
+                    'style' => array(
+                        'id'      => 'style',
+                        'title'   => esc_html__( 'Darstellung', 'it-kayali-translate' ),
+                        'type'    => 'selector',
+                        'tab'     => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'   => 'flags',
+                        'options' => $this->selector_options( array(
+                            'flags'    => 'Flaggen',
+                            'pills'    => 'Pills',
+                            'text'     => 'Text',
+                            'floating' => 'Floating Button',
+                        ) ),
+                    ),
+                    'floating_fixed' => array(
+                        'id'          => 'floating_fixed',
+                        'title'       => esc_html__( 'Floating am Bildschirm fixieren', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Optional: Der Sprachumschalter bleibt beim Scrollen sichtbar. Empfohlen zusammen mit der Darstellung Floating Button.', 'it-kayali-translate' ),
+                        'type'        => 'switcher',
+                        'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'       => false,
+                    ),
+                    'floating_vertical' => array(
+                        'id'      => 'floating_vertical',
+                        'title'   => esc_html__( 'Floating-Position vertikal', 'it-kayali-translate' ),
+                        'type'    => 'selector',
+                        'tab'     => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'   => 'bottom',
+                        'options' => $this->selector_options( array(
+                            'top'    => 'Oben',
+                            'bottom' => 'Unten',
+                        ) ),
+                    ),
+                    'css_class' => array(
+                        'id'          => 'css_class',
+                        'title'       => esc_html__( 'Zusätzliche CSS-Klasse', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Optional für eigenes Styling des Sprachumschalters.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
+                        'value'       => '',
+                    ),
+                );
+
+                $devices = array(
+                    'desktop' => array( 'tab' => 'Desktop', 'gap' => '12', 'pad_x' => '10', 'pad_y' => '6', 'offset' => '24' ),
+                    'tablet'  => array( 'tab' => 'Tablet',  'gap' => '10', 'pad_x' => '9',  'pad_y' => '5', 'offset' => '18' ),
+                    'mobile'  => array( 'tab' => 'Mobile',  'gap' => '8',  'pad_x' => '8',  'pad_y' => '5', 'offset' => '14' ),
+                );
+
+                foreach ( $devices as $device => $settings ) {
+                    $tab = esc_html__( $settings['tab'], 'it-kayali-translate' );
+                    $params[ 'align_' . $device ] = array(
+                        'id'          => 'align_' . $device,
+                        'title'       => esc_html__( 'Ausrichtung', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Position innerhalb des verfügbaren Header-Bereichs.', 'it-kayali-translate' ),
+                        'type'        => 'selector',
+                        'tab'         => $tab,
+                        'value'       => 'left',
+                        'options'     => $this->selector_options( array(
+                            'left'   => 'Links',
+                            'center' => 'Mitte',
+                            'right'  => 'Rechts',
+                        ) ),
+                    );
+                    $params[ 'gap_' . $device ] = array(
+                        'id'          => 'gap_' . $device,
+                        'title'       => esc_html__( 'Abstand zwischen Sprachen (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Freier Pixelwert, z. B. 8, 12 oder 20.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['gap'],
+                    );
+                    $params[ 'padding_x_' . $device ] = array(
+                        'id'          => 'padding_x_' . $device,
+                        'title'       => esc_html__( 'Innenabstand horizontal (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Innenabstand links/rechts für Pills und Floating Button.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['pad_x'],
+                    );
+                    $params[ 'padding_y_' . $device ] = array(
+                        'id'          => 'padding_y_' . $device,
+                        'title'       => esc_html__( 'Innenabstand vertikal (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Innenabstand oben/unten für Pills und Floating Button.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['pad_y'],
+                    );
+
+                    foreach ( array( 'top' => 'Oben', 'right' => 'Rechts', 'bottom' => 'Unten', 'left' => 'Links' ) as $side => $label ) {
+                        $params[ 'margin_' . $side . '_' . $device ] = array(
+                            'id'          => 'margin_' . $side . '_' . $device,
+                            'title'       => sprintf( esc_html__( 'Außenabstand %s (px)', 'it-kayali-translate' ), esc_html__( $label, 'it-kayali-translate' ) ),
+                            'description' => esc_html__( 'Auch negative Werte sind möglich, z. B. -8.', 'it-kayali-translate' ),
+                            'type'        => 'text',
+                            'tab'         => $tab,
+                            'value'       => '0',
+                        );
+                    }
+
+                    $params[ 'floating_offset_' . $device ] = array(
+                        'id'          => 'floating_offset_' . $device,
+                        'title'       => esc_html__( 'Floating-Abstand zum Bildschirmrand (px)', 'it-kayali-translate' ),
+                        'description' => esc_html__( 'Wird nur verwendet, wenn „Floating am Bildschirm fixieren“ aktiv ist.', 'it-kayali-translate' ),
+                        'type'        => 'text',
+                        'tab'         => $tab,
+                        'value'       => $settings['offset'],
+                    );
+                }
+
                 $this->args = array(
                     'type'            => 'itktlanguages',
                     'title'           => esc_html__( 'IT-Kayali Sprachen', 'it-kayali-translate' ),
@@ -112,53 +261,7 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                     'drag_source'     => 'content_element',
                     'removable'       => true,
                     'addable'         => true,
-                    'params'          => array(
-                        'show_codes' => array(
-                            'id'          => 'show_codes',
-                            'title'       => esc_html__( 'Sprachkürzel anzeigen', 'it-kayali-translate' ),
-                            'description' => esc_html__( 'Zeigt zusätzlich DE, EN, AR usw. neben der Flagge.', 'it-kayali-translate' ),
-                            'type'        => 'switcher',
-                            'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
-                            'value'       => false,
-                        ),
-                        'show_names' => array(
-                            'id'          => 'show_names',
-                            'title'       => esc_html__( 'Sprachnamen anzeigen', 'it-kayali-translate' ),
-                            'description' => esc_html__( 'Zeigt zusätzlich Deutsch, English, العربية usw.', 'it-kayali-translate' ),
-                            'type'        => 'switcher',
-                            'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
-                            'value'       => false,
-                        ),
-                        'style' => array(
-                            'id'      => 'style',
-                            'title'   => esc_html__( 'Darstellung', 'it-kayali-translate' ),
-                            'type'    => 'selector',
-                            'tab'     => esc_html__( 'Allgemein', 'it-kayali-translate' ),
-                            'value'   => 'flags',
-                            'options' => array(
-                                'flags' => array(
-                                    'value' => 'flags',
-                                    'label' => esc_html__( 'Flaggen', 'it-kayali-translate' ),
-                                ),
-                                'pills' => array(
-                                    'value' => 'pills',
-                                    'label' => esc_html__( 'Pills', 'it-kayali-translate' ),
-                                ),
-                                'text' => array(
-                                    'value' => 'text',
-                                    'label' => esc_html__( 'Text', 'it-kayali-translate' ),
-                                ),
-                            ),
-                        ),
-                        'css_class' => array(
-                            'id'          => 'css_class',
-                            'title'       => esc_html__( 'Zusätzliche CSS-Klasse', 'it-kayali-translate' ),
-                            'description' => esc_html__( 'Optional für eigenes Styling des Sprachumschalters.', 'it-kayali-translate' ),
-                            'type'        => 'text',
-                            'tab'         => esc_html__( 'Allgemein', 'it-kayali-translate' ),
-                            'value'       => '',
-                        ),
-                    ),
+                    'params'          => $params,
                 );
             }
 
@@ -167,8 +270,9 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
 
                 $parsed = $this->parse_args( $el );
                 $params = isset( $parsed['params'] ) && is_array( $parsed['params'] ) ? $parsed['params'] : array();
-                $style  = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
-                if ( ! in_array( $style, array( 'flags', 'pills', 'text' ), true ) ) { $style = 'flags'; }
+
+                $style = isset( $params['style'] ) ? sanitize_key( (string) $params['style'] ) : 'flags';
+                if ( ! in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ) { $style = 'flags'; }
 
                 $html = ITKT_Frontend::instance()->shortcode_switcher(
                     array(
@@ -179,7 +283,33 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                 );
                 if ( '' === trim( (string) $html ) ) { return; }
 
-                $classes = array( 'wd-header-itkt-languages' );
+                $classes = array( 'wd-header-itkt-languages', 'itkt-responsive-switcher' );
+                $css_vars = array();
+                $align_map = array( 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' );
+
+                foreach ( array( 'desktop', 'tablet', 'mobile' ) as $device ) {
+                    $align = isset( $params[ 'align_' . $device ] ) ? sanitize_key( (string) $params[ 'align_' . $device ] ) : 'left';
+                    if ( ! isset( $align_map[ $align ] ) ) { $align = 'left'; }
+                    $classes[] = 'itkt-' . $device . '-align-' . $align;
+                    $css_vars[] = '--itkt-align-' . $device . ':' . $align_map[ $align ];
+                    $css_vars[] = '--itkt-gap-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'gap_' . $device, 12, 0, 100 ) ) . 'px';
+                    $css_vars[] = '--itkt-padding-x-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'padding_x_' . $device, 10, 0, 80 ) ) . 'px';
+                    $css_vars[] = '--itkt-padding-y-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'padding_y_' . $device, 6, 0, 80 ) ) . 'px';
+
+                    foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
+                        $css_vars[] = '--itkt-margin-' . $side . '-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'margin_' . $side . '_' . $device, 0, -300, 500 ) ) . 'px';
+                    }
+
+                    $default_offset = 'desktop' === $device ? 24 : ( 'tablet' === $device ? 18 : 14 );
+                    $css_vars[] = '--itkt-floating-offset-' . $device . ':' . $this->css_number( $this->responsive_number( $params, 'floating_offset_' . $device, $default_offset, 0, 300 ) ) . 'px';
+                }
+
+                if ( ! empty( $params['floating_fixed'] ) ) {
+                    $classes[] = 'itkt-floating-fixed';
+                    $vertical = isset( $params['floating_vertical'] ) ? sanitize_key( (string) $params['floating_vertical'] ) : 'bottom';
+                    $classes[] = 'itkt-floating-vertical-' . ( 'top' === $vertical ? 'top' : 'bottom' );
+                }
+
                 if ( ! empty( $parsed['id'] ) ) {
                     $classes[] = 'whb-' . sanitize_html_class( (string) $parsed['id'] );
                 }
@@ -190,7 +320,7 @@ class ITKT_WoodMart_Adapter implements ITKT_Adapter_Interface {
                     }
                 }
 
-                echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes all generated attributes/content.
+                echo '<div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '" style="' . esc_attr( implode( ';', $css_vars ) ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcode_switcher escapes all generated attributes/content.
             }
         };
     }
