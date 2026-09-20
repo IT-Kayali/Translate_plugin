@@ -36,6 +36,7 @@ class ITKT_Plugin {
         // make translated pages inherit the source page's header unless a different header was
         // explicitly selected for that translation, and never rewrite admin-bar editor links.
         add_action( 'admin_bar_menu', array( 'ITKT_WoodMart_Adapter', 'normalize_header_editor_admin_bar' ), 200 );
+        add_action( 'template_redirect', array( 'ITKT_WoodMart_Adapter', 'repair_prefixed_header_editor_url' ), -50 );
         add_filter( 'get_post_metadata', array( 'ITKT_WoodMart_Adapter', 'inherit_source_header_assignment' ), 20, 5 );
         add_action( 'added_post_meta', array( 'ITKT_WoodMart_Adapter', 'track_explicit_header_override' ), 20, 4 );
         add_action( 'updated_post_meta', array( 'ITKT_WoodMart_Adapter', 'track_explicit_header_override' ), 20, 4 );
