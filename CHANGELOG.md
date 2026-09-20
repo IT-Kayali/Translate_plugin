@@ -2,9 +2,19 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.37**.
+Current development version: **0.12.38**.
 
 
+
+## [0.12.38]
+
+### Direct mobile/tablet edge positioning
+- Replaces transform-based offset correction with a direct pixel X-position relative to the language-switcher nav.
+- Left-side trigger: menu lands exactly 10px from the left viewport edge.
+- Right-side trigger: menu lands exactly 10px from the right viewport edge.
+- Centered trigger remains centered with a 10px clamp.
+- This avoids WoodMart parent transforms/CSS transitions neutralizing the previous visual shift.
+- UI positioning only; no routing/header/language logic changed.
 
 ## [0.12.37]
 
