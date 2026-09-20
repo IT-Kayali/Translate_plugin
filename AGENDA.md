@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.32 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.33 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -27,6 +27,17 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Produktions-Fix v0.12.33 – Dropdown an Bildschirmkante ausrichten
+
+- Realtest: Bei ganz linker Position konnte das Dropdown teilweise links aus dem sichtbaren Bereich verschwinden.
+- Neue Logik:
+  - links -> Dropdown-Kante am Trigger links, Öffnung nach innen/rechts
+  - rechts -> Dropdown-Kante am Trigger rechts, Öffnung nach innen/links
+  - Mitte -> zentriert
+- Zusätzlich automatische horizontale Sicherheitskorrektur bei sehr schmalen Viewports.
+- Realtest offen: Mobile/Tablet jeweils ganz links, Mitte und ganz rechts sowie Öffnung nach oben/unten.
 
 ### Produktions-Fix v0.12.32 – Floating-Einstellungen nur für Floating Button
 
