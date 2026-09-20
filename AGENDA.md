@@ -1,6 +1,6 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.29 – Produktionskandidat / finale Abnahme**
+**Aktueller Entwicklungsstand: v0.12.30 – Produktionskandidat / finale Abnahme**
 **Letzte Aktualisierung: 20.09.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
@@ -24,6 +24,19 @@ v0.12.10 wurde auf der echten Staging-Seite erfolgreich bestätigt:
 
 
 
+
+
+### Bedienung v0.12.30 – Header-Dropdown und Floating getrennt
+
+- Realtest v0.12.29: Bei aktivierter globaler Konfiguration konnte ein WoodMart-Element trotz lokaler Auswahl **Flaggen** wie der globale Floating/Dropdown-Switcher erscheinen.
+- Neue klare Trennung der Darstellungen:
+  - **Flaggen** = alle aktiven Flaggen inline
+  - **Dropdown** = nur aktive Sprache sichtbar, Menü im normalen Headerfluss
+  - **Floating Button** = Dropdown-Interaktion als eigenständige Floating-Variante
+- Globale WoodMart-Vererbung übernimmt nur Abstände/Größen, nicht mehr die Darstellungsart.
+- Damit können Header-Dropdown und zusätzlicher Floating-Switcher gleichzeitig verwendet werden.
+- Mobile-Regel bleibt separat: normale Flaggen/Pills/Text können auf Smartphones weiterhin automatisch als Dropdown erscheinen.
+- Realtest offen: Header-Dropdown Desktop + Mobile, normale Flaggen Desktop, zweite Floating-Instanz unten links/rechts sowie Shortcode-Floating im Footer.
 
 ### Bedienung v0.12.29 – moderner Dropdown-Sprachumschalter
 

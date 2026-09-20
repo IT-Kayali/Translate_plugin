@@ -3,7 +3,7 @@ Contributors: it-kayali
 Tags: translation, multilingual, woocommerce, elementor, woodmart
 Requires at least: 6.4
 Requires PHP: 8.0
-Stable tag: 0.12.29
+Stable tag: 0.12.30
 License: GPLv2 or later
 
 Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and WoodMart integrations.
@@ -54,6 +54,16 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 
 
 
+
+
+= 0.12.30 =
+* Adds a separate Dropdown style for normal header/topbar placement.
+* Keeps Floating Button as an independent optional viewport-fixed switcher.
+* Fixes WoodMart global settings overriding a locally selected Flaggen display mode.
+* WoodMart global inheritance now applies only responsive spacing/sizing while display behavior remains per element.
+* Allows a header Dropdown and a second Floating Button to coexist.
+* Hardens inline-flag visibility against theme button CSS.
+* Adds shortcode fixed, position and direction overrides.
 
 = 0.12.29 =
 * Redesigns Floating Button as an active-language trigger with the other languages in a modern dropdown.

@@ -1742,7 +1742,7 @@ class ITKT_Frontend {
         $config = is_array( $config ) ? array_replace_recursive( $defaults, $config ) : $defaults;
 
         $style = sanitize_key( (string) ( $config['style'] ?? 'flags' ) );
-        $config['style'] = in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ? $style : 'flags';
+        $config['style'] = in_array( $style, array( 'flags', 'pills', 'text', 'dropdown', 'floating' ), true ) ? $style : 'flags';
         $config['show_codes'] = ! empty( $config['show_codes'] );
         $config['show_names'] = ! empty( $config['show_names'] );
         $config['mobile_dropdown'] = ! empty( $config['mobile_dropdown'] );
@@ -1818,6 +1818,9 @@ class ITKT_Frontend {
                 'labels'        => '',
                 'style'         => '',
                 'names'         => '',
+                'fixed'         => '',
+                'position'      => '',
+                'direction'     => '',
                 'config_source' => 'global',
                 'config'        => null,
             ),
@@ -1835,10 +1838,19 @@ class ITKT_Frontend {
 
         $style = sanitize_key( (string) $atts['style'] );
         if ( $style ) {
-            $config['style'] = in_array( $style, array( 'flags', 'pills', 'text', 'floating' ), true ) ? $style : $config['style'];
+            $config['style'] = in_array( $style, array( 'flags', 'pills', 'text', 'dropdown', 'floating' ), true ) ? $style : $config['style'];
         }
         if ( '' !== (string) $atts['labels'] ) { $config['show_codes'] = '1' === (string) $atts['labels']; }
         if ( '' !== (string) $atts['names'] ) { $config['show_names'] = '1' === (string) $atts['names']; }
+        if ( '' !== (string) $atts['fixed'] ) { $config['floating_fixed'] = '1' === (string) $atts['fixed']; }
+        if ( '' !== (string) $atts['position'] ) {
+            $position = sanitize_key( (string) $atts['position'] );
+            if ( in_array( $position, array( 'top', 'bottom' ), true ) ) { $config['floating_vertical'] = $position; }
+        }
+        if ( '' !== (string) $atts['direction'] ) {
+            $direction = sanitize_key( (string) $atts['direction'] );
+            if ( in_array( $direction, array( 'auto', 'up', 'down' ), true ) ) { $config['dropdown_direction'] = $direction; }
+        }
 
         $current = ITKT_Languages::instance()->current_code();
         if ( empty( $languages[ $current ] ) ) { $current = ITKT_Languages::instance()->get_default_code(); }
@@ -1853,7 +1865,7 @@ class ITKT_Frontend {
             'itkt-tablet-align-' . $config['devices']['tablet']['align'],
             'itkt-mobile-align-' . $config['devices']['mobile']['align'],
         );
-        if ( 'floating' === $config['style'] ) { $shell_classes[] = 'itkt-dropdown-all'; }
+        if ( in_array( $config['style'], array( 'dropdown', 'floating' ), true ) ) { $shell_classes[] = 'itkt-dropdown-all'; }
         if ( $config['mobile_dropdown'] ) { $shell_classes[] = 'itkt-mobile-dropdown'; }
         if ( $config['floating_fixed'] ) {
             $shell_classes[] = 'itkt-floating-fixed';

@@ -441,3 +441,77 @@ body.itkt-content-layout-rtl footer .itkt-language-switcher{direction:ltr!import
 @media (prefers-reduced-motion:reduce){
   .itkt-switcher-trigger,.itkt-switcher-menu,.itkt-switcher-chevron{transition:none!important}
 }
+
+
+/* V0.12.30: strict separation of inline flags, header dropdown and floating dropdown. */
+/* Theme button rules must never make the hidden dropdown trigger visible in inline flag mode. */
+.itkt-switcher-shell .itkt-switcher-trigger,
+.itkt-switcher-shell .itkt-switcher-menu{
+  display:none!important;
+}
+.itkt-switcher-shell .itkt-switcher-inline{
+  display:flex!important;
+}
+
+/* Explicit Dropdown and Floating modes collapse the inline languages on every viewport size. */
+.itkt-switcher-shell.itkt-dropdown-all .itkt-switcher-inline{
+  display:none!important;
+}
+.itkt-switcher-shell.itkt-dropdown-all .itkt-switcher-trigger{
+  display:inline-flex!important;
+}
+.itkt-switcher-shell.itkt-dropdown-all .itkt-switcher-menu{
+  display:flex!important;
+}
+
+/* Header dropdown: compact and integrated into the header/topbar instead of looking like a floating card. */
+.itkt-dropdown-shell .itkt-switcher-trigger{
+  min-width:36px;
+  min-height:34px;
+  padding:var(--itkt-padding-y-desktop,7px) var(--itkt-padding-x-desktop,10px);
+  border:1px solid transparent;
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.itkt-dropdown-shell .itkt-switcher-trigger:hover{
+  border-color:rgba(7,26,47,.10);
+  background:rgba(255,255,255,.48);
+  box-shadow:none;
+  transform:none;
+}
+.itkt-dropdown-shell .itkt-switcher-menu{
+  border-radius:13px;
+  box-shadow:0 14px 38px rgba(7,26,47,.16);
+}
+
+/* Floating stays visually independent and can be fixed to the viewport. */
+.itkt-floating-shell .itkt-switcher-trigger{
+  border:1px solid rgba(7,26,47,.11);
+  background:rgba(255,255,255,.97);
+  box-shadow:0 8px 24px rgba(7,26,47,.13);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+@media (max-width:1024px){
+  .itkt-dropdown-shell .itkt-switcher-trigger{
+    padding:var(--itkt-padding-y-tablet,7px) var(--itkt-padding-x-tablet,10px);
+  }
+}
+@media (max-width:767px){
+  /* Normal flags/pills/text may optionally collapse only on mobile. */
+  .itkt-switcher-shell.itkt-mobile-dropdown .itkt-switcher-inline{
+    display:none!important;
+  }
+  .itkt-switcher-shell.itkt-mobile-dropdown .itkt-switcher-trigger{
+    display:inline-flex!important;
+  }
+  .itkt-switcher-shell.itkt-mobile-dropdown .itkt-switcher-menu{
+    display:flex!important;
+  }
+  .itkt-dropdown-shell .itkt-switcher-trigger{
+    padding:var(--itkt-padding-y-mobile,8px) var(--itkt-padding-x-mobile,10px);
+  }
+}

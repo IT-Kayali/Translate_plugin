@@ -2,8 +2,26 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.29**.
+Current development version: **0.12.30**.
 
+
+
+## [0.12.30]
+
+### Separate header Dropdown and Floating Button modes
+- Added a dedicated **Dropdown** display mode for normal header/topbar placement.
+- **Dropdown** shows only the active language and opens the remaining languages in a compact menu, but stays inside the normal page/header layout.
+- **Floating Button** remains a separate display mode and can be fixed to the viewport independently.
+- Fixed a v0.12.29 inheritance bug where enabling global switcher settings could override a WoodMart element configured as normal **Flaggen** and make it look like the global floating/dropdown style.
+- WoodMart's **Globale Abstände/Größen verwenden** option now inherits only responsive spacing/sizing; display mode, labels, dropdown direction and floating behavior remain per-element.
+- This allows one header Dropdown and a second independent Floating Button on the same page.
+- Strengthened CSS visibility rules so theme button styles cannot expose the hidden dropdown trigger while the element is configured as normal inline flags.
+- On mobile, normal flags/pills/text can still collapse to the active-language dropdown through **Auf Mobile als Dropdown**.
+- Added shortcode overrides:
+  - `style="dropdown"` for a normal layout dropdown
+  - `style="floating" fixed="1"` for a fixed floating dropdown
+  - `position="top|bottom"`
+  - `direction="auto|up|down"`
 
 
 ## [0.12.29]

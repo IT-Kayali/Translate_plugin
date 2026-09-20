@@ -1,6 +1,6 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.29**
+**Current development version: v0.12.30**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
 
@@ -18,7 +18,36 @@ IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stab
 - v0.12.27 adds a dedicated **Shortcodes** admin reference with copy buttons, active-language status and usage help for Elementor, WordPress and WoodMart.
 - v0.12.28 adds a **Floating Button** language-switcher style plus separate Desktop/Tablet/Mobile alignment and spacing controls inside the native WoodMart Header Builder element.
 - v0.12.29 turns the Floating Button into a compact **active-language dropdown**, adds automatic up/down opening, and introduces a central **Sprachumschalter** settings page shared by Shortcodes, Elementor/Footer and WoodMart.
+- v0.12.30 separates **Dropdown** from **Floating Button** so a normal header dropdown and an independent fixed floating switcher can coexist; global inheritance now affects only spacing/sizing in WoodMart.
 
+
+
+## v0.12.30 – separate header dropdown and floating switcher
+
+- Adds **Dropdown** as its own display style for Header Builder / topbar placement.
+- Header Dropdown:
+  - only the active language is visible
+  - other active languages open in the compact menu
+  - remains in normal header flow and is not fixed to the viewport
+- Floating Button:
+  - uses the same active-language dropdown interaction
+  - can be fixed to the viewport independently
+  - keeps its own top/bottom and responsive edge positioning
+- WoodMart global inheritance now means **global dimensions only**. The following remain local to each Header Builder element:
+  - display style
+  - language code/name visibility
+  - mobile dropdown toggle
+  - dropdown opening direction
+  - floating fixed state
+  - floating top/bottom position
+- This fixes the production case where a WoodMart element selected as **Flaggen** was rendered with the global floating/dropdown behavior.
+- Normal inline flags are protected with strict CSS display rules so WoodMart/theme button CSS cannot reveal the hidden dropdown trigger.
+- Recommended setup:
+  - Header: **Dropdown**, Floating fixed = off
+  - Separate floating instance: **Floating Button**, Floating fixed = on
+- Shortcode examples:
+  - `[itkt_language_switcher style="dropdown"]`
+  - `[itkt_language_switcher style="floating" fixed="1" position="bottom"]`
 
 
 ## v0.12.29 – modern dropdown and global switcher rules
