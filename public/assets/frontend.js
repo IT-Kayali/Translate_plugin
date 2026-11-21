@@ -147,6 +147,11 @@
     var raw = anchor.getAttribute('href') || '';
     if (!raw || raw.charAt(0) === '#' || /^(mailto:|tel:|sms:|javascript:)/i.test(raw)) return true;
     if (url.origin !== window.location.origin) return true;
+    // Same-origin sibling applications are outside a subdirectory WordPress installation.
+    var home;
+    try { home = new URL(ITKTFrontend.homeUrl || '/', window.location.origin); } catch (e) { return true; }
+    var homePath = home.pathname.replace(/\/+$/, '');
+    if (homePath && url.pathname !== homePath && url.pathname.indexOf(homePath + '/') !== 0) return true;
     if (anchor.hasAttribute('download')) return true;
     var path = url.pathname || '/';
     if (/\/(wp-admin|wp-login\.php|wp-json|wp-content|wp-includes)(\/|$)/i.test(path)) return true;
@@ -1104,19 +1109,22 @@
 
     if (typeof MutationObserver !== 'undefined') {
       var runtimeTimer = 0;
+      var pendingRuntimeRoots = new Set();
       var observer = new MutationObserver(function (mutations) {
         if (runtimeApplying) return;
-        var roots = [];
         mutations.forEach(function (mutation) {
           Array.prototype.forEach.call(mutation.addedNodes || [], function (node) {
-            if (node.nodeType === 1) roots.push(node);
+            if (node.nodeType === 1) pendingRuntimeRoots.add(node);
           });
-          if (mutation.type === 'characterData' && mutation.target && mutation.target.parentElement) roots.push(mutation.target.parentElement);
+          if (mutation.type === 'characterData' && mutation.target && mutation.target.parentElement) pendingRuntimeRoots.add(mutation.target.parentElement);
         });
-        if (!roots.length) return;
+        if (!pendingRuntimeRoots.size) return;
         window.clearTimeout(runtimeTimer);
         runtimeTimer = window.setTimeout(function(){
+          var roots = Array.from(pendingRuntimeRoots);
+          pendingRuntimeRoots.clear();
           roots.forEach(function(node){
+            if (!document.documentElement.contains(node)) return;
             applyGlobalRuntimeTranslations(node);
             applyVisualTranslations(node);
             if (node.matches && node.matches('a[href]')) rewriteAnchor(node);

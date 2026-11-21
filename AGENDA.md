@@ -1,9 +1,16 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.39 – Produktionskandidat / finale Abnahme**
-**Letzte Aktualisierung: 20.09.2026**
+**Aktueller Entwicklungsstand: v0.12.40 – Regression-Fixes / Staging-Abnahme offen**
+**Letzte Aktualisierung: 21.11.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
+
+## Review 0.12.40
+
+- Bestätigter Fehler: Zwei getrennte DOM-/AJAX-Updates innerhalb des 80-ms-Debounce-Fensters konnten den ersten Übersetzungsauftrag verlieren. Die Warteschlange behält jetzt alle betroffenen DOM-Wurzeln.
+- Bestätigter Fehler: Bei WordPress unter `/shop/` wurde ein fremder gleichnamiger Pfadanfang wie `/shopping/` in eine falsche Sprach-URL umgeschrieben. Links außerhalb des Installationspfades bleiben jetzt unverändert.
+- Regressionstests: DOM-Tests und echtes Chrome, Englisch/Arabisch sowie Desktop/Mobile. Die alten Fehler werden vor dem Fix reproduziert.
+- Offen: echte WordPress-/WooCommerce-/WoodMart-Staging-Abnahme mit Warenkorb, Checkout, Konto, Header und Sprachwechsel. Kein Live-Deployment. Hauptbranch bis zur Abnahme unverändert.
 
 ## Arbeitsregel
 

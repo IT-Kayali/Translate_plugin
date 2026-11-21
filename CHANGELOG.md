@@ -2,9 +2,17 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.39**.
+Current development version: **0.12.40**.
 
 
+
+## [0.12.40]
+
+### Frontend runtime regression fixes, staging acceptance pending
+- Keep all DOM roots queued during the debounce window so separate AJAX fragments are not silently dropped from translation/link processing.
+- Do not add language prefixes to same-origin links outside a subdirectory WordPress installation, including sibling paths that share only a textual prefix.
+- Add repeatable DOM and real-Chrome regression tests covering the two reproduced failures.
+- Main-branch integration and WordPress/WooCommerce/WoodMart staging acceptance remain pending. No live deployment was performed.
 
 ## [0.12.39]
 
