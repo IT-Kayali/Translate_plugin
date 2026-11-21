@@ -3,7 +3,7 @@
  * Plugin Name: IT-Kayali Translate
  * Plugin URI: https://it-kayali.de
  * Description: Modular multilingual translation management for WordPress with optional WooCommerce, Elementor and theme adapters.
- * Version: 0.12.41
+ * Version: 0.12.42
  * Author: IT-Kayali
  * Author URI: https://it-kayali.de
  * Text Domain: it-kayali-translate
@@ -165,7 +165,7 @@ if ( $itkt_current_basename === $itkt_canonical_basename ) {
     } );
 }
 
-if ( ! defined( 'ITKT_VERSION' ) ) { define( 'ITKT_VERSION', '0.12.41' ); }
+if ( ! defined( 'ITKT_VERSION' ) ) { define( 'ITKT_VERSION', '0.12.42' ); }
 if ( ! defined( 'ITKT_FILE' ) ) { define( 'ITKT_FILE', __FILE__ ); }
 if ( ! defined( 'ITKT_DIR' ) ) { define( 'ITKT_DIR', plugin_dir_path( __FILE__ ) ); }
 if ( ! defined( 'ITKT_URL' ) ) { define( 'ITKT_URL', plugin_dir_url( __FILE__ ) ); }
@@ -194,6 +194,10 @@ require_once $itkt_bootstrap_dir . 'includes/class-itkt-frontend-catalog.php';
 require_once $itkt_bootstrap_dir . 'includes/class-itkt-dynamic-runtime.php';
 require_once $itkt_bootstrap_dir . 'includes/class-itkt-backup.php';
 require_once $itkt_bootstrap_dir . 'includes/class-itkt-cache.php';
+require_once $itkt_bootstrap_dir . 'includes/class-itkt-ai-translation-guard.php';
+require_once $itkt_bootstrap_dir . 'includes/class-itkt-ai-translation-service.php';
+require_once $itkt_bootstrap_dir . 'includes/class-itkt-ai-http-provider.php';
+require_once $itkt_bootstrap_dir . 'includes/class-itkt-ai-admin.php';
 require_once $itkt_bootstrap_dir . 'includes/class-itkt-admin.php';
 
 register_activation_hook( __FILE__, array( 'ITKT_Plugin', 'activate' ) );

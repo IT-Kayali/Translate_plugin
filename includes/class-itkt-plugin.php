@@ -99,7 +99,7 @@ class ITKT_Plugin {
             update_option( 'itkt_rewrite_version', ITKT_VERSION, false );
         }
 
-        if ( is_admin() ) { ITKT_Admin::instance(); }
+        if ( is_admin() ) { ITKT_Admin::instance(); ITKT_AI_Admin::boot(); }
     }
 
     public function maybe_redirect_to_setup() {

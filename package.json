@@ -1,13 +1,14 @@
 {
   "name": "it-kayali-translate-tests",
-  "version": "0.12.41",
+  "version": "0.12.42",
   "private": true,
   "description": "Local regression tests for IT-Kayali Translate",
   "scripts": {
     "test": "node tests/frontend-regressions.cjs",
     "test:browser": "node tests/browser-regressions.cjs",
     "test:switcher": "node tests/switcher-accessibility.cjs",
-    "test:all": "npm test && npm run test:browser && npm run test:switcher"
+    "test:all": "npm test && npm run test:browser && npm run test:switcher && npm run test:ai",
+    "test:ai": "node tests/run-ai.cjs"
   },
   "devDependencies": {
     "jsdom": "26.1.0",

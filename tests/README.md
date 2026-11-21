@@ -24,7 +24,7 @@ CHROME_PATH=/path/to/google-chrome npm run test:browser
 
 - The two DOM regression cases failed against the original 0.12.39 frontend source and pass with the changes.
 - All three DOM cases and all four real-Chrome combinations pass after the fixes.
-- All 23 PHP files pass PHP 8.1 syntax checks. This is not a PHP 8.0 compatibility guarantee.
+- All 32 repository PHP files (including AI-module tests) pass PHP 8.1 syntax checks. This is not a PHP 8.0 compatibility guarantee.
 - All JavaScript files pass Node syntax checks.
 - The browser fixture has been visually inspected. It is not a screenshot of the user's site.
 
@@ -57,3 +57,7 @@ Use staging backups and keep production unchanged until acceptance. No live depl
 - Add these functional tests to CI. The current workflow checks syntax but does not execute these regression cases. Updating workflow files requires a separately scoped permission.
 - Add WordPress integration coverage for backup/restore failure paths. Some destructive database operations and post-update failures need explicit fault-injection tests before the existing transaction code can be treated as proven rollback protection.
 - Review frontend-catalog data minimization, especially URL query parameters and account/checkout content, before collecting production storefront text broadly.
+
+## AI API module (0.12.42)
+
+Run `npm run test:ai` with PHP 8.0+ available, or set `PHP_BIN` to its executable. This runs the guard/service/provider, admin flow and atomic-storage boundary tests, renders the actual PHP admin page with mocked data, and checks it in Chrome. No real API request or credential is used. `npm run test:all` now includes this suite. See `docs/AI-TRANSLATION.md` for setup, exact scope and remaining staging/live-provider checks.

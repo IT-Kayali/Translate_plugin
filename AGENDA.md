@@ -1,9 +1,18 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.41 – Regression-Fixes / Staging-Abnahme offen**
+**Aktueller Entwicklungsstand: v0.12.42 – Regression-Fixes / Staging-Abnahme offen**
 **Letzte Aktualisierung: 21.11.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
+
+## KI-API-Erweiterung 0.12.42
+
+- Nutzbare Admin-Oberfläche mit Anbieterauswahl: OpenAI sowie DeepL API Free/Pro. Katalog suchen, Texte auswählen, automatisch übersetzen, Vorschläge prüfen und separat übernehmen.
+- Schlüssel nur serverseitig; Kosten-/Datenfreigabe pro Auftrag, maximal 3 Texte, keine Hintergrundaufrufe und keine automatische Wiederholung.
+- Vorhandene Übersetzungen nicht überschreiben. Platzhalter-/Markup-Schutz, benutzergebundene kurzlebige Vorschau und atomare Übernahme mit Quellenprüfung.
+- Provider-, Service-, Admin- und Speicherpfade mit Mocks geprüft; Screenshots zeigen echte PHP-Adminausgabe in einer lokalen Mock-Umgebung.
+- Noch offen: echte API-Zugangsdaten, ausdrücklich genehmigter Live-Test und installierte WordPress-/WooCommerce-/WoodMart-Staging-Abnahme. Keine echten Kosten oder Kundendatenübertragung während der Entwicklung.
+- Umfang zunächst Katalogtexte. Ganze Seiten, Produktfelder, Elementor-Dokumente, Plural- und visuelle Records sind nicht Teil dieser Version.
 
 ## Erweiterung 0.12.41
 

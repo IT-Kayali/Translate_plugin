@@ -480,6 +480,26 @@ class ITKT_Strings {
         return true;
     }
 
+    /** Insert a reviewed AI result only if the exact source still exists and no override won the race. */
+    public function save_ai_translation_if_missing( $string_id, $language, $translation, $expected_source ) {
+        global $wpdb;
+        $string_id = absint( $string_id );
+        $language = sanitize_key( $language );
+        if ( ! $string_id || ! isset( ITKT_Languages::instance()->get_active()[ $language ] ) ) { return false; }
+        $translation = wp_kses_post( (string) $translation );
+        if ( '' === trim( wp_strip_all_tags( $translation, true ) ) ) { return false; }
+        $inserted = $wpdb->query( $wpdb->prepare(
+            'INSERT IGNORE INTO ' . $this->table('string_translations') . ' (string_id,language,translation,updated_at) SELECT id,%s,%s,%s FROM ' . $this->table('strings') . ' WHERE id=%d AND BINARY original=BINARY %s',
+            $language, $translation, current_time('mysql'), $string_id, (string) $expected_source
+        ) );
+        if ( 1 !== $inserted ) { return false; }
+        unset( $this->runtime_cache[ $language ], $this->global_runtime_cache[ $language ] );
+        $version = max( 1, absint( get_option( 'itkt_runtime_data_version', 1 ) ) );
+        update_option( 'itkt_runtime_data_version', $version + 1, false );
+        do_action( 'itkt_string_translation_saved', $string_id, $language, $translation );
+        return true;
+    }
+
     public function delete_translation( $string_id, $language ) {
         global $wpdb;
         $string_id = absint( $string_id );

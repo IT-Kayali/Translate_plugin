@@ -2,9 +2,20 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.41**.
+Current development version: **0.12.42**.
 
 
+
+## [0.12.42]
+
+### Automatic catalog translation through selectable APIs
+- Add an admin-only KI-Übersetzung page with searchable catalog selection and OpenAI / DeepL API Free / DeepL API Pro adapters.
+- Generate translations automatically for explicitly selected texts, then show expiring per-user previews and a separate reviewed apply action. Existing translations are not overwritten.
+- Configure API keys only through server environment/wp-config, not frontend assets or database options. OpenAI model ID is supplied explicitly.
+- Require per-batch content/cost consent. Bound input/output sizes, disable redirects/retries/fallbacks, prevent accidental duplicate submits and reject malformed/truncated output.
+- Preserve recognized template syntax and validate it before previewing; atomic source-checked application avoids overwriting concurrent manual translations.
+- Add mocked PHP/provider/admin/storage tests plus actual rendered-admin browser checks. No live API request, paid call or customer-content transfer was made during development.
+- Initial scope is catalog strings, not whole pages/products/Elementor/plural/visual records. Real provider and WordPress/WooCommerce/WoodMart staging validation remain pending. See docs/AI-TRANSLATION.md.
 
 ## [0.12.41]
 

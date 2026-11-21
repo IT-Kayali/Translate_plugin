@@ -1,8 +1,14 @@
 # IT-Kayali Translate
 
-**Current development version: v0.12.41**
+**Current development version: v0.12.42**
 
 IT-Kayali Translate is a modular multilingual WordPress plugin focused on a stable multilingual storefront for the current production project. Commercial licensing, customer updater infrastructure and marketplace preparation are intentionally postponed until later.
+
+## Review update 0.12.42: automatic API translation
+
+Administrators can now select OpenAI or DeepL API Free/Pro, choose catalog texts and languages, and generate translations automatically. Requests require explicit content/cost confirmation; generated suggestions appear in a short-lived private admin preview and are published only with a separate review/apply action. Existing translations are preserved. Keys are configured server-side, not in frontend code or Git. See [AI setup, scope, safeguards and tests](docs/AI-TRANSLATION.md).
+
+Development validation uses mocked HTTP and database boundaries, not paid API calls. No live provider key or shop content was used. Whole-page/product/Elementor/plural/visual-record translation is outside this first implementation. The feature is a review build pending real provider and installed WordPress/shop staging verification. Main and production remain unchanged.
 
 ## Review update 0.12.41
 
