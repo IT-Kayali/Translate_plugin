@@ -34,6 +34,16 @@ async function mutationBurst() {
   } finally { dom.window.close(); }
 }
 
+async function insertedTextNode() {
+  const dom = await page({ globalTranslations: { exact: { Kasse: 'Checkout' }, patterns: [] } }, '<main><button id="checkout"></button></main>');
+  try {
+    const w = dom.window;
+    w.document.querySelector('#checkout').appendChild(w.document.createTextNode('Kasse'));
+    await sleep(250);
+    assert.equal(w.document.querySelector('#checkout').textContent, 'Checkout', 'Text-only DOM insertions must also trigger runtime translation');
+  } finally { dom.window.close(); }
+}
+
 async function scopedLinks() {
   const dom = await page({}, '<main><a id="inside" href="/shop/kasse/?x=1#pay">Kasse</a><a id="sibling" href="/shopping/">Other application</a><a id="outside" href="/support/">Support</a><a id="external" href="https://elsewhere.test/shop/">External</a><a id="admin" href="/shop/wp-admin/">Admin</a><a id="switch" class="itkt-lang-link" href="/shop/ar/">Arabic</a></main>');
   try {
@@ -49,7 +59,7 @@ async function scopedLinks() {
 
 (async () => {
   let failures = 0;
-  for (const test of [mutationBurst, scopedLinks]) {
+  for (const test of [mutationBurst, insertedTextNode, scopedLinks]) {
     try { await test(); console.log('PASS', test.name); }
     catch (e) { failures++; console.error('FAIL', test.name, e.message); }
   }

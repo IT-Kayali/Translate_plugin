@@ -1115,6 +1115,7 @@
         mutations.forEach(function (mutation) {
           Array.prototype.forEach.call(mutation.addedNodes || [], function (node) {
             if (node.nodeType === 1) pendingRuntimeRoots.add(node);
+            else if (node.nodeType === 3 && node.parentElement) pendingRuntimeRoots.add(node.parentElement);
           });
           if (mutation.type === 'characterData' && mutation.target && mutation.target.parentElement) pendingRuntimeRoots.add(mutation.target.parentElement);
         });
@@ -1179,12 +1180,47 @@
   }, true);
 
   document.addEventListener('keydown', function(event){
-    if (event.key !== 'Escape') return;
-    var open = document.querySelector('.itkt-switcher-shell.is-open');
-    if (!open) return;
-    var trigger = open.querySelector('.itkt-switcher-trigger');
-    closeLanguageSwitcher(open);
-    if (trigger && typeof trigger.focus === 'function') trigger.focus();
+    var target = event.target;
+    var shell = target && target.closest ? target.closest('.itkt-switcher-shell') : null;
+    if (!shell) return;
+    var trigger = shell.querySelector('.itkt-switcher-trigger');
+    var onTrigger = target === trigger || (trigger && trigger.contains(target));
+    var menu = shell.querySelector('.itkt-switcher-menu');
+    var inMenu = menu && menu.contains(target);
+    if (!onTrigger && !inMenu) return;
+
+    if (event.key === 'Escape' && shell.classList.contains('is-open')) {
+      event.preventDefault();
+      closeLanguageSwitcher(shell);
+      if (trigger) trigger.focus();
+      return;
+    }
+    if (event.key === 'Tab') {
+      closeLanguageSwitcher(shell);
+      return; // Never trap focus or override the browser's next Tab destination.
+    }
+
+    var opensMenu = onTrigger && (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ');
+    var movesInMenu = inMenu && ['ArrowDown','ArrowUp','Home','End'].indexOf(event.key) !== -1;
+    if (!opensMenu && !movesInMenu) return;
+    var items = Array.prototype.slice.call(shell.querySelectorAll('.itkt-switcher-menu .itkt-menu-link[href]'));
+    if (!items.length) return;
+    event.preventDefault();
+    if (opensMenu) {
+      openLanguageSwitcher(shell);
+      items[event.key === 'ArrowUp' ? items.length - 1 : 0].focus();
+      return;
+    }
+    var index = items.indexOf(target.closest('.itkt-menu-link'));
+    if (event.key === 'Home') index = 0;
+    else if (event.key === 'End') index = items.length - 1;
+    else index = (index + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length;
+    items[index].focus();
+  });
+
+  document.addEventListener('focusout', function(event){
+    var shell = event.target && event.target.closest ? event.target.closest('.itkt-switcher-shell.is-open') : null;
+    if (shell && (!event.relatedTarget || !shell.contains(event.relatedTarget))) closeLanguageSwitcher(shell);
   });
 
   var switcherRepositionTimer = 0;

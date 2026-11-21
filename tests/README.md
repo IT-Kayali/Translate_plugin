@@ -23,10 +23,22 @@ CHROME_PATH=/path/to/google-chrome npm run test:browser
 ## Results for this review
 
 - The two DOM regression cases failed against the original 0.12.39 frontend source and pass with the changes.
-- Both DOM cases and all four real-Chrome combinations pass after the fix.
+- All three DOM cases and all four real-Chrome combinations pass after the fixes.
 - All 23 PHP files pass PHP 8.1 syntax checks. This is not a PHP 8.0 compatibility guarantee.
 - All JavaScript files pass Node syntax checks.
 - The browser fixture has been visually inspected. It is not a screenshot of the user's site.
+
+## Language-menu keyboard extension (0.12.41)
+
+```sh
+npm run test:switcher
+# All suites:
+npm run test:all
+```
+
+The actual plugin frontend CSS/JS is loaded into `tests/fixtures/language-switcher.html`, a local copy of the dropdown structure with a test-page shell. Chrome checks 1440/768/390 px: keyboard open with Enter/Space/arrows, wrapping arrow navigation, Home/End, Escape focus return, normal Tab exit, mouse click, focus-leave closing, ARIA state and viewport bounds. Set `SCREENSHOT_DIR` to save desktop/tablet/mobile images. The page itself labels screenshots as local tests, not the customer shop. A complete accessibility audit is not claimed.
+
+A third DOM regression reproduces insertion of a bare text node into an existing button. Previously the observer ignored that child-list mutation; the new case now passes locally and in the four language/browser combinations.
 
 ## Before main integration or deployment
 

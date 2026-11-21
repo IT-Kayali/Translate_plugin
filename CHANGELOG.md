@@ -2,9 +2,18 @@
 
 All notable development changes to **IT-Kayali Translate** are recorded here.
 
-Current development version: **0.12.40**.
+Current development version: **0.12.41**.
 
 
+
+## [0.12.41]
+
+### Keyboard-friendly language menu and text-only AJAX updates
+- Extend the existing dropdown with Enter/Space/arrow-key opening, wrapping arrow navigation, Home/End, Escape focus return and normal Tab exit. Close the menu when focus leaves it.
+- Keep menu links out of the regular Tab order. Keyboard users enter the menu from its trigger; mouse/touch selection is unchanged.
+- Translate newly inserted text nodes inside existing elements, not only newly inserted elements and character-data edits.
+- Add real-Chrome keyboard, click, focus and viewport tests at desktop/tablet/mobile widths, with a reproducible labeled local screenshot fixture.
+- All prior regression tests still pass. WordPress/WooCommerce/WoodMart staging acceptance is still open; no main integration or deployment.
 
 ## [0.12.40]
 

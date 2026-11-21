@@ -39,6 +39,14 @@ const source = fs.readFileSync(path.join(__dirname, '../public/assets/frontend.j
         await page.waitForFunction(() => document.querySelector('#first').textContent !== 'Warenkorb' && document.querySelector('#second').textContent !== 'Kasse');
         assert.equal(await page.locator('#first').textContent(), language === 'ar' ? 'السلة' : 'Cart');
         assert.equal(await page.locator('#second').textContent(), language === 'ar' ? 'الدفع' : 'Checkout');
+        await page.evaluate(() => {
+          const button = document.createElement('button'); button.id = 'text-only';
+          document.querySelector('#fragments').appendChild(button);
+        });
+        await page.waitForTimeout(100);
+        await page.evaluate(() => document.querySelector('#text-only').appendChild(document.createTextNode('Kasse')));
+        await page.waitForFunction(() => document.querySelector('#text-only').textContent !== 'Kasse');
+        assert.equal(await page.locator('#text-only').textContent(), language === 'ar' ? 'الدفع' : 'Checkout');
         assert.equal(await page.locator('#inside').getAttribute('href'), 'https://example.test/shop/' + language + '/kasse/?x=1#pay');
         assert.equal(await page.locator('#sibling').getAttribute('href'), '/shopping/');
         assert.equal(await page.locator('#outside').getAttribute('href'), '/support/');

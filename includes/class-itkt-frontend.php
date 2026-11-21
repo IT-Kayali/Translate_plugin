@@ -1895,10 +1895,10 @@ class ITKT_Frontend {
         $html .= '<span class="itkt-trigger-label">' . $this->switcher_label_html( $current, $active_lang, $config['show_codes'], $config['show_names'], false ) . '</span>';
         $html .= '<span class="itkt-switcher-chevron" aria-hidden="true"></span></button>';
 
-        $html .= '<div id="' . esc_attr( $menu_id ) . '" class="itkt-switcher-menu" role="menu" aria-hidden="true">';
+        $html .= '<div id="' . esc_attr( $menu_id ) . '" class="itkt-switcher-menu" role="menu" aria-label="' . esc_attr__( 'Available languages', 'it-kayali-translate' ) . '" aria-hidden="true">';
         foreach ( $languages as $code => $lang ) {
             if ( $code === $current ) { continue; }
-            $html .= '<a class="itkt-lang-link itkt-menu-link" role="menuitem" href="' . esc_url( $this->language_url( $code ) ) . '" data-itkt-lang="' . esc_attr( $code ) . '" hreflang="' . esc_attr( $code ) . '" lang="' . esc_attr( $code ) . '">';
+            $html .= '<a class="itkt-lang-link itkt-menu-link" role="menuitem" tabindex="-1" href="' . esc_url( $this->language_url( $code ) ) . '" data-itkt-lang="' . esc_attr( $code ) . '" hreflang="' . esc_attr( $code ) . '" lang="' . esc_attr( $code ) . '">';
             $html .= $this->switcher_label_html( $code, $lang, $config['show_codes'], true, true );
             $html .= '</a>';
         }

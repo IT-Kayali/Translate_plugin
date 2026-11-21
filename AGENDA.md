@@ -1,9 +1,17 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.40 – Regression-Fixes / Staging-Abnahme offen**
+**Aktueller Entwicklungsstand: v0.12.41 – Regression-Fixes / Staging-Abnahme offen**
 **Letzte Aktualisierung: 21.11.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
+
+## Erweiterung 0.12.41
+
+- Bestehendes Sprachdropdown per Tastatur bedienen: Enter/Leertaste/Pfeiltasten zum Öffnen, Pfeiltasten für die Auswahl, Home/End, Esc mit Fokus-Rückgabe und normales Tab-Verhalten.
+- Menü beim Verlassen per Fokus schließen; ausgeblendete Menülinks nicht als reguläre Tab-Ziele anbieten.
+- Neu eingefügte reine Textknoten in vorhandenen Elementen werden ebenfalls übersetzt. Fehler vor dem Fix reproduziert.
+- Chrome-Tests auf Desktop/Tablet/Mobile; Screenshots ausdrücklich als lokale Testseite gekennzeichnet. Keine vollständige Barrierefreiheits-Zertifizierung.
+- Kundenshop, WordPress-/WooCommerce-/WoodMart-Integration und Deployment bleiben ungeprüft. Separater Review-Branch, Hauptbranch unverändert.
 
 ## Review 0.12.40
 
