@@ -54,18 +54,18 @@ Dynamic AJAX/fragment updates, WooCommerce cart events, popups and offcanvas/dra
 * Adds automatic catalog translation with selectable OpenAI and DeepL API Free/Pro providers.
 * Adds explicit per-batch confirmation, template guards, review previews and non-overwriting publication.
 * API keys are server-configured only. No background calls, automatic retries or live calls during development.
-* First implementation covers catalog strings. Real provider and WordPress/shop staging acceptance are still required.
+* First implementation covers catalog strings. Verified read-only on the production shop on 2026-11-22 (admin/AI screens, language switching, EN/AR storefront routes). Real provider execution, checkout/payment flows and mobile acceptance are still untested; no API key is configured.
 
 = 0.12.41 =
 * Adds keyboard operation to the language dropdown: Enter/Space, arrows, Home/End, Escape and Tab.
 * Closes the menu when focus leaves and preserves normal Tab navigation.
 * Processes text-only AJAX insertions in existing elements.
-* Adds desktop/tablet/mobile Chrome tests and a labeled local screenshot fixture. Shop staging acceptance remains pending.
+* Adds desktop/tablet/mobile Chrome tests and a labeled local screenshot fixture. Verified read-only on the production shop on 2026-11-22 as part of 0.12.42; checkout/payment/mobile acceptance remains pending.
 
 = 0.12.40 =
 * Preserves all pending AJAX fragment roots during frontend translation debounce.
 * Leaves links outside a subdirectory WordPress installation unchanged.
-* Adds DOM and real-browser regression tests. WordPress/WooCommerce/WoodMart staging acceptance remains pending.
+* Adds DOM and real-browser regression tests. Verified read-only on the production shop on 2026-11-22 as part of 0.12.42; checkout/payment/mobile acceptance remains pending.
 
 
 

@@ -1,7 +1,7 @@
 # IT-Kayali Translate – Entwicklungsagenda
 
-**Aktueller Entwicklungsstand: v0.12.42 – Regression-Fixes / Staging-Abnahme offen**
-**Letzte Aktualisierung: 21.11.2026**
+**Aktueller Entwicklungsstand: v0.12.42 – auf Zielshop installiert und read-only verifiziert / Restabnahme offen**
+**Letzte Aktualisierung: 22.11.2026**
 
 Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produktiven Einsatz**. Verkauf, Lizenzierung, Marketplace und Kunden-Updater bleiben bewusst für später zurückgestellt.
 
@@ -11,7 +11,8 @@ Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produkti
 - Schlüssel nur serverseitig; Kosten-/Datenfreigabe pro Auftrag, maximal 3 Texte, keine Hintergrundaufrufe und keine automatische Wiederholung.
 - Vorhandene Übersetzungen nicht überschreiben. Platzhalter-/Markup-Schutz, benutzergebundene kurzlebige Vorschau und atomare Übernahme mit Quellenprüfung.
 - Provider-, Service-, Admin- und Speicherpfade mit Mocks geprüft; Screenshots zeigen echte PHP-Adminausgabe in einer lokalen Mock-Umgebung.
-- Noch offen: echte API-Zugangsdaten, ausdrücklich genehmigter Live-Test und installierte WordPress-/WooCommerce-/WoodMart-Staging-Abnahme. Keine echten Kosten oder Kundendatenübertragung während der Entwicklung.
+- Zielverifikation 22.11.2026: 0.12.42 nach abgesicherter Sicherung/Rollback-Absicherung auf dem produktiven WooCommerce-Shop installiert. Read-only geprüft: Admin-Dashboard, System- und KI-Übersetzung-Seiten (alle drei Anbieter vorhanden, keiner konfiguriert), Sprachwechsel, EN-Startseite und leerer Warenkorb, EN-Endpunkt Mein-Konto/Downloads sowie AR-Shop. Keine API-Kosten, keine Inhaltsübertragung, keine Datenbank- oder Dateiwiederherstellung auf dem Live-Shop.
+- Noch offen: echte API-Zugangsdaten und ausdrücklich genehmigter, kostenpflichtiger Probeaufruf, gefüllter Warenkorb/AJAX, Checkout und Zahlung, mobile Abnahme sowie die eigentliche Übersetzung vorhandener Inhalte. Hauptbranch bis zur Abnahme unverändert.
 - Umfang zunächst Katalogtexte. Ganze Seiten, Produktfelder, Elementor-Dokumente, Plural- und visuelle Records sind nicht Teil dieser Version.
 
 ## Erweiterung 0.12.41
@@ -27,7 +28,7 @@ Der aktuelle Fokus ist ein **fertiges, stabiles Plugin für den eigenen produkti
 - Bestätigter Fehler: Zwei getrennte DOM-/AJAX-Updates innerhalb des 80-ms-Debounce-Fensters konnten den ersten Übersetzungsauftrag verlieren. Die Warteschlange behält jetzt alle betroffenen DOM-Wurzeln.
 - Bestätigter Fehler: Bei WordPress unter `/shop/` wurde ein fremder gleichnamiger Pfadanfang wie `/shopping/` in eine falsche Sprach-URL umgeschrieben. Links außerhalb des Installationspfades bleiben jetzt unverändert.
 - Regressionstests: DOM-Tests und echtes Chrome, Englisch/Arabisch sowie Desktop/Mobile. Die alten Fehler werden vor dem Fix reproduziert.
-- Offen: echte WordPress-/WooCommerce-/WoodMart-Staging-Abnahme mit Warenkorb, Checkout, Konto, Header und Sprachwechsel. Kein Live-Deployment. Hauptbranch bis zur Abnahme unverändert.
+- Offen: echte WordPress-/WooCommerce-/WoodMart-Staging-Abnahme mit Warenkorb, Checkout, Konto, Header und Sprachwechsel. Kein Live-Deployment. Hauptbranch bis zur Abnahme unverändert. (Überholt am 22.11.2026: als Teil von 0.12.42 auf dem Produktivshop installiert und read-only verifiziert, inkl. Konto-Endpunkt und Sprachwechsel; Warenkorb mit Inhalt, Checkout, Zahlung und mobile Abnahme bleiben offen. Hauptbranch weiterhin unverändert.)
 
 ## Arbeitsregel
 

@@ -50,7 +50,7 @@ These narrow tests do not establish that an installed shop works end to end. Use
 4. WoodMart standard/sticky headers and language switcher on desktop/tablet/mobile.
 5. Inline translation save, runtime refresh and page/object cache behavior.
 
-Use staging backups and keep production unchanged until acceptance. No live deployment or main-branch merge is part of this review.
+Use staging backups and keep production unchanged until acceptance. No live deployment or main-branch merge is part of this review. (Superseded 2026-11-22: the 0.12.42 build including these fixes was deployed to the production shop under a verified backup/rollback safeguard and checked read-only; main remains unmerged and checkout/payment/mobile acceptance remains open.)
 
 ## Further review suggestions, not implemented here
 

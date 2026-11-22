@@ -15,7 +15,8 @@ Current development version: **0.12.42**.
 - Require per-batch content/cost consent. Bound input/output sizes, disable redirects/retries/fallbacks, prevent accidental duplicate submits and reject malformed/truncated output.
 - Preserve recognized template syntax and validate it before previewing; atomic source-checked application avoids overwriting concurrent manual translations.
 - Add mocked PHP/provider/admin/storage tests plus actual rendered-admin browser checks. No live API request, paid call or customer-content transfer was made during development.
-- Initial scope is catalog strings, not whole pages/products/Elementor/plural/visual records. Real provider and WordPress/WooCommerce/WoodMart staging validation remain pending. See docs/AI-TRANSLATION.md.
+- Initial scope is catalog strings, not whole pages/products/Elementor/plural/visual records. See docs/AI-TRANSLATION.md.
+- Target verification 2026-11-22: installed on the production shop behind a verified backup/rollback safeguard; admin/system/AI screens, language switching, EN homepage/empty cart, EN My Account downloads endpoint and AR shop passed read-only checks. Providers remain unconfigured, so no real API call, cost or content transfer. Filled-cart AJAX, checkout, payment and mobile acceptance remain untested. Main remains unmerged.
 
 ## [0.12.41]
 
@@ -24,7 +25,7 @@ Current development version: **0.12.42**.
 - Keep menu links out of the regular Tab order. Keyboard users enter the menu from its trigger; mouse/touch selection is unchanged.
 - Translate newly inserted text nodes inside existing elements, not only newly inserted elements and character-data edits.
 - Add real-Chrome keyboard, click, focus and viewport tests at desktop/tablet/mobile widths, with a reproducible labeled local screenshot fixture.
-- All prior regression tests still pass. WordPress/WooCommerce/WoodMart staging acceptance is still open; no main integration or deployment.
+- All prior regression tests still pass. WordPress/WooCommerce/WoodMart staging acceptance is still open; no main integration or deployment. (Superseded 2026-11-22: deployed to the production shop and verified read-only as part of 0.12.42; main remains unmerged and checkout/payment/mobile acceptance remains open.)
 
 ## [0.12.40]
 
@@ -32,7 +33,7 @@ Current development version: **0.12.42**.
 - Keep all DOM roots queued during the debounce window so separate AJAX fragments are not silently dropped from translation/link processing.
 - Do not add language prefixes to same-origin links outside a subdirectory WordPress installation, including sibling paths that share only a textual prefix.
 - Add repeatable DOM and real-Chrome regression tests covering the two reproduced failures.
-- Main-branch integration and WordPress/WooCommerce/WoodMart staging acceptance remain pending. No live deployment was performed.
+- Main-branch integration and WordPress/WooCommerce/WoodMart staging acceptance remain pending. No live deployment was performed. (Superseded 2026-11-22: deployed to the production shop and verified read-only as part of 0.12.42; main remains unmerged and checkout/payment/mobile acceptance remains open.)
 
 ## [0.12.39]
 
